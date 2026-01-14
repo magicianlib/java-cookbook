@@ -8,7 +8,9 @@
         <artifactId>java-cookbook</artifactId>
         <version>${revision}</version>
     </parent>
+
     <artifactId>cookbook-jackson</artifactId>
+    <packaging>jar</packaging>
 
     <properties>
         <jackson.version>2.20.1</jackson.version>

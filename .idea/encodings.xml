@@ -3,6 +3,8 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/cookbook-datetime/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cookbook-datetime/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/cookbook-httpclient5/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/cookbook-httpclient5/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cookbook-jackson/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cookbook-jackson/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cookbook-okhttp/src/main/java" charset="UTF-8" />

@@ -12,6 +12,7 @@
         <module>cookbook-jackson</module>
         <module>cookbook-datetime</module>
         <module>cookbook-okhttp</module>
+        <module>cookbook-httpclient5</module>
     </modules>
 
     <properties>

@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>cookbook-okhttp</artifactId>
+    <packaging>jar</packaging>
 
     <properties>
         <okhttp.version>5.2.0</okhttp.version>

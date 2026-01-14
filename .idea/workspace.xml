@@ -4,16 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9a41ff61-571a-4cf8-83f8-5be47be5e6d5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/validation.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cookbook-datetime/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cookbook-jackson/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cookbook-okhttp/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+    <list default="true" id="9a41ff61-571a-4cf8-83f8-5be47be5e6d5" name="Changes" comment="init">
+      <change afterPath="$PROJECT_DIR$/cookbook-httpclient5/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cookbook-httpclient5/src/main/java/io/ituknown/App.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cookbook-datetime/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/cookbook-datetime/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cookbook-jackson/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/cookbook-jackson/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cookbook-okhttp/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/cookbook-okhttp/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,6 +29,19 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="UPDATE_TYPE" value="REBASE" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="jar://$MAVEN_REPOSITORY$/org/apache/httpcomponents/client5/httpclient5/5.6/httpclient5-5.6-sources.jar!/org/apache/hc/client5/http/auth/CredentialsStore.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/apache/httpcomponents/client5/httpclient5/5.6/httpclient5-5.6-sources.jar!/org/apache/hc/client5/http/classic/methods/HttpGet.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/apache/httpcomponents/client5/httpclient5/5.6/httpclient5-5.6-sources.jar!/org/apache/hc/client5/http/config/ConnectionConfig.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/apache/httpcomponents/client5/httpclient5/5.6/httpclient5-5.6-sources.jar!/org/apache/hc/client5/http/config/RequestConfig.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/apache/httpcomponents/client5/httpclient5/5.6/httpclient5-5.6-sources.jar!/org/apache/hc/client5/http/impl/auth/BasicCredentialsProvider.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/apache/httpcomponents/client5/httpclient5/5.6/httpclient5-5.6-sources.jar!/org/apache/hc/client5/http/impl/classic/BasicHttpClientResponseHandler.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/apache/httpcomponents/client5/httpclient5/5.6/httpclient5-5.6-sources.jar!/org/apache/hc/client5/http/impl/classic/CloseableHttpClient.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/apache/httpcomponents/client5/httpclient5/5.6/httpclient5-5.6-sources.jar!/org/apache/hc/client5/http/impl/io/PoolingHttpClientConnectionManager.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/apache/httpcomponents/client5/httpclient5/5.6/httpclient5-5.6-sources.jar!/org/apache/hc/client5/http/protocol/HttpClientContext.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/apache/httpcomponents/core5/httpcore5/5.4/httpcore5-5.4-sources.jar!/org/apache/hc/core5/http/HttpHost.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/apache/httpcomponents/core5/httpcore5/5.4/httpcore5-5.4.jar!/org/apache/hc/core5/http/io/SocketConfig.class" root0="SKIP_INSPECTION" />
   </component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
@@ -49,10 +61,10 @@
     <option name="jreName" value="1.8" />
     <option name="skipTests" value="true" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 4
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 4
+}</component>
   <component name="ProjectId" id="38BQtyN0MlOhcTeWOMqTChxlqXN" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="1" id="Add" />
@@ -65,12 +77,15 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Application.Client.executor": "Debug",
+    "Maven. [org.apache.maven.plugins:maven-archetype-plugin:RELEASE:generate].executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "com.github.patou.gitmoji.display-icon": "emoji",
+    "com.github.patou.gitmoji.migration-offered": "true",
     "com.github.patou.gitmoji.text-after-unicode": " ",
+    "com.github.patou.gitmoji.use-project-settings": "true",
     "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/Users/ituknown/JetBrains/java-cookbook/java-cookbook/cookbook-okhttp/src/main/java/io/ituknown/okhttp",
@@ -123,11 +138,22 @@
       <option name="presentableId" value="Default" />
       <updated>1697008811608</updated>
     </task>
+    <task id="LOCAL-00001" summary="init">
+      <option name="closed" value="true" />
+      <created>1768286173633</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1768286173633</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <option name="MARK_IGNORED_AS_EXCLUDED" value="true" />
+    <MESSAGE value="init" />
+    <option name="LAST_COMMIT_MESSAGE" value="init" />
   </component>
 </project>
