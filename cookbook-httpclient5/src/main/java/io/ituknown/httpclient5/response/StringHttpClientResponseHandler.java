@@ -1,31 +1,43 @@
 package io.ituknown.httpclient5.response;
 
-import io.ituknown.httpclient5.StringResponse;
 import org.apache.hc.client5.http.ClientProtocolException;
 import org.apache.hc.client5.http.impl.classic.AbstractHttpClientResponseHandler;
 import org.apache.hc.core5.annotation.Contract;
 import org.apache.hc.core5.annotation.ThreadingBehavior;
 import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 @Contract(threading = ThreadingBehavior.STATELESS)
-public class StringHttpClientResponseHandler extends AbstractHttpClientResponseHandler<StringResponse> {
+public class StringHttpClientResponseHandler extends AbstractHttpClientResponseHandler<StringEntityResponse> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(StringHttpClientResponseHandler.class);
+
     @Override
-    public StringResponse handleResponse(ClassicHttpResponse response) throws IOException {
-        StringResponse result = super.handleResponse(response);
+    public StringEntityResponse handleResponse(ClassicHttpResponse response) throws IOException {
+        StringEntityResponse result = super.handleResponse(response);
         result.setHeaders(response.getHeaders());
+
+        StringBuilder builder = new StringBuilder();
+        for (Header header : response.getHeaders()) {
+            builder.append(" ").append(header.getName()).append(": ").append(header.getValue());
+        }
+        LOGGER.info("http response content: {}, header: [{}]", result.getEntity(), builder.substring(1));
+
         return result;
     }
 
     @Override
-    public StringResponse handleEntity(HttpEntity entity) throws IOException {
+    public StringEntityResponse handleEntity(HttpEntity entity) throws IOException {
         try {
-            String result = EntityUtils.toString(entity);
-            return new StringResponse(result);
+            String result = EntityUtils.toString(entity, StandardCharsets.UTF_8);
+            return new StringEntityResponse(result);
         } catch (final ParseException ex) {
             throw new ClientProtocolException(ex);
         }

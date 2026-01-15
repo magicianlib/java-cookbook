@@ -1,27 +1,28 @@
 package io.ituknown.httpclient5;
 
-import io.ituknown.httpclient5.response.StringHttpClientResponseHandler;
-import org.apache.hc.client5.http.auth.CredentialsProvider;
-import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.config.TlsConfig;
-import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.http.ssl.TLS;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
+import java.net.URI;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-class SyncClientRegistry {
+class SyncClient {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SyncClient.class);
     /**
      * 默认连接配置
      */
@@ -68,35 +69,56 @@ class SyncClientRegistry {
         //CONN_MANAGER.setDefaultSocketConfig(SOCKET_CONFIG); // 套接字配置
     }
 
-    // 全局唯一的同步客户端
-    static final CloseableHttpClient SYNC_CLIENT = HttpClients.custom()
+    /**
+     * 全局唯一的同步客户端
+     */
+    private static final CloseableHttpClient INSTANCE = HttpClients.custom()
             // 启动一个后台线程, 每隔 10 秒扫描一次连接池. 强制关闭超过 ConnectionConfig#setIdleTimeout 定义的闲置连接
             .evictIdleConnections(TimeValue.ofSeconds(10L))
             .setConnectionManager(CONN_MANAGER)
             .build();
 
-    {
-        CredentialsProvider provider = new BasicCredentialsProvider();
-        HttpClientContext context = HttpClientContext.create();
-        context.setCredentialsProvider(provider); // 认证凭证
+    static <T> T execute(CustomRequestConfig customConfig, HttpUriRequestBase requestBase, HttpClientResponseHandler<T> responseHandler) {
+        URI url = null;
 
-        HttpHost proxy = null; // 代理
         try {
-            proxy = HttpHost.create("");
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+            url = requestBase.getUri();
 
-        RequestConfig config = RequestConfig.custom().setProxy(proxy).setRedirectsEnabled(true).build();
+            RequestConfig.Builder builder = RequestConfig.custom();
 
-        HttpGet request = new HttpGet("https://target-site.com");
-        request.setConfig(config);
+            // 代理
+            if (customConfig.getProxy() != null && !customConfig.getProxy().isBlank()) {
+                builder.setProxy(HttpHost.create(customConfig.getProxy()));
+            }
 
-        // 使用 HttpClientResponseHandler 会自动处理连接的释放
-        try {
-            StringResponse response = SYNC_CLIENT.execute(request, context, new StringHttpClientResponseHandler());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            // 重定向
+            builder.setRedirectsEnabled(customConfig.isRedirects());
+            // 获取连接超时时间
+            builder.setConnectionRequestTimeout(customConfig.getConnectionRequestTimeout(), TimeUnit.MILLISECONDS);
+            // 服务器响应超时时间
+            builder.setResponseTimeout(customConfig.getResponseTimeout(), TimeUnit.MILLISECONDS);
+
+            requestBase.setConfig(builder.build());
+
+            // 认证凭证
+            HttpClientContext context = HttpClientContext.create();
+            if (customConfig.getCredentials() != null) {
+                context.setCredentialsProvider(customConfig.getCredentials());
+            }
+
+            // 请求头
+            for (Map.Entry<String, Object> entry : customConfig.getHeaders().entrySet()) {
+                requestBase.setHeader(entry.getKey(), entry.getValue());
+            }
+
+            if (customConfig.isPrintLog()) {
+                LOGGER.info("http request: {} {}, header: {}", requestBase.getMethod(), url, customConfig.getHeaders());
+            }
+
+            return INSTANCE.execute(requestBase, context, responseHandler);
+        } catch (Exception e) {
+            LOGGER.error("Http request exception[{} {}]: {}", requestBase.getMethod(), url, e.getMessage(), e);
+            throw new HttpException(e);
         }
     }
 }
