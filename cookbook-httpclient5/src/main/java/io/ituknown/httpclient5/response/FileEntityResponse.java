@@ -1,15 +1,18 @@
 package io.ituknown.httpclient5.response;
 
-import org.apache.hc.core5.http.Header;
-
 import java.nio.file.Path;
 
-public class FileEntityResponse extends HeaderResponse {
+public class FileEntityResponse {
+    private Header header;
     private Path filename;
     private long fileSize;
 
-    public FileEntityResponse(Header[] headers) {
-        super(headers);
+    public Header getHeader() {
+        return header;
+    }
+
+    public void setHeader(Header header) {
+        this.header = header;
     }
 
     public Path getFilename() {
@@ -26,5 +29,10 @@ public class FileEntityResponse extends HeaderResponse {
 
     public void setFileSize(long fileSize) {
         this.fileSize = fileSize;
+    }
+
+    @Override
+    public String toString() {
+        return "[filename: " + filename + ", size: " + fileSize + "] header: " + header;
     }
 }

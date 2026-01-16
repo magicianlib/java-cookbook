@@ -38,11 +38,11 @@ public class HttpClientUtils extends SyncClient {
         return execute(config, request, new StringHttpClientResponseHandler());
     }
 
-    public static HeaderResponse getStream(String url, Consumer<InputStream> streamConsumer) {
+    public static Header getStream(String url, Consumer<InputStream> streamConsumer) {
         return getStream(url, CustomRequestConfig.DEFAULT, streamConsumer);
     }
 
-    public static HeaderResponse getStream(String url, CustomRequestConfig config, Consumer<InputStream> streamConsumer) {
+    public static Header getStream(String url, CustomRequestConfig config, Consumer<InputStream> streamConsumer) {
         HttpGet request = new HttpGet(url);
         return execute(config, request, new StreamHttpClientResponseHandler(streamConsumer));
     }
@@ -78,11 +78,11 @@ public class HttpClientUtils extends SyncClient {
         return execute(config, request, new StringHttpClientResponseHandler());
     }
 
-    public static HeaderResponse postJson(String url, String jsonContent, Consumer<InputStream> streamConsumer) {
+    public static Header postJson(String url, String jsonContent, Consumer<InputStream> streamConsumer) {
         return postJson(url, jsonContent, CustomRequestConfig.DEFAULT, streamConsumer);
     }
 
-    public static HeaderResponse postJson(String url, String jsonContent, CustomRequestConfig config, Consumer<InputStream> streamConsumer) {
+    public static Header postJson(String url, String jsonContent, CustomRequestConfig config, Consumer<InputStream> streamConsumer) {
         HttpPost request = new HttpPost(url);
         request.setEntity(new StringEntity(jsonContent, ContentType.APPLICATION_JSON));
         return execute(config, request, new StreamHttpClientResponseHandler(streamConsumer));
@@ -98,11 +98,11 @@ public class HttpClientUtils extends SyncClient {
         return execute(config, request, new StringHttpClientResponseHandler());
     }
 
-    public static HeaderResponse postJson(String url, byte[] jsonContent, Consumer<InputStream> streamConsumer) {
+    public static Header postJson(String url, byte[] jsonContent, Consumer<InputStream> streamConsumer) {
         return postJson(url, jsonContent, CustomRequestConfig.DEFAULT, streamConsumer);
     }
 
-    public static HeaderResponse postJson(String url, byte[] jsonContent, CustomRequestConfig config, Consumer<InputStream> streamConsumer) {
+    public static Header postJson(String url, byte[] jsonContent, CustomRequestConfig config, Consumer<InputStream> streamConsumer) {
         HttpPost request = new HttpPost(url);
         request.setEntity(new ByteArrayEntity(jsonContent, ContentType.APPLICATION_JSON));
         return execute(config, request, new StreamHttpClientResponseHandler(streamConsumer));
@@ -121,11 +121,11 @@ public class HttpClientUtils extends SyncClient {
         return execute(config, request, new StringHttpClientResponseHandler());
     }
 
-    public static HeaderResponse post(String url, String content, ContentType contentType, Consumer<InputStream> streamConsumer) {
+    public static Header post(String url, String content, ContentType contentType, Consumer<InputStream> streamConsumer) {
         return post(url, content, contentType, CustomRequestConfig.DEFAULT, streamConsumer);
     }
 
-    public static HeaderResponse post(String url, String content, ContentType contentType, CustomRequestConfig config, Consumer<InputStream> streamConsumer) {
+    public static Header post(String url, String content, ContentType contentType, CustomRequestConfig config, Consumer<InputStream> streamConsumer) {
         HttpPost request = new HttpPost(url);
         request.setEntity(new StringEntity(content, contentType));
         return execute(config, request, new StreamHttpClientResponseHandler(streamConsumer));
@@ -145,11 +145,11 @@ public class HttpClientUtils extends SyncClient {
         return execute(config, request, new StringHttpClientResponseHandler());
     }
 
-    public static HeaderResponse post(String url, byte[] content, ContentType contentType, Consumer<InputStream> streamConsumer) {
+    public static Header post(String url, byte[] content, ContentType contentType, Consumer<InputStream> streamConsumer) {
         return post(url, content, contentType, CustomRequestConfig.DEFAULT, streamConsumer);
     }
 
-    public static HeaderResponse post(String url, byte[] content, ContentType contentType, CustomRequestConfig config, Consumer<InputStream> streamConsumer) {
+    public static Header post(String url, byte[] content, ContentType contentType, CustomRequestConfig config, Consumer<InputStream> streamConsumer) {
         HttpPost request = new HttpPost(url);
         request.setEntity(new ByteArrayEntity(content, contentType));
         return execute(config, request, new StreamHttpClientResponseHandler(streamConsumer));
@@ -173,15 +173,15 @@ public class HttpClientUtils extends SyncClient {
         return execute(config, request, new StringHttpClientResponseHandler());
     }
 
-    public static <T extends NameValuePair> HeaderResponse postForm(String url, final List<T> parameters, Consumer<InputStream> streamConsumer) {
+    public static <T extends NameValuePair> Header postForm(String url, final List<T> parameters, Consumer<InputStream> streamConsumer) {
         return postForm(url, parameters, CustomRequestConfig.DEFAULT, StandardCharsets.UTF_8, streamConsumer);
     }
 
-    public static <T extends NameValuePair> HeaderResponse postForm(String url, final List<T> parameters, CustomRequestConfig config, Consumer<InputStream> streamConsumer) {
+    public static <T extends NameValuePair> Header postForm(String url, final List<T> parameters, CustomRequestConfig config, Consumer<InputStream> streamConsumer) {
         return postForm(url, parameters, config, StandardCharsets.UTF_8, streamConsumer);
     }
 
-    public static <T extends NameValuePair> HeaderResponse postForm(String url, final List<T> parameters, CustomRequestConfig config, Charset charset, Consumer<InputStream> streamConsumer) {
+    public static <T extends NameValuePair> Header postForm(String url, final List<T> parameters, CustomRequestConfig config, Charset charset, Consumer<InputStream> streamConsumer) {
         UrlEncodedFormEntity entity = new UrlEncodedFormEntity(parameters, charset);
         HttpPost request = new HttpPost(url);
         request.setEntity(entity);
@@ -201,11 +201,11 @@ public class HttpClientUtils extends SyncClient {
         return execute(config, request, new StringHttpClientResponseHandler());
     }
 
-    public static HeaderResponse postMultipart(String url, MultipartEntityBuilder entity, Consumer<InputStream> streamConsumer) {
+    public static Header postMultipart(String url, MultipartEntityBuilder entity, Consumer<InputStream> streamConsumer) {
         return postMultipart(url, entity, CustomRequestConfig.DEFAULT, streamConsumer);
     }
 
-    public static HeaderResponse postMultipart(String url, MultipartEntityBuilder entity, CustomRequestConfig config, Consumer<InputStream> streamConsumer) {
+    public static Header postMultipart(String url, MultipartEntityBuilder entity, CustomRequestConfig config, Consumer<InputStream> streamConsumer) {
         HttpPost request = new HttpPost(url);
         request.setEntity(entity.build());
         return execute(config, request, new StreamHttpClientResponseHandler(streamConsumer));
@@ -233,7 +233,7 @@ public class HttpClientUtils extends SyncClient {
         return execute(config, request, new StringHttpClientResponseHandler());
     }
 
-    public static HeaderResponse postFile(String url, File file, Consumer<InputStream> streamConsumer) {
+    public static Header postFile(String url, File file, Consumer<InputStream> streamConsumer) {
         String type = URLConnection.guessContentTypeFromName(file.getName());
         if (type == null) {
             type = "application/octet-stream"; // 默认二进制流
@@ -242,11 +242,11 @@ public class HttpClientUtils extends SyncClient {
         return postFile(url, file, ContentType.create(type), CustomRequestConfig.DEFAULT, streamConsumer);
     }
 
-    public static HeaderResponse postFile(String url, File file, ContentType contentType, Consumer<InputStream> streamConsumer) {
+    public static Header postFile(String url, File file, ContentType contentType, Consumer<InputStream> streamConsumer) {
         return postFile(url, file, contentType, CustomRequestConfig.DEFAULT, streamConsumer);
     }
 
-    public static HeaderResponse postFile(String url, File file, ContentType contentType, CustomRequestConfig config, Consumer<InputStream> streamConsumer) {
+    public static Header postFile(String url, File file, ContentType contentType, CustomRequestConfig config, Consumer<InputStream> streamConsumer) {
         HttpPost request = new HttpPost(url);
         request.setEntity(new FileEntity(file, contentType));
         return execute(config, request, new StreamHttpClientResponseHandler(streamConsumer));

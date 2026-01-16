@@ -1,5 +1,6 @@
 package io.ituknown.httpclient5.response;
 
+import io.ituknown.httpclient5.Helper;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 
 import java.io.IOException;
@@ -15,14 +16,14 @@ public class FileDownloadUseRemoteNameHttpClientResponseHandler extends FileDown
     }
 
     @Override
-    protected Path getFilename() {
+    protected Path getFileName() {
         return fileName;
     }
 
     @Override
     public FileEntityResponse handleResponse(ClassicHttpResponse response) throws IOException {
         // 从 Header 获取文件名，如果没有则给个默认值
-        String fileName = FileNameParser.getFileNameFromHeader(response.getFirstHeader("Content-Disposition"));
+        String fileName = Helper.fileNameParse(response.getFirstHeader("Content-Disposition"));
         if (fileName == null) {
             fileName = "download_" + System.currentTimeMillis();
         }

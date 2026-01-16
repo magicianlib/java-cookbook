@@ -1,11 +1,11 @@
 package io.ituknown.httpclient5.response;
 
+import io.ituknown.httpclient5.Helper;
 import org.apache.hc.client5.http.ClientProtocolException;
 import org.apache.hc.client5.http.impl.classic.AbstractHttpClientResponseHandler;
 import org.apache.hc.core5.annotation.Contract;
 import org.apache.hc.core5.annotation.ThreadingBehavior;
 import org.apache.hc.core5.http.ClassicHttpResponse;
-import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
@@ -22,14 +22,8 @@ public class StringHttpClientResponseHandler extends AbstractHttpClientResponseH
     @Override
     public StringEntityResponse handleResponse(ClassicHttpResponse response) throws IOException {
         StringEntityResponse result = super.handleResponse(response);
-        result.setHeaders(response.getHeaders());
-
-        StringBuilder builder = new StringBuilder();
-        for (Header header : response.getHeaders()) {
-            builder.append(" ").append(header.getName()).append(": ").append(header.getValue());
-        }
-        LOGGER.info("http response content: {}, header: [{}]", result.getEntity(), builder.substring(1));
-
+        result.setHeader(Helper.resolveHeader(response));
+        LOGGER.info("http response {}", result);
         return result;
     }
 

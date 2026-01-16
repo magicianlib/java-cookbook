@@ -1,8 +1,8 @@
 package io.ituknown.httpclient5.response;
 
+import io.ituknown.httpclient5.Helper;
 import org.apache.hc.client5.http.HttpResponseException;
 import org.apache.hc.core5.http.ClassicHttpResponse;
-import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
@@ -29,49 +29,48 @@ public class FileDownloadHttpClientResponseHandler implements HttpClientResponse
         this.fileName = fileName;
     }
 
-    protected Path getFilename() {
+    protected Path getFileName() {
         return fileName;
     }
 
     @Override
     public FileEntityResponse handleResponse(ClassicHttpResponse response) throws IOException {
-        StringBuilder builder = new StringBuilder();
-        for (Header header : response.getHeaders()) {
-            builder.append(" ").append(header.getName()).append(": ").append(header.getValue());
-        }
-        LOGGER.info("http response content: [file: {}] header: [{}]", getFileName(), builder.substring(1));
-
         if (response.getCode() >= 300) {
             EntityUtils.consume(response.getEntity());
             throw new HttpResponseException(response.getCode(), response.getReasonPhrase());
         }
 
+        FileEntityResponse result = new FileEntityResponse();
+        result.setHeader(Helper.resolveHeader(response));
+
         final HttpEntity entity = response.getEntity();
         if (entity == null) {
-            return new FileEntityResponse(response.getHeaders());
+            LOGGER.info("http response no data, header: {}", result.getHeader());
+            return result;
         }
 
         // 确保父目录存在
-        Path parent = getFilename().getParent();
+        Path parent = getFileName().getParent();
         if (parent != null && Files.notExists(parent)) {
             Files.createDirectories(parent);
         }
 
-        FileEntityResponse result = new FileEntityResponse(response.getHeaders());
-        result.setFilename(getFilename());
+        result.setFilename(getFileName());
 
         try (final InputStream in = entity.getContent()) {
             // StandardCopyOption.REPLACE_EXISTING 视业务需求而定
-            long bytesCopied = Files.copy(in, getFilename(), StandardCopyOption.REPLACE_EXISTING);
+            long bytesCopied = Files.copy(in, getFileName(), StandardCopyOption.REPLACE_EXISTING);
             result.setFileSize(bytesCopied);
 
             // 确保实体被完全消耗
             EntityUtils.consume(entity);
         } catch (IOException e) {
             // 发生异常时尝试删除可能创建的残缺文件
-            Files.deleteIfExists(getFilename());
+            Files.deleteIfExists(getFileName());
             throw e;
         }
+
+        LOGGER.info("http response {}", result);
         return result;
     }
 }

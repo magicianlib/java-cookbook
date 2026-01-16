@@ -1,14 +1,27 @@
-package io.ituknown.httpclient5.response;
+package io.ituknown.httpclient5;
 
-import org.apache.hc.core5.http.Header;
+import io.ituknown.httpclient5.response.Header;
+import io.ituknown.httpclient5.response.MinimalField;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.HeaderElement;
 import org.apache.hc.core5.http.message.BasicHeaderValueParser;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
-class FileNameParser {
-    static String getFileNameFromHeader(Header header) {
+public class Helper {
+
+    public static Header resolveHeader(ClassicHttpResponse response) {
+        Header header = new Header();
+        if (response.getHeaders() != null) {
+            for (org.apache.hc.core5.http.Header h : response.getHeaders()) {
+                header.addField(new MinimalField(h.getName(), h.getValue()));
+            }
+        }
+        return header;
+    }
+
+    public static String fileNameParse(org.apache.hc.core5.http.Header header) {
         if (header == null) {
             return null;
         }
