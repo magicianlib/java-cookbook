@@ -26,19 +26,19 @@ public class Helper {
             return null;
         }
 
-        // 使用 HC5 自带的解析器解析标准 getFilename
-        // 格式: attachment; getFilename="example.txt"
+        // 使用 HC5 自带的解析器解析标准 Filename
+        // 格式: attachment; Filename="example.txt"
         for (HeaderElement element : BasicHeaderValueParser.INSTANCE.parseElements(header.getValue(), null)) {
-            if (element.getName().equalsIgnoreCase("getFilename")) {
+            if (element.getName().equalsIgnoreCase("Filename")) {
                 return element.getValue();
             }
         }
 
-        // 手动处理 RFC 5987 扩展格式 (getFilename*)
-        // 格式: attachment; getFilename*=UTF-8''%e6%b5%8b%e8%af%95.txt
+        // 手动处理 RFC 5987 扩展格式 (Filename*)
+        // 格式: attachment; Filename*=UTF-8''%e6%b5%8b%e8%af%95.txt
         String value = header.getValue();
-        if (value.contains("getFilename*=")) {
-            int start = value.indexOf("getFilename*=");
+        if (value.contains("Filename*=")) {
+            int start = value.indexOf("Filename*=");
             String raw = value.substring(start + 10).split(";")[0].trim();
             // 简单处理 UTF-8 编码部分
             if (raw.toLowerCase().startsWith("utf-8''")) {

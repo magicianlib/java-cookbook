@@ -8,6 +8,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.SocketConfig;
@@ -111,8 +112,14 @@ class SyncClient {
                 requestBase.setHeader(entry.getKey(), entry.getValue());
             }
 
-            if (customConfig.isPrintLog()) {
-                LOGGER.info("http request: {} {}, header: {}", requestBase.getMethod(), url, customConfig.getHeaders());
+            StringBuilder printHeader = new StringBuilder();
+            for (Header header : requestBase.getHeaders()) {
+                printHeader.append(", ").append(header.getName()).append(": ").append(header.getValue()).append(", ");
+            }
+            if (printHeader.isEmpty()) {
+                LOGGER.info("http request: {} {}, header: []", requestBase.getMethod(), url);
+            } else {
+                LOGGER.info("http request: {} {}, header: [{}]", requestBase.getMethod(), url, printHeader.substring(2));
             }
 
             return INSTANCE.execute(requestBase, context, responseHandler);

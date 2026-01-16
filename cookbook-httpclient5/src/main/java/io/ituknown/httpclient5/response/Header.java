@@ -2,7 +2,7 @@ package io.ituknown.httpclient5.response;
 
 import java.util.*;
 
-public class Header {
+public class Header implements Iterable<MinimalField> {
     private final List<MinimalField> fields;
     private final Map<String, List<MinimalField>> fieldMap;
 
@@ -18,7 +18,7 @@ public class Header {
 
         fields.add(field);
 
-        String key = field.getName().toLowerCase(Locale.ROOT);
+        String key = field.name().toLowerCase(Locale.ROOT);
         fieldMap.computeIfAbsent(key, k -> new LinkedList<>()).add(field);
     }
 
@@ -51,6 +51,11 @@ public class Header {
         } else {
             return list;
         }
+    }
+
+    @Override
+    public Iterator<MinimalField> iterator() {
+        return Collections.unmodifiableList(fields).iterator();
     }
 
     @Override

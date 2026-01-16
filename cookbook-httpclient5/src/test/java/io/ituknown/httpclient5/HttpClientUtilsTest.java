@@ -1,8 +1,8 @@
 package io.ituknown.httpclient5;
 
 import io.ituknown.httpclient5.response.FileEntityResponse;
+import io.ituknown.httpclient5.response.MinimalField;
 import io.ituknown.httpclient5.response.StringEntityResponse;
-import org.apache.hc.core5.http.Header;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -16,8 +16,8 @@ public class HttpClientUtilsTest {
         config.setProxy("127.0.0.1:7897");
         StringEntityResponse result = HttpClientUtils.get("http://baidu.com", config);
         System.out.println(result.getEntity());
-        for (Header header : result.getHeadersUseEmptyIsAbsent()) {
-            System.out.println(header.getName() + ": " + header.getValue());
+        for (MinimalField field : result.getHeader()) {
+            System.out.println(field.name() + ": " + field.value());
         }
 
         Assertions.assertNotNull(result.getEntity());
@@ -30,8 +30,8 @@ public class HttpClientUtilsTest {
         FileEntityResponse result = HttpClientUtils.download("https://github.com/magicianlib.png", config, "C:\\Users\\WINDOWS\\Downloads\\tmp\\tmp\\magicianlib.png");
         System.out.println(result.getFilename());
         System.out.println(result.getFileSize());
-        for (Header header : result.getHeadersUseEmptyIsAbsent()) {
-            System.out.println(header.getName() + ": " + header.getValue());
+        for (MinimalField field : result.getHeader()) {
+            System.out.println(field.name() + ": " + field.value());
         }
 
         Assertions.assertTrue(result.getFileSize() > 0);
@@ -46,8 +46,8 @@ public class HttpClientUtilsTest {
         FileEntityResponse result = HttpClientUtils.downloadUseRemoteName("https://github.com/magicianlib.png", config, path);
         System.out.println(result.getFilename());
         System.out.println(result.getFileSize());
-        for (Header header : result.getHeadersUseEmptyIsAbsent()) {
-            System.out.println(header.getName() + ": " + header.getValue());
+        for (MinimalField field : result.getHeader()) {
+            System.out.println(field.name() + ": " + field.value());
         }
 
         Assertions.assertTrue(result.getFileSize() > 0);

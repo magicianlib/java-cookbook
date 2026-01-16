@@ -29,7 +29,7 @@ public class FileDownloadHttpClientResponseHandler implements HttpClientResponse
         this.fileName = fileName;
     }
 
-    protected Path getFileName() {
+    public Path getFileName() {
         return fileName;
     }
 
@@ -52,15 +52,17 @@ public class FileDownloadHttpClientResponseHandler implements HttpClientResponse
         // 确保父目录存在
         Path parent = getFileName().getParent();
         if (parent != null && Files.notExists(parent)) {
+            LOGGER.info("The file [{}] is ready to be saved. However, the directory does not exist. execute create.", getFileName());
             Files.createDirectories(parent);
+        } else {
+            LOGGER.info("The file [{}] is ready to be saved", getFileName());
         }
-
-        result.setFilename(getFileName());
 
         try (final InputStream in = entity.getContent()) {
             // StandardCopyOption.REPLACE_EXISTING 视业务需求而定
             long bytesCopied = Files.copy(in, getFileName(), StandardCopyOption.REPLACE_EXISTING);
             result.setFileSize(bytesCopied);
+            result.setFilename(getFileName());
 
             // 确保实体被完全消耗
             EntityUtils.consume(entity);

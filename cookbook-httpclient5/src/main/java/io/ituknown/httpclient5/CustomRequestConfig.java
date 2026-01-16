@@ -12,10 +12,6 @@ import java.util.Map;
 public class CustomRequestConfig {
     static final CustomRequestConfig DEFAULT = new CustomRequestConfig();
     /**
-     * 是否输出请求日志
-     */
-    private boolean printRequestLog;
-    /**
      * 是否允许请求重定向
      */
     private boolean redirects = true;
@@ -56,14 +52,6 @@ public class CustomRequestConfig {
      * 请求头
      */
     private final Map<String, Object> headers = new HashMap<>();
-
-    public boolean isPrintLog() {
-        return printRequestLog;
-    }
-
-    public void setPrintLog(boolean printLog) {
-        this.printRequestLog = printLog;
-    }
 
     public boolean isRedirects() {
         return redirects;
