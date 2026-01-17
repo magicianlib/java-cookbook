@@ -12,11 +12,13 @@ public class FileDownloadUseRemoteNameHttpClientResponseHandler extends FileDown
     private static final Logger LOGGER = LoggerFactory.getLogger(FileDownloadUseRemoteNameHttpClientResponseHandler.class);
 
     private final Path targetDir;
+    private final String requestUrl;
     private Path fileName;
 
-    public FileDownloadUseRemoteNameHttpClientResponseHandler(Path targetDir) {
+    public FileDownloadUseRemoteNameHttpClientResponseHandler(Path targetDir, String requestUrl) {
         super(targetDir);
         this.targetDir = targetDir;
+        this.requestUrl = requestUrl;
     }
 
     @Override
@@ -26,14 +28,25 @@ public class FileDownloadUseRemoteNameHttpClientResponseHandler extends FileDown
 
     @Override
     public FileEntityResponse handleResponse(ClassicHttpResponse response) throws IOException {
-        // 从 Header 获取文件名，如果没有则给个默认值
+        // 从请求头获取文件名
         String fileName = Helper.fileNameParse(response.getFirstHeader("Content-Disposition"));
-        if (fileName == null) {
-            fileName = "download_" + System.currentTimeMillis();
-            LOGGER.info("Since no file name was parsed from Content-Disposition, a temporary file name was used: {}", fileName);
+
+        // 如果 Header 没有，尝试从 URL 获取
+        if (fileName == null || fileName.isBlank()) {
+            fileName = Helper.getFileNameFromUrl(requestUrl);
+            if (fileName != null) {
+                LOGGER.info("Parsed file name from URL: {}", fileName);
+            }
         } else {
-            LOGGER.info("The file name parsed from Content-Disposition: {}", fileName);
+            LOGGER.info("Parsed file name from Content-Disposition: {}", fileName);
         }
+
+        // 保底策略
+        if (fileName == null || fileName.isBlank()) {
+            fileName = "download_" + System.currentTimeMillis();
+            LOGGER.warn("Failed to parse name from Header and URL, using fallback: {}", fileName);
+        }
+
         this.fileName = targetDir.resolve(fileName);
         return super.handleResponse(response);
     }

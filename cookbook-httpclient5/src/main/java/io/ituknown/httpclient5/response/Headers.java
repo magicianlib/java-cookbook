@@ -2,11 +2,11 @@ package io.ituknown.httpclient5.response;
 
 import java.util.*;
 
-public class Header implements Iterable<MinimalField> {
+public class Headers implements Iterable<MinimalField> {
     private final List<MinimalField> fields;
     private final Map<String, List<MinimalField>> fieldMap;
 
-    public Header() {
+    public Headers() {
         this.fields = new ArrayList<>();
         this.fieldMap = new HashMap<>();
     }

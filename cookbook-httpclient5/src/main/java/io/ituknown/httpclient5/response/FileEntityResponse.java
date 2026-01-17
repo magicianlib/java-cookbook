@@ -3,16 +3,16 @@ package io.ituknown.httpclient5.response;
 import java.nio.file.Path;
 
 public class FileEntityResponse {
-    private Header header;
+    private Headers headers;
     private Path filename;
     private long fileSize;
 
-    public Header getHeader() {
-        return header;
+    public Headers getHeader() {
+        return headers;
     }
 
-    public void setHeader(Header header) {
-        this.header = header;
+    public void setHeader(Headers headers) {
+        this.headers = headers;
     }
 
     public Path getFilename() {
@@ -33,6 +33,6 @@ public class FileEntityResponse {
 
     @Override
     public String toString() {
-        return "[filename: " + filename + ", size: " + fileSize + "] header: " + header;
+        return "[filename: " + filename + ", size: " + fileSize + "] headers: " + headers;
     }
 }

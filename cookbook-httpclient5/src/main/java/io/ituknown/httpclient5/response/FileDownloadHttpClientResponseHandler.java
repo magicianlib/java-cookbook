@@ -37,6 +37,7 @@ public class FileDownloadHttpClientResponseHandler implements HttpClientResponse
     public FileEntityResponse handleResponse(ClassicHttpResponse response) throws IOException {
         if (response.getCode() >= 300) {
             EntityUtils.consume(response.getEntity());
+            LOGGER.warn("Download failed, status code: {}, reason: {}", response.getCode(), response.getReasonPhrase());
             throw new HttpResponseException(response.getCode(), response.getReasonPhrase());
         }
 
@@ -45,34 +46,39 @@ public class FileDownloadHttpClientResponseHandler implements HttpClientResponse
 
         final HttpEntity entity = response.getEntity();
         if (entity == null) {
-            LOGGER.info("http response no data, header: {}", result.getHeader());
+            LOGGER.warn("Http response has no entity content. Header: {}", result.getHeader());
             return result;
         }
 
+        Path targetFile = getFileName();
+        LOGGER.debug("Starting file download. Target: {}, Expected Size: {} bytes", targetFile, entity.getContentLength());
+
         // 确保父目录存在
-        Path parent = getFileName().getParent();
+        Path parent = targetFile.getParent();
         if (parent != null && Files.notExists(parent)) {
-            LOGGER.info("The file [{}] is ready to be saved. However, the directory does not exist. execute create.", getFileName());
+            LOGGER.info("Creating directory: {}", parent);
             Files.createDirectories(parent);
-        } else {
-            LOGGER.info("The file [{}] is ready to be saved", getFileName());
         }
 
         try (final InputStream in = entity.getContent()) {
             // StandardCopyOption.REPLACE_EXISTING 视业务需求而定
-            long bytesCopied = Files.copy(in, getFileName(), StandardCopyOption.REPLACE_EXISTING);
+            long bytesCopied = Files.copy(in, targetFile, StandardCopyOption.REPLACE_EXISTING);
             result.setFileSize(bytesCopied);
-            result.setFilename(getFileName());
+            result.setFilename(targetFile);
 
             // 确保实体被完全消耗
             EntityUtils.consume(entity);
         } catch (IOException e) {
-            // 发生异常时尝试删除可能创建的残缺文件
-            Files.deleteIfExists(getFileName());
+            LOGGER.error("Failed to save file [{}]. Cleaning up fragment...", targetFile, e);
+            try {
+                Files.deleteIfExists(targetFile);
+            } catch (IOException cleanupEx) {
+                LOGGER.error("Failed to delete fragmented file: {}", targetFile, cleanupEx);
+            }
             throw e;
         }
 
-        LOGGER.info("http response {}", result);
+        LOGGER.info("Download completed: {}, Size: {} bytes", targetFile.getFileName(), result.getFileSize());
         return result;
     }
 }

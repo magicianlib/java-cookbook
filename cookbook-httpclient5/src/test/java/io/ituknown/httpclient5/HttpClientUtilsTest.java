@@ -1,7 +1,6 @@
 package io.ituknown.httpclient5;
 
 import io.ituknown.httpclient5.response.FileEntityResponse;
-import io.ituknown.httpclient5.response.MinimalField;
 import io.ituknown.httpclient5.response.StringEntityResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -15,10 +14,7 @@ public class HttpClientUtilsTest {
         CustomRequestConfig config = new CustomRequestConfig();
         config.setProxy("127.0.0.1:7897");
         StringEntityResponse result = HttpClientUtils.get("http://baidu.com", config);
-        System.out.println(result.getEntity());
-        for (MinimalField field : result.getHeader()) {
-            System.out.println(field.name() + ": " + field.value());
-        }
+        System.out.println(result);
 
         Assertions.assertNotNull(result.getEntity());
     }
@@ -28,12 +24,7 @@ public class HttpClientUtilsTest {
         CustomRequestConfig config = new CustomRequestConfig();
         config.setProxy("127.0.0.1:7897");
         FileEntityResponse result = HttpClientUtils.download("https://github.com/magicianlib.png", config, "C:\\Users\\WINDOWS\\Downloads\\tmp\\tmp\\magicianlib.png");
-        System.out.println(result.getFilename());
-        System.out.println(result.getFileSize());
-        for (MinimalField field : result.getHeader()) {
-            System.out.println(field.name() + ": " + field.value());
-        }
-
+        System.out.println(result);
         Assertions.assertTrue(result.getFileSize() > 0);
     }
 
@@ -44,11 +35,7 @@ public class HttpClientUtilsTest {
 
         Path path = Paths.get("C:\\Users\\WINDOWS\\Downloads\\tmp\\tmp");
         FileEntityResponse result = HttpClientUtils.downloadUseRemoteName("https://github.com/magicianlib.png", config, path);
-        System.out.println(result.getFilename());
-        System.out.println(result.getFileSize());
-        for (MinimalField field : result.getHeader()) {
-            System.out.println(field.name() + ": " + field.value());
-        }
+        System.out.println(result);
 
         Assertions.assertTrue(result.getFileSize() > 0);
     }

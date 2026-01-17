@@ -5,16 +5,16 @@ public class StringEntityResponse {
         this.entity = entity;
     }
 
-    private Header header;
+    private Headers headers;
 
     private String entity;
 
-    public Header getHeader() {
-        return header;
+    public Headers getHeader() {
+        return headers;
     }
 
-    public void setHeader(Header header) {
-        this.header = header;
+    public void setHeader(Headers headers) {
+        this.headers = headers;
     }
 
     public String getEntity() {
@@ -27,6 +27,6 @@ public class StringEntityResponse {
 
     @Override
     public String toString() {
-        return "entity: " + entity + ", header: " + header;
+        return "entity: " + entity + ", headers: " + headers;
     }
 }

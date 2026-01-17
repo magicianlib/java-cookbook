@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.Consumer;
 
-public class StreamHttpClientResponseHandler extends AbstractHttpClientResponseHandler<Header> {
+public class StreamHttpClientResponseHandler extends AbstractHttpClientResponseHandler<Headers> {
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamHttpClientResponseHandler.class);
 
     private final Consumer<InputStream> streamConsumer;
@@ -21,15 +21,15 @@ public class StreamHttpClientResponseHandler extends AbstractHttpClientResponseH
     }
 
     @Override
-    public Header handleResponse(ClassicHttpResponse response) throws IOException {
+    public Headers handleResponse(ClassicHttpResponse response) throws IOException {
         super.handleResponse(response);
-        Header header = Helper.resolveHeader(response);
-        LOGGER.info("http response content: [STREAM], header: {}", header);
-        return header;
+        Headers headers = Helper.resolveHeader(response);
+        LOGGER.info("http response content: [STREAM], headers: {}", headers);
+        return headers;
     }
 
     @Override
-    public io.ituknown.httpclient5.response.Header handleEntity(HttpEntity entity) throws IOException {
+    public Headers handleEntity(HttpEntity entity) throws IOException {
         try (InputStream in = entity.getContent()) {
             streamConsumer.accept(in);
         }

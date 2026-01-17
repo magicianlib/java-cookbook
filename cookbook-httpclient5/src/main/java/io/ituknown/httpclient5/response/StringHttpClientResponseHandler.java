@@ -2,6 +2,7 @@ package io.ituknown.httpclient5.response;
 
 import io.ituknown.httpclient5.Helper;
 import org.apache.hc.client5.http.ClientProtocolException;
+import org.apache.hc.client5.http.HttpResponseException;
 import org.apache.hc.client5.http.impl.classic.AbstractHttpClientResponseHandler;
 import org.apache.hc.core5.annotation.Contract;
 import org.apache.hc.core5.annotation.ThreadingBehavior;
@@ -21,10 +22,26 @@ public class StringHttpClientResponseHandler extends AbstractHttpClientResponseH
 
     @Override
     public StringEntityResponse handleResponse(ClassicHttpResponse response) throws IOException {
-        StringEntityResponse result = super.handleResponse(response);
-        result.setHeader(Helper.resolveHeader(response));
-        LOGGER.info("http response {}", result);
-        return result;
+        int statusCode = response.getCode();
+
+        try {
+            StringEntityResponse result = super.handleResponse(response);
+            result.setHeader(Helper.resolveHeader(response));
+
+            if (LOGGER.isInfoEnabled()) {
+                String entity = result.getEntity();
+                String logContent = (entity != null && entity.length() > 1000)
+                        ? entity.substring(0, 1000) + "... [truncated, total: " + entity.length() + "]"
+                        : entity;
+
+                LOGGER.info("HTTP Success [{}], Content: {}", statusCode, logContent);
+            }
+
+            return result;
+        } catch (HttpResponseException e) {
+            LOGGER.warn("HTTP Failed [{}], Reason: {}", statusCode, e.getMessage());
+            throw e;
+        }
     }
 
     @Override

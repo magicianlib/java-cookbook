@@ -1,27 +1,37 @@
 package io.ituknown.httpclient5;
 
-import io.ituknown.httpclient5.response.Header;
+import io.ituknown.httpclient5.response.Headers;
 import io.ituknown.httpclient5.response.MinimalField;
 import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HeaderElement;
 import org.apache.hc.core5.http.message.BasicHeaderValueParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
 public class Helper {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Helper.class);
 
-    public static Header resolveHeader(ClassicHttpResponse response) {
-        Header header = new Header();
+    /**
+     * 获取响应头
+     */
+    public static Headers resolveHeader(ClassicHttpResponse response) {
+        Headers headers = new Headers();
         if (response.getHeaders() != null) {
-            for (org.apache.hc.core5.http.Header h : response.getHeaders()) {
-                header.addField(new MinimalField(h.getName(), h.getValue()));
+            for (Header h : response.getHeaders()) {
+                headers.addField(new MinimalField(h.getName(), h.getValue()));
             }
         }
-        return header;
+        return headers;
     }
 
-    public static String fileNameParse(org.apache.hc.core5.http.Header header) {
+    /**
+     * 从请求头提取文件名
+     */
+    public static String fileNameParse(Header header) {
         if (header == null) {
             return null;
         }
@@ -47,5 +57,27 @@ public class Helper {
         }
 
         return null;
+    }
+
+    /**
+     * 从 URL 中提取文件名
+     */
+    public static String getFileNameFromUrl(String url) {
+        if (url == null || url.isEmpty()) {
+            return null;
+        }
+
+        try {
+            // 使用 URI 类处理可以自动过滤掉 Query Parameter (?a=b) 和 Fragment (#anchor)
+            String path = new java.net.URI(url).getPath();
+            if (path == null || path.isEmpty() || path.equals("/")) {
+                return null;
+            }
+            String name = path.substring(path.lastIndexOf('/') + 1);
+            return name.isBlank() ? null : name;
+        } catch (Exception e) {
+            LOGGER.debug("Failed to parse URL path: {}", url);
+            return null;
+        }
     }
 }

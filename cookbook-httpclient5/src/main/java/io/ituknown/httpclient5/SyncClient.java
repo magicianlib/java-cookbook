@@ -9,9 +9,11 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.SocketConfig;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.ssl.TLS;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
@@ -19,7 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
 class SyncClient {
@@ -112,19 +116,52 @@ class SyncClient {
                 requestBase.setHeader(entry.getKey(), entry.getValue());
             }
 
-            StringBuilder printHeader = new StringBuilder();
-            for (Header header : requestBase.getHeaders()) {
-                printHeader.append(", ").append(header.getName()).append(": ").append(header.getValue()).append(", ");
-            }
-            if (printHeader.isEmpty()) {
-                LOGGER.info("http request: {} {}, header: []", requestBase.getMethod(), url);
-            } else {
-                LOGGER.info("http request: {} {}, header: [{}]", requestBase.getMethod(), url, printHeader.substring(2));
+            if (LOGGER.isInfoEnabled()) {
+                StringJoiner headerJoiner = new StringJoiner(", ");
+                for (Header header : requestBase.getHeaders()) {
+                    headerJoiner.add(header.getName() + ": " + header.getValue());
+                }
+
+                String payload = "Binary/Large Content";
+
+                if (requestBase.getEntity() != null) {
+
+                    HttpEntity entity = requestBase.getEntity();
+
+                    // Entity 必须是常见的可读文本类型
+                    if (entity.isRepeatable()) {
+                        try {
+                            // 限制读取长度，避免 EntityUtils.toString 加载超大文件到内存
+                            String content = EntityUtils.toString(entity, StandardCharsets.UTF_8);
+                            if (content != null) {
+                                payload = content.length() > 1000
+                                        ? content.substring(0, 1000) + "... [Total: " + content.length() + "]"
+                                        : content;
+                            }
+                        } catch (Exception e) {
+                            payload = "[Error reading payload: " + e.getMessage() + "]";
+                        }
+                    }
+                }
+
+                LOGGER.info("HTTP Request: [{} {}] | Payload: {} | Timeout: {}ms | Proxy: {} | Headers: [{}]",
+                        requestBase.getMethod(),
+                        url,
+                        payload,
+                        customConfig.getResponseTimeout(),
+                        customConfig.getProxy() != null ? customConfig.getProxy() : "NONE",
+                        headerJoiner
+                );
             }
 
             return INSTANCE.execute(requestBase, context, responseHandler);
         } catch (Exception e) {
-            LOGGER.error("Http request exception[{} {}]: {}", requestBase.getMethod(), url, e.getMessage(), e);
+            LOGGER.error("HTTP Execution Error [{} {}]: {}",
+                    requestBase.getMethod(),
+                    url != null ? url : "Unknown URI",
+                    e.getMessage(),
+                    e);
+
             throw new HttpException(e);
         }
     }
