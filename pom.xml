@@ -13,6 +13,7 @@
         <module>cookbook-datetime</module>
         <module>cookbook-okhttp</module>
         <module>cookbook-httpclient5</module>
+        <module>cookbook-crypto</module>
     </modules>
 
     <properties>
