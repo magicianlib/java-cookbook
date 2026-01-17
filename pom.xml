@@ -15,6 +15,7 @@
         <module>cookbook-httpclient5</module>
         <module>cookbook-crypto</module>
         <module>cookbook-result</module>
+        <module>cookbook-fesod</module>
     </modules>
 
     <properties>
@@ -25,6 +26,8 @@
 
         <plugin.compiler.version>3.14.1</plugin.compiler.version>
         <plugin.flatten.version>1.7.3</plugin.flatten.version>
+
+        <junit.version>6.0.0</junit.version>
     </properties>
 
     <dependencyManagement>
@@ -43,6 +46,39 @@
                 <groupId>io.ituknown</groupId>
                 <artifactId>cookbook-okhttp</artifactId>
                 <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.ituknown</groupId>
+                <artifactId>cookbook-httpclient5</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.ituknown</groupId>
+                <artifactId>cookbook-crypto</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.ituknown</groupId>
+                <artifactId>cookbook-result</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.ituknown</groupId>
+                <artifactId>cookbook-fesod</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
