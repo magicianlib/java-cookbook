@@ -16,12 +16,16 @@
         <module>cookbook-crypto</module>
         <module>cookbook-result</module>
         <module>cookbook-fesod</module>
+        <module>cookbook-falconmonitor</module>
     </modules>
 
     <properties>
         <revision>1.0-SNAPSHOT</revision>
+
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.release>21</maven.compiler.release>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <plugin.compiler.version>3.14.1</plugin.compiler.version>
@@ -65,6 +69,11 @@
             <dependency>
                 <groupId>io.ituknown</groupId>
                 <artifactId>cookbook-fesod</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.ituknown</groupId>
+                <artifactId>cookbook-falconmonitor</artifactId>
                 <version>${revision}</version>
             </dependency>
 
