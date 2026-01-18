@@ -11,7 +11,6 @@
 
     <properties>
         <argon2.version>2.12</argon2.version>
-        <junit.version>6.0.0</junit.version>
     </properties>
 
     <dependencies>
@@ -23,12 +22,7 @@
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
