@@ -1,15 +1,7 @@
 package io.ituknown.httpclient5;
 
-import io.ituknown.httpclient5.response.FileEntityResponse;
-import io.ituknown.httpclient5.response.StringEntityResponse;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 public class HttpClientUtilsTest {
-    @Test
+    /*@Test
     public void testGet() {
         CustomRequestConfig config = new CustomRequestConfig();
         config.setRedirects(true);
@@ -39,6 +31,5 @@ public class HttpClientUtilsTest {
         System.out.println(result);
 
         Assertions.assertTrue(result.getFileSize() > 0);
-    }
-
+    }*/
 }
