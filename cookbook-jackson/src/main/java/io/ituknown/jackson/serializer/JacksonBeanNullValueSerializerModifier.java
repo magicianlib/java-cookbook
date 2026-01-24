@@ -55,11 +55,6 @@ public class JacksonBeanNullValueSerializerModifier extends BeanSerializerModifi
     }
 
 
-    // ===============================
-    // =============================== Null Value Processor 
-    // =============================== 
-
-
     public static class NullMapSerializer extends JsonSerializer<Object> {
         @Override
         public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
