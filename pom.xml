@@ -17,6 +17,7 @@
         <module>cookbook-result</module>
         <module>cookbook-fesod</module>
         <module>cookbook-falconmonitor</module>
+        <module>cookbook-commons</module>
     </modules>
 
     <properties>
