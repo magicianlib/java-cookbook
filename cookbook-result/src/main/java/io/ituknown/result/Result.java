@@ -1,17 +1,22 @@
 package io.ituknown.result;
 
 import io.ituknown.jackson.JacksonUtils;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serial;
 import java.io.Serializable;
 
+/**
+ * 消息结果
+ *
+ * @author magicianlib@gmail.com
+ */
+@Getter
+@Setter
 public class Result<T> implements Serializable {
     @Serial
-    private static final long serialVersionUID = 8249601870035703225L;
-
-    public Result(T data) {
-        this.data = data;
-    }
+    private static final long serialVersionUID = 6820965203253182123L;
 
     /**
      * 状态码
@@ -22,59 +27,16 @@ public class Result<T> implements Serializable {
      */
     private String message;
     /**
+     * 是否成功状态
+     */
+    private boolean success;
+    /**
      * 数据
      */
-    private final T data;
+    private T data;
 
     @Override
     public String toString() {
         return JacksonUtils.toJson(this);
-    }
-
-    public int getCode() {
-        return code;
-    }
-
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public T getData() {
-        return data;
-    }
-
-    public static <T> Result<T> create(Status status, String message, T data) {
-        Result<T> result = new Result<>(data);
-        result.setCode(status.code());
-        result.setMessage(message != null && !message.isBlank() ? message : status.message());
-        return result;
-    }
-
-    public static <T> Result<T> createSuccess() {
-        return create(BasicStatus.SUCCESS, null, null);
-    }
-
-    public static <T> Result<T> createSuccess(T data) {
-        return create(BasicStatus.SUCCESS, null, data);
-    }
-
-    public static <T> Result<T> createFailure() {
-        return create(BasicStatus.FAILURE, null, null);
-    }
-
-    public static <T> Result<T> createFailure(Status status) {
-        return create(status, null, null);
-    }
-
-    public static <T> Result<T> createFailure(Status status, String message) {
-        return create(status, message, null);
     }
 }
