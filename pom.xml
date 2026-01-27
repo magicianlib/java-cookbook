@@ -18,6 +18,7 @@
         <module>cookbook-falconmonitor</module>
         <module>cookbook-commons</module>
         <module>cookbook-validator</module>
+        <module>cookbook-caffeine</module>
     </modules>
 
     <properties>
