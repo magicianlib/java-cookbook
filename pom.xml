@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.ituknown</groupId>
@@ -18,6 +17,7 @@
         <module>cookbook-fesod</module>
         <module>cookbook-falconmonitor</module>
         <module>cookbook-commons</module>
+        <module>cookbook-validator</module>
     </modules>
 
     <properties>
@@ -42,43 +42,53 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>io.ituknown</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>cookbook-jackson</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>io.ituknown</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>cookbook-datetime</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>io.ituknown</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>cookbook-okhttp</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>io.ituknown</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>cookbook-httpclient5</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>io.ituknown</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>cookbook-crypto</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>io.ituknown</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>cookbook-result</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>io.ituknown</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>cookbook-fesod</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
-                <groupId>io.ituknown</groupId>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>cookbook-falconmonitor</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>cookbook-validator</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>cookbook-caffeine</artifactId>
                 <version>${revision}</version>
             </dependency>
 
@@ -105,27 +115,51 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <!-- 编译 -->
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${plugin.compiler.version}</version>
+                </plugin>
+                <plugin>
+                    <!-- 多模板统一版本构建 -->
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>flatten-maven-plugin</artifactId>
+                    <version>${plugin.flatten.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${plugin.compiler.version}</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                     <encoding>${project.build.sourceEncoding}</encoding>
+                    <!-- 子模块如果也需要配置 annotationProcessorPaths, 需要在标签后面增加 combine.children="append" 属性 -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <!-- 启用 lombok 注解 -->
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
-            <!-- 多模板统一版本构建 -->
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
-                <version>${plugin.flatten.version}</version>
                 <configuration>
                     <!--true:更新pom文件,不然无法更新module里的pom版本号-->
                     <updatePomFile>true</updatePomFile>
