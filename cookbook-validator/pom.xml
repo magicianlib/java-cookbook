@@ -12,6 +12,7 @@
 
     <properties>
         <hibernate-validator.version>9.1.0.Final</hibernate-validator.version>
+        <hibernate-validator.el.version>6.0.0</hibernate-validator.el.version>
     </properties>
 
     <dependencies>
@@ -19,6 +20,12 @@
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>${hibernate-validator.version}</version>
+        </dependency>
+        <!-- hibernate-validator 需要依赖 expressly 解析 EL -->
+        <dependency>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
+            <version>${hibernate-validator.el.version}</version>
         </dependency>
     </dependencies>
 

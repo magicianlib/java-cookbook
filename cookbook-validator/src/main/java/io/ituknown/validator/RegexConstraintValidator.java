@@ -1,5 +1,4 @@
-package io.magician.result.validator;
-
+package io.ituknown.validator;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
@@ -16,6 +15,9 @@ public class RegexConstraintValidator implements ConstraintValidator<IntegerRege
     public boolean isValid(Integer value, ConstraintValidatorContext context) {
         context.disableDefaultConstraintViolation();
         context.buildConstraintViolationWithTemplate(integerRegex.message()).addConstraintViolation();
-        return false;
+        if (value > integerRegex.max()) {
+            return false;
+        }
+        return true;
     }
 }
