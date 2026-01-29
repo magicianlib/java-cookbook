@@ -1,10 +1,7 @@
 package io.ituknown.validator;
 
 import jakarta.validation.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.groups.Default;
-import lombok.Getter;
-import lombok.Setter;
 import org.hibernate.validator.HibernateValidator;
 
 import java.util.Locale;
@@ -41,14 +38,6 @@ public class ValidatorUtils {
         });
     }
 
-    public static void main(String[] args) {
-        Locale.setDefault(Locale.ENGLISH);
-        User u = new User();
-        u.setUsername("222");
-        u.setAge(101);
-        validate(u);
-    }
-
     /**
      * 验证对象
      */
@@ -56,18 +45,19 @@ public class ValidatorUtils {
         validate(Locale.getDefault(), obj, Default.class);
     }
 
-    public static <T> void validate(Locale locale, T obj) {
-        validate(locale, obj, Default.class);
-    }
-
     public static <T> void validate(T obj, Class<?>... groups) {
         validate(Locale.getDefault(), obj, groups);
+    }
+
+    public static <T> void validate(Locale locale, T obj) {
+        validate(locale, obj, Default.class);
     }
 
     public static <T> void validate(Locale locale, T obj, Class<?>... groups) {
         Set<ConstraintViolation<T>> validate = getValidator(locale).validate(obj, groups);
         for (ConstraintViolation<T> violation : validate) {
-            throw new IllegalArgumentException(violation.getPropertyPath() + " " + violation.getMessage());
+            throw new IllegalArgumentException(violation.getMessage());
+            //throw new IllegalArgumentException(violation.getPropertyPath() + " " + violation.getMessage());
         }
     }
 
@@ -78,31 +68,19 @@ public class ValidatorUtils {
         validateProperty(Locale.getDefault(), obj, propertyName, Default.class);
     }
 
-    public static <T> void validateProperty(Locale locale, T obj, String propertyName) {
-        validateProperty(locale, obj, propertyName, Default.class);
-    }
-
     public static <T> void validateProperty(T obj, String propertyName, Class<?>... groups) {
         validateProperty(Locale.getDefault(), obj, propertyName, groups);
     }
 
+    public static <T> void validateProperty(Locale locale, T obj, String propertyName) {
+        validateProperty(locale, obj, propertyName, Default.class);
+    }
 
     public static <T> void validateProperty(Locale locale, T obj, String propertyName, Class<?>... groups) {
         Set<ConstraintViolation<T>> validate = getValidator(locale).validateProperty(obj, propertyName, groups);
         for (ConstraintViolation<T> violation : validate) {
-            throw new IllegalArgumentException(propertyName + "：" + violation.getMessage());
-        }
-    }
-
-    @Setter
-    @Getter
-    public static class User {
-        @NotBlank(groups = Modify.class)
-        private String username;
-        @IntegerRegex
-        private Integer age;
-
-        public @interface Modify {
+            throw new IllegalArgumentException(violation.getMessage());
+            //throw new IllegalArgumentException(propertyName + "：" + violation.getMessage());
         }
     }
 }

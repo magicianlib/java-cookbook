@@ -13,7 +13,6 @@ import java.util.List;
  * Jackson 序列化时对 NULL 值处理
  *
  * @author magicianlib@gmail.com
- * @since 2022/04/19 16:21
  */
 public class JacksonBeanNullValueSerializerModifier extends BeanSerializerModifier {
 
