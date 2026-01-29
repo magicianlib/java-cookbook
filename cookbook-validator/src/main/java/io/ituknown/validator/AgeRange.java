@@ -10,16 +10,25 @@ import java.lang.annotation.Target;
 
 import static java.lang.annotation.ElementType.*;
 
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
 @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE})
+@Retention(RetentionPolicy.RUNTIME)
+@Repeatable(List.class)
+@Documented
 @Constraint(validatedBy = RegexConstraintValidator.class)
-public @interface IntegerRegex {
+public @interface AgeRange {
     String message() default "{io.magician.result.validator.IntegerRegex.message}";
 
+    int min() default 1;
     int max() default 100;
 
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
+
+    @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE})
+	  @Retention(RUNTIME)
+	  @Documented
+	  @interface List {
+		    AgeRange[] value();
+	  }
 }
