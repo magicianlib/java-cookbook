@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -18,7 +19,6 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
 
 /**
  * Jackson JSON 序列化/反序列化工具类
@@ -51,26 +51,29 @@ public enum JacksonUtils {
      * @param format 是否开启JSON格式化
      */
     public static ObjectMapper createObjectMapper(boolean format) {
-        ObjectMapper mapper = new ObjectMapper();
+        JsonMapper.Builder builder = JsonMapper.builder();
 
         // 格式化输出
-        // mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        mapper.configure(SerializationFeature.INDENT_OUTPUT, format);
+        builder.configure(SerializationFeature.INDENT_OUTPUT, format);
 
         // 忽略未知字段
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        builder.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
         // 序列化时忽略空值
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        builder.defaultPropertyInclusion(
+                JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL)
+        );
 
         // 设置时区
-        mapper.setTimeZone(TimeZone.getDefault());
+        builder.defaultTimeZone(TimeZone.getDefault());
 
         // 忽略 transient 字段
-        mapper.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true);
+        builder.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true);
 
         // java.util.Date 日期格式 处理
-        mapper.setDateFormat(new SimpleDateFormat(DateFormatUtils.DATE_TIME_PATTERN));
+        builder.defaultDateFormat(new SimpleDateFormat(DateFormatUtils.DATE_TIME_PATTERN));
+
+        ObjectMapper mapper = builder.build();
 
         // java.time.* 日期格式处理
         JacksonConfig.configureObjectMapper4Jsr310(mapper);

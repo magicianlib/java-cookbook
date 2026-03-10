@@ -67,29 +67,32 @@ public enum JacksonXmlUtils {
      * @return 配置好的 XmlMapper 实例
      */
     public static XmlMapper createXmlMapper(boolean includeDeclaration, boolean format) {
-        XmlMapper mapper = new XmlMapper();
+        XmlMapper.Builder builder = XmlMapper.builder();
 
         // 格式化输出
-        // mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        mapper.configure(SerializationFeature.INDENT_OUTPUT, format);
+        builder.configure(SerializationFeature.INDENT_OUTPUT, format);
 
         // XML 声明
-        mapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, includeDeclaration);
+        builder.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, includeDeclaration);
 
         // 忽略未知字段
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        builder.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
         // 序列化时忽略空值
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        builder.defaultPropertyInclusion(
+                JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL)
+        );
 
         // 设置时区
-        mapper.setTimeZone(TimeZone.getDefault());
+        builder.defaultTimeZone(TimeZone.getDefault());
 
         // 忽略 transient 字段
-        mapper.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true);
+        builder.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true);
 
         // java.util.Date 日期格式 处理
-        mapper.setDateFormat(new SimpleDateFormat(DateFormatUtils.DATE_TIME_PATTERN));
+        builder.defaultDateFormat(new SimpleDateFormat(DateFormatUtils.DATE_TIME_PATTERN));
+
+        XmlMapper mapper = builder.build();
 
         // java.time.* 日期格式处理
         JacksonConfig.configureObjectMapper4Jsr310(mapper);
