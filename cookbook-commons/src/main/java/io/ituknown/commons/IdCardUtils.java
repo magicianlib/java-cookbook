@@ -8,7 +8,7 @@ public class IdCardUtils {
      * <p>
      * <a href="http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm">http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm</a>
      */
-    private static boolean verify(String cardNum) {
+    public static boolean verify(String cardNum) {
         if (cardNum == null || cardNum.length() != 18) {
             return false;
         }
