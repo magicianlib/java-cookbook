@@ -57,7 +57,7 @@ public enum SensitiveType {
         return s.replaceAll("^(.+?(?:区|县|旗|自治县|市))(.+)$", "$1****");
     });
 
-    private final Function<String, String> strategy;
+    final Function<String, String> strategy;
 
     SensitiveType(Function<String, String> strategy) {
         this.strategy = strategy;
