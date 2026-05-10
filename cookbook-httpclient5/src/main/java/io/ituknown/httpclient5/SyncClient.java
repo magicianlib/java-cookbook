@@ -3,7 +3,6 @@ package io.ituknown.httpclient5;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
-import org.apache.hc.client5.http.config.TlsConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
@@ -12,11 +11,8 @@ import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
-import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.apache.hc.core5.http.ssl.TLS;
 import org.apache.hc.core5.util.TimeValue;
-import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 class SyncClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(SyncClient.class);
+
     /**
      * 默认连接配置
      */
@@ -46,22 +43,6 @@ class SyncClient {
             .build();
 
     /**
-     * TLS 安全配置 - L7 层
-     */
-    private static final TlsConfig TLS_CONFIG = TlsConfig.custom()
-            .setSupportedProtocols(TLS.V_1_2, TLS.V_1_3) // 限制使用的 TLS 版本, 可用于禁用不安全的版本
-            .setHandshakeTimeout(Timeout.ofSeconds(5)) // TLS 握手的超时时间
-            .build();
-
-    /**
-     * 套接字配置 - L4 层
-     */
-    private static final SocketConfig SOCKET_CONFIG = SocketConfig.custom()
-            .setSoTimeout(Timeout.ofSeconds(5))
-            .setTcpNoDelay(true)
-            .build();
-
-    /**
      * 连接池配置
      */
     private static final PoolingHttpClientConnectionManager CONN_MANAGER = new PoolingHttpClientConnectionManager();
@@ -70,8 +51,6 @@ class SyncClient {
         CONN_MANAGER.setMaxTotal(200); // 连接池允许最大总链接数
         CONN_MANAGER.setDefaultMaxPerRoute(20); // 每个目标机器并发限制
         CONN_MANAGER.setDefaultConnectionConfig(DEFAULT_CONNECTION_CONFIG); // 默认连接配置
-        //CONN_MANAGER.setDefaultTlsConfig(TLS_CONFIG); // TLS 安全配置
-        //CONN_MANAGER.setDefaultSocketConfig(SOCKET_CONFIG); // 套接字配置
     }
 
     /**
@@ -83,7 +62,7 @@ class SyncClient {
             .setConnectionManager(CONN_MANAGER)
             .build();
 
-    static <T> T execute(CustomRequestConfig customConfig, HttpUriRequestBase requestBase, HttpClientResponseHandler<T> responseHandler) {
+    static <T> T execute(HttpRequestConfig config, HttpUriRequestBase requestBase, HttpClientResponseHandler<T> responseHandler) {
         URI url = null;
 
         try {
@@ -92,27 +71,27 @@ class SyncClient {
             RequestConfig.Builder builder = RequestConfig.custom();
 
             // 代理
-            if (customConfig.getProxy() != null && !customConfig.getProxy().isBlank()) {
-                builder.setProxy(HttpHost.create(customConfig.getProxy()));
+            if (config.getProxy() != null && !config.getProxy().isBlank()) {
+                builder.setProxy(HttpHost.create(config.getProxy()));
             }
 
             // 重定向
-            builder.setRedirectsEnabled(customConfig.isRedirects());
+            builder.setRedirectsEnabled(config.isRedirects());
             // 获取连接超时时间
-            builder.setConnectionRequestTimeout(customConfig.getConnectionRequestTimeout(), TimeUnit.MILLISECONDS);
+            builder.setConnectionRequestTimeout(config.getConnectionRequestTimeout(), TimeUnit.MILLISECONDS);
             // 服务器响应超时时间
-            builder.setResponseTimeout(customConfig.getResponseTimeout(), TimeUnit.MILLISECONDS);
+            builder.setResponseTimeout(config.getResponseTimeout(), TimeUnit.MILLISECONDS);
 
             requestBase.setConfig(builder.build());
 
             // 认证凭证
             HttpClientContext context = HttpClientContext.create();
-            if (customConfig.getCredentials() != null) {
-                context.setCredentialsProvider(customConfig.getCredentials());
+            if (config.getCredentials() != null) {
+                context.setCredentialsProvider(config.getCredentials());
             }
 
             // 请求头
-            for (Map.Entry<String, Object> entry : customConfig.getHeaders().entrySet()) {
+            for (Map.Entry<String, String> entry : config.getHeaders().entrySet()) {
                 requestBase.setHeader(entry.getKey(), entry.getValue());
             }
 
@@ -148,8 +127,8 @@ class SyncClient {
                         requestBase.getMethod(),
                         url,
                         payload,
-                        customConfig.getResponseTimeout(),
-                        customConfig.getProxy() != null ? customConfig.getProxy() : "NONE",
+                        config.getResponseTimeout(),
+                        config.getProxy() != null ? config.getProxy() : "NONE",
                         headerJoiner
                 );
             }

@@ -23,7 +23,7 @@ public class Headers implements Iterable<MinimalField> {
     }
 
     public List<MinimalField> getFields() {
-        return fields;
+        return Collections.unmodifiableList(fields);
     }
 
     public MinimalField getField(final String name) {
@@ -41,16 +41,15 @@ public class Headers implements Iterable<MinimalField> {
 
     public List<MinimalField> getFields(final String name) {
         if (name == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         String key = name.toLowerCase(Locale.ROOT);
         List<MinimalField> list = fieldMap.get(key);
         if (list == null || list.isEmpty()) {
             return Collections.emptyList();
-        } else {
-            return list;
         }
+        return list;
     }
 
     @Override

@@ -9,11 +9,11 @@ public class StringEntityResponse {
 
     private String entity;
 
-    public Headers getHeader() {
+    public Headers getHeaders() {
         return headers;
     }
 
-    public void setHeader(Headers headers) {
+    public void setHeaders(Headers headers) {
         this.headers = headers;
     }
 

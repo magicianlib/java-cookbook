@@ -5,15 +5,17 @@ import io.ituknown.httpclient5.response.MinimalField;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HeaderElement;
+import org.apache.hc.core5.http.NameValuePair;
 import org.apache.hc.core5.http.message.BasicHeaderValueParser;
+import org.apache.hc.core5.http.message.ParserCursor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
-public class Helper {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Helper.class);
+public class HeaderHelper {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HeaderHelper.class);
 
     /**
      * 获取响应头
@@ -38,9 +40,16 @@ public class Helper {
 
         // 使用 HC5 自带的解析器解析标准 Filename
         // 格式: attachment; Filename="example.txt"
-        for (HeaderElement element : BasicHeaderValueParser.INSTANCE.parseElements(header.getValue(), null)) {
-            if (element.getName().equalsIgnoreCase("Filename")) {
-                return element.getValue();
+        String headerValue = header.getValue();
+        if (headerValue == null) {
+            return null;
+        }
+        ParserCursor cursor = new ParserCursor(0, headerValue.length());
+        for (HeaderElement element : BasicHeaderValueParser.INSTANCE.parseElements(headerValue, cursor)) {
+            for (NameValuePair param : element.getParameters()) {
+                if (param.getName().equalsIgnoreCase("Filename")) {
+                    return param.getValue();
+                }
             }
         }
 
@@ -50,7 +59,6 @@ public class Helper {
         if (value.contains("Filename*=")) {
             int start = value.indexOf("Filename*=");
             String raw = value.substring(start + 10).split(";")[0].trim();
-            // 简单处理 UTF-8 编码部分
             if (raw.toLowerCase().startsWith("utf-8''")) {
                 return URLDecoder.decode(raw.substring(7), StandardCharsets.UTF_8);
             }
@@ -68,7 +76,6 @@ public class Helper {
         }
 
         try {
-            // 使用 URI 类处理可以自动过滤掉 Query Parameter (?a=b) 和 Fragment (#anchor)
             String path = new java.net.URI(url).getPath();
             if (path == null || path.isEmpty() || path.equals("/")) {
                 return null;

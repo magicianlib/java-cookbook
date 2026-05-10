@@ -1,6 +1,6 @@
 package io.ituknown.httpclient5.response;
 
-import io.ituknown.httpclient5.Helper;
+import io.ituknown.httpclient5.HeaderHelper;
 import org.apache.hc.client5.http.HttpResponseException;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.HttpEntity;
@@ -16,21 +16,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
-public class FileDownloadHttpClientResponseHandler implements HttpClientResponseHandler<FileEntityResponse> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileDownloadHttpClientResponseHandler.class);
+public class FileDownloadResponseHandler implements HttpClientResponseHandler<FileEntityResponse> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileDownloadResponseHandler.class);
 
-    private final Path fileName;
+    private final Path filePath;
 
-    public FileDownloadHttpClientResponseHandler(String fileName) {
-        this(Paths.get(fileName));
+    public FileDownloadResponseHandler(String filePath) {
+        this(Paths.get(filePath));
     }
 
-    public FileDownloadHttpClientResponseHandler(Path fileName) {
-        this.fileName = fileName;
-    }
-
-    public Path getFileName() {
-        return fileName;
+    public FileDownloadResponseHandler(Path filePath) {
+        this.filePath = filePath;
     }
 
     @Override
@@ -42,43 +38,39 @@ public class FileDownloadHttpClientResponseHandler implements HttpClientResponse
         }
 
         FileEntityResponse result = new FileEntityResponse();
-        result.setHeader(Helper.resolveHeader(response));
+        result.setHeaders(HeaderHelper.resolveHeader(response));
 
         final HttpEntity entity = response.getEntity();
         if (entity == null) {
-            LOGGER.warn("Http response has no entity content. Header: {}", result.getHeader());
+            LOGGER.warn("Http response has no entity content. Header: {}", result.getHeaders());
             return result;
         }
 
-        Path targetFile = getFileName();
-        LOGGER.debug("Starting file download. Target: {}, Expected Size: {} bytes", targetFile, entity.getContentLength());
+        LOGGER.debug("Starting file download. Target: {}, Expected Size: {} bytes", filePath, entity.getContentLength());
 
-        // 确保父目录存在
-        Path parent = targetFile.getParent();
+        Path parent = filePath.getParent();
         if (parent != null && Files.notExists(parent)) {
             LOGGER.info("Creating directory: {}", parent);
             Files.createDirectories(parent);
         }
 
         try (final InputStream in = entity.getContent()) {
-            // StandardCopyOption.REPLACE_EXISTING 视业务需求而定
-            long bytesCopied = Files.copy(in, targetFile, StandardCopyOption.REPLACE_EXISTING);
+            long bytesCopied = Files.copy(in, filePath, StandardCopyOption.REPLACE_EXISTING);
             result.setFileSize(bytesCopied);
-            result.setFilename(targetFile);
+            result.setFilePath(filePath);
 
-            // 确保实体被完全消耗
             EntityUtils.consume(entity);
         } catch (IOException e) {
-            LOGGER.error("Failed to save file [{}]. Cleaning up fragment...", targetFile, e);
+            LOGGER.error("Failed to save file [{}]. Cleaning up fragment...", filePath, e);
             try {
-                Files.deleteIfExists(targetFile);
+                Files.deleteIfExists(filePath);
             } catch (IOException cleanupEx) {
-                LOGGER.error("Failed to delete fragmented file: {}", targetFile, cleanupEx);
+                LOGGER.error("Failed to delete fragmented file: {}", filePath, cleanupEx);
             }
             throw e;
         }
 
-        LOGGER.info("Download completed: {}, Size: {} bytes", targetFile.getFileName(), result.getFileSize());
+        LOGGER.info("Download completed: {}, Size: {} bytes", filePath.getFileName(), result.getFileSize());
         return result;
     }
 }

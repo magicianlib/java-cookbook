@@ -1,6 +1,6 @@
 package io.ituknown.httpclient5.response;
 
-import io.ituknown.httpclient5.Helper;
+import io.ituknown.httpclient5.HeaderHelper;
 import org.apache.hc.client5.http.ClientProtocolException;
 import org.apache.hc.client5.http.HttpResponseException;
 import org.apache.hc.client5.http.impl.classic.AbstractHttpClientResponseHandler;
@@ -17,8 +17,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 @Contract(threading = ThreadingBehavior.STATELESS)
-public class StringHttpClientResponseHandler extends AbstractHttpClientResponseHandler<StringEntityResponse> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(StringHttpClientResponseHandler.class);
+public class StringResponseHandler extends AbstractHttpClientResponseHandler<StringEntityResponse> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(StringResponseHandler.class);
 
     @Override
     public StringEntityResponse handleResponse(ClassicHttpResponse response) throws IOException {
@@ -26,7 +26,7 @@ public class StringHttpClientResponseHandler extends AbstractHttpClientResponseH
 
         try {
             StringEntityResponse result = super.handleResponse(response);
-            result.setHeader(Helper.resolveHeader(response));
+            result.setHeaders(HeaderHelper.resolveHeader(response));
 
             if (LOGGER.isInfoEnabled()) {
                 String entity = result.getEntity();
