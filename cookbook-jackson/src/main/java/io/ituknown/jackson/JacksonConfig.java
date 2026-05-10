@@ -33,7 +33,7 @@ public final class JacksonConfig {
 
         {
             // LocalTime 序列化和反序列化配置
-            JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(DateFormatUtils.ISO_TIME_PATTERN);
+            JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(DateFormatUtils.ISO_LOCAL_TIME_PATTERN);
             objectMapper.configOverride(LocalTime.class).setFormat(format);
         }
         {
