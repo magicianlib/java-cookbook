@@ -25,7 +25,7 @@ public final class JacksonConfig {
      *
      * @param objectMapper 实例
      */
-    public static void configureObjectMapper4Jsr310(ObjectMapper objectMapper) {
+    public static void configureObjectMapperForJsr310(ObjectMapper objectMapper) {
         objectMapper.registerModule(new JavaTimeModule());
 
         // 禁用 JSR310 将日期时间写为时间戳的特性 默认行为，必须禁用才能使用后面的字符串格式
@@ -59,11 +59,11 @@ public final class JacksonConfig {
     }
 
     /**
-     * 序列化对 Null 值处理
+     * 配置序列化时对 Null 值的默认处理：Map → {}、Collection → []、Boolean → false、BigDecimal → "0"、Number → 0、String → ""
      *
      * @param objectMapper 实例
      */
-    public static void configureNullObject(ObjectMapper objectMapper) {
+    public static void configureNullValueSerialization(ObjectMapper objectMapper) {
 
         SerializerFactory serializerFactory = objectMapper.getSerializerFactory()
                 .withSerializerModifier(new JacksonBeanNullValueSerializerModifier());
@@ -72,9 +72,11 @@ public final class JacksonConfig {
     }
 
     /**
-     * 添加自定义序列化实现
+     * 注册自定义序列化器
      *
      * @param objectMapper 实例
+     * @param type         目标类型
+     * @param serializer   序列化器
      */
     public static <T> void registerModule(ObjectMapper objectMapper, Class<? extends T> type, JsonSerializer<T> serializer) {
 
@@ -85,9 +87,11 @@ public final class JacksonConfig {
     }
 
     /**
-     * 添加自定义反序列化实现
+     * 注册自定义反序列化器
      *
-     * @param objectMapper 实例
+     * @param objectMapper  实例
+     * @param type          目标类型
+     * @param deserializer  反序列化器
      */
     public static <T> void registerModule(ObjectMapper objectMapper, Class<T> type, JsonDeserializer<? extends T> deserializer) {
 

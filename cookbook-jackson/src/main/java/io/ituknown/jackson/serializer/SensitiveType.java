@@ -26,7 +26,7 @@ public enum SensitiveType {
     /**
      * 身份证：保留前六位和后四位
      */
-    ID_CARD(s -> s.replaceAll("(\\d{6})\\d{8,10}(\\w{4})", "$1**********$2")),
+    ID_CARD(s -> s.replaceAll("(\\d{6})\\d+(\\d{4})", "$1****$2")),
 
     /**
      * 地址：只保留省市区，隐藏后续详细地址

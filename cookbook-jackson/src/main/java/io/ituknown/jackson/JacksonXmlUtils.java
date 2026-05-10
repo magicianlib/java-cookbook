@@ -95,10 +95,10 @@ public enum JacksonXmlUtils {
         XmlMapper mapper = builder.build();
 
         // java.time.* 日期格式处理
-        JacksonConfig.configureObjectMapper4Jsr310(mapper);
+        JacksonConfig.configureObjectMapperForJsr310(mapper);
 
         // Null 值处理
-        JacksonConfig.configureNullObject(mapper);
+        JacksonConfig.configureNullValueSerialization(mapper);
 
         // BigDecimal 自定义序列化
         JacksonConfig.registerModule(mapper, BigDecimal.class, new BigDecimalAsStringJsonSerializer());
@@ -161,7 +161,7 @@ public enum JacksonXmlUtils {
         try {
             xmlMapper.writeValue(w, obj);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SerializationException(obj.getClass(), e);
         }
     }
 
@@ -177,7 +177,7 @@ public enum JacksonXmlUtils {
         try {
             xmlMapper.writeValue(out, obj);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SerializationException(obj.getClass(), e);
         }
     }
 
@@ -325,19 +325,19 @@ public enum JacksonXmlUtils {
      * </pre></p>
      *
      * @param xml                XML字符串
-     * @param general            泛型类型
+     * @param parametrized       泛型容器类型
      * @param parameterClasses   泛型参数
      * @param includeDeclaration 是否包含 xml 声明
      * @return T
      * @throws DeserializationException if deserialize failed
      */
-    public static <T> T toObj(String xml, boolean includeDeclaration, Class<T> general, Class<?>... parameterClasses) {
-        return toObj(xml, getXmlMapper(includeDeclaration), general, parameterClasses);
+    public static <T> T toObj(String xml, boolean includeDeclaration, Class<T> parametrized, Class<?>... parameterClasses) {
+        return toObj(xml, getXmlMapper(includeDeclaration), parametrized, parameterClasses);
     }
 
-    public static <T> T toObj(String xml, final XmlMapper xmlMapper, Class<T> general, Class<?>... parameterClasses) {
+    public static <T> T toObj(String xml, final XmlMapper xmlMapper, Class<T> parametrized, Class<?>... parameterClasses) {
         try {
-            JavaType javaType = xmlMapper.getTypeFactory().constructParametricType(general, parameterClasses);
+            JavaType javaType = xmlMapper.getTypeFactory().constructParametricType(parametrized, parameterClasses);
             return xmlMapper.readValue(xml, javaType);
         } catch (IOException e) {
             throw new DeserializationException(e);

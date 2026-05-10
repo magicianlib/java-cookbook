@@ -32,19 +32,19 @@ public class JacksonBeanNullValueSerializerModifier extends BeanSerializerModifi
                 // Collection Fill []
                 writer.assignNullSerializer(new NullCollectionSerializer());
 
-            } else if (rawClass.isAssignableFrom(Boolean.class)) {
+            } else if (Boolean.class.isAssignableFrom(rawClass)) {
                 // Boolean Fill false
                 writer.assignNullSerializer(new NullBooleanSerializer());
 
-            } else if (rawClass.isAssignableFrom(BigDecimal.class)) {
+            } else if (BigDecimal.class.isAssignableFrom(rawClass)) {
                 // BigDecimal Fill ZERO
                 writer.assignNullSerializer(new NullBigDecimalSerializer());
 
-            } else if (rawClass.isAssignableFrom(Number.class)) {
-                // Boolean Fill false
+            } else if (Number.class.isAssignableFrom(rawClass)) {
+                // Number Fill 0 (Integer, Long, Double, etc.)
                 writer.assignNullSerializer(new NullNumberSerializer());
 
-            } else if (rawClass.isAssignableFrom(String.class)) {
+            } else if (String.class.isAssignableFrom(rawClass)) {
                 // String Fill ""
                 writer.assignNullSerializer(new NullStringSerializer());
 

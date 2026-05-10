@@ -1,12 +1,22 @@
 package io.ituknown.jackson;
 
+import lombok.Getter;
+
+import java.io.Serial;
 import java.lang.reflect.Type;
 
+/**
+ * 反序列化异常
+ *
+ * @author magicianlib@gmail.com
+ */
+@Getter
 public class DeserializationException extends RuntimeException {
+    @Serial
     private static final long serialVersionUID = -6514424812979501022L;
 
-    private static final String DEFAULT_ERROR = "deserialize failed. ";
-    private static final String SPECIFIED_CLASS_ERROR = "deserialize for class [%s] failed.";
+    private static final String DEFAULT_ERROR = "Failed to deserialize";
+    private static final String SPECIFIED_CLASS_ERROR = "Failed to deserialize to class [%s]";
 
     private Class<?> targetClass;
 
@@ -36,7 +46,4 @@ public class DeserializationException extends RuntimeException {
         super(String.format(SPECIFIED_CLASS_ERROR, targetType.toString()), throwable);
     }
 
-    public Class<?> getTargetClass() {
-        return targetClass;
-    }
 }

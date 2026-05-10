@@ -1,32 +1,40 @@
 package io.ituknown.jackson;
 
+import lombok.Getter;
+
+import java.io.Serial;
+
+/**
+ * 序列化异常
+ *
+ * @author magicianlib@gmail.com
+ */
+@Getter
 public class SerializationException extends RuntimeException {
+    @Serial
     private static final long serialVersionUID = 6475435719302659535L;
 
-    private static final String DEFAULT_ERROR = "serialize failed. ";
-    private static final String SPECIFIED_CLASS_ERROR = "serialize for class [%s] failed.";
+    private static final String DEFAULT_ERROR = "Failed to serialize";
+    private static final String SPECIFIED_CLASS_ERROR = "Failed to serialize class [%s]";
 
-    private Class<?> serializedClass;
+    private Class<?> sourceClass;
 
     public SerializationException() {
         super();
     }
 
-    public SerializationException(Class<?> serializedClass) {
-        super(String.format(SPECIFIED_CLASS_ERROR, serializedClass.getName()));
-        this.serializedClass = serializedClass;
+    public SerializationException(Class<?> sourceClass) {
+        super(String.format(SPECIFIED_CLASS_ERROR, sourceClass.getName()));
+        this.sourceClass = sourceClass;
     }
 
     public SerializationException(Throwable throwable) {
         super(DEFAULT_ERROR, throwable);
     }
 
-    public SerializationException(Class<?> serializedClass, Throwable throwable) {
-        super(String.format(SPECIFIED_CLASS_ERROR, serializedClass.getName()), throwable);
-        this.serializedClass = serializedClass;
+    public SerializationException(Class<?> sourceClass, Throwable throwable) {
+        super(String.format(SPECIFIED_CLASS_ERROR, sourceClass.getName()), throwable);
+        this.sourceClass = sourceClass;
     }
 
-    public Class<?> getSerializedClass() {
-        return serializedClass;
-    }
 }

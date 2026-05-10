@@ -9,6 +9,11 @@ import com.fasterxml.jackson.databind.ser.ContextualSerializer;
 
 import java.io.IOException;
 
+/**
+ * 敏感数据脱敏序列化器，配合 {@link Sensitive} 注解使用
+ *
+ * @author magicianlib@gmail.com
+ */
 public class SensitiveSerializer extends JsonSerializer<String> implements ContextualSerializer {
 
     private SensitiveType type;
@@ -28,6 +33,10 @@ public class SensitiveSerializer extends JsonSerializer<String> implements Conte
 
     @Override
     public void serialize(String value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        if (type == null) {
+            gen.writeString(value);
+            return;
+        }
         gen.writeString(type.mask(value));
     }
 
