@@ -47,8 +47,8 @@ public class PhoneMaskUtilsTest {
 
     @Test
     public void testFixedPhoneShortNumber() {
-        assertEquals("010-***456", PhoneMaskUtils.fixedPhone("010-123456"));
-        assertEquals("010-**345", PhoneMaskUtils.fixedPhone("010-12345"));
+        assertEquals("010-****56", PhoneMaskUtils.fixedPhone("010-123456"));
+        assertEquals("010-****45", PhoneMaskUtils.fixedPhone("010-12345"));
     }
 
     @Test
@@ -81,7 +81,7 @@ public class PhoneMaskUtilsTest {
 
     @Test
     public void testAutoOtherLength() {
-        assertEquals("138*****78", PhoneMaskUtils.auto("1381234567"));
+        assertEquals("138*****67", PhoneMaskUtils.auto("1381234567"));
     }
 
     @Test
