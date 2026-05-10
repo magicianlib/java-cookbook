@@ -8,8 +8,9 @@ import java.io.Serial;
 import java.io.Serializable;
 
 /**
- * 消息结果
+ * 统一响应结果封装
  *
+ * @param <T> 数据类型
  * @author magicianlib@gmail.com
  */
 @Getter
@@ -23,20 +24,24 @@ public class Result<T> implements Serializable {
      */
     private int code;
     /**
-     * 信息
+     * 响应信息
      */
     private String message;
     /**
-     * 是否成功状态
+     * 是否成功
      */
     private boolean success;
     /**
-     * 数据
+     * 响应数据
      */
     private T data;
 
     @Override
     public String toString() {
-        return JacksonUtils.toJson(this);
+        try {
+            return JacksonUtils.toJson(this);
+        } catch (Exception e) {
+            return "Result{code=" + code + ", message='" + message + "', success=" + success + ", data=" + data + '}';
+        }
     }
 }
