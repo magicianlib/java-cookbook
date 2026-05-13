@@ -8,6 +8,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
+import static io.ituknown.datetime.TimestampStyle.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class DateFormatUtilsTest {
@@ -148,9 +149,9 @@ public class DateFormatUtilsTest {
     @Test
     public void testTimestamp_WithTemporalAndStyle() {
         LocalDateTime dateTime = LocalDateTime.of(2025, 6, 15, 10, 30, 45, 123_000_000);
-        assertEquals("20250615103045", DateFormatUtils.timestamp(dateTime, DateFormatUtils.TimestampStyle.FULL));
-        assertEquals("20250615103045123", DateFormatUtils.timestamp(dateTime, DateFormatUtils.TimestampStyle.MILLIS));
-        assertEquals("250615103045", DateFormatUtils.timestamp(dateTime, DateFormatUtils.TimestampStyle.COMPACT));
+        assertEquals("20250615103045", DateFormatUtils.timestamp(dateTime, TimestampStyle.FULL));
+        assertEquals("20250615103045123", DateFormatUtils.timestamp(dateTime, TimestampStyle.MILLIS));
+        assertEquals("250615103045", DateFormatUtils.timestamp(dateTime, TimestampStyle.COMPACT));
     }
 
     @Test
@@ -163,9 +164,9 @@ public class DateFormatUtilsTest {
 
     @Test
     public void testTimestamp_Style() {
-        assertEquals(14, DateFormatUtils.timestamp(DateFormatUtils.TimestampStyle.FULL).length());
-        assertEquals(17, DateFormatUtils.timestamp(DateFormatUtils.TimestampStyle.MILLIS).length());
-        assertEquals(12, DateFormatUtils.timestamp(DateFormatUtils.TimestampStyle.COMPACT).length());
+        assertEquals(14, DateFormatUtils.timestamp(TimestampStyle.FULL).length());
+        assertEquals(17, DateFormatUtils.timestamp(TimestampStyle.MILLIS).length());
+        assertEquals(12, DateFormatUtils.timestamp(TimestampStyle.COMPACT).length());
     }
 
     @Test
@@ -177,9 +178,9 @@ public class DateFormatUtilsTest {
 
     @Test
     public void testTimestampUtc_Style() {
-        assertEquals(14, DateFormatUtils.timestampUtc(DateFormatUtils.TimestampStyle.FULL).length());
-        assertEquals(17, DateFormatUtils.timestampUtc(DateFormatUtils.TimestampStyle.MILLIS).length());
-        assertEquals(12, DateFormatUtils.timestampUtc(DateFormatUtils.TimestampStyle.COMPACT).length());
+        assertEquals(14, DateFormatUtils.timestampUtc(TimestampStyle.FULL).length());
+        assertEquals(17, DateFormatUtils.timestampUtc(TimestampStyle.MILLIS).length());
+        assertEquals(12, DateFormatUtils.timestampUtc(TimestampStyle.COMPACT).length());
     }
 
     @Test

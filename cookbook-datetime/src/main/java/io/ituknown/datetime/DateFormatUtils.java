@@ -166,21 +166,6 @@ public final class DateFormatUtils {
 
     // ===== 快捷方法 =====
 
-    /**
-     * 时间戳输出风格
-     */
-    public enum TimestampStyle {
-
-        /** 四位年份: {@code yyyyMMddHHmmss} → {@code 20250615103045} */
-        FULL,
-
-        /** 四位年份 + 毫秒: {@code yyyyMMddHHmmssSSS} → {@code 20250615103045123} */
-        MILLIS,
-
-        /** 两位年份: {@code yyMMddHHmmss} → {@code 250615103045} */
-        COMPACT
-    }
-
     private static DateTimeFormatter resolveTimestampFormatter(TimestampStyle style) {
         return switch (style) {
             case FULL -> TIMESTAMP;
@@ -191,6 +176,13 @@ public final class DateFormatUtils {
 
     /**
      * 格式化为时间戳字符串
+     * <p>
+     * 示例输出:
+     * <ul>
+     *   <li>{@link TimestampStyle#FULL}: {@code 20250615103045}</li>
+     *   <li>{@link TimestampStyle#MILLIS}: {@code 20250615103045123}</li>
+     *   <li>{@link TimestampStyle#COMPACT}: {@code 250615103045}</li>
+     * </ul>
      *
      * @param temporal 时间对象
      * @param style    时间戳风格
@@ -200,9 +192,9 @@ public final class DateFormatUtils {
     }
 
     /**
-     * 以当前本地时间生成时间戳字符串
-     *
-     * @param style 时间戳风格
+     * 以当前本地时间生成时间戳字符串（{@link TimestampStyle#FULL}）
+     * <p>
+     * 示例输出: {@code 20250615103045}
      */
     public static String timestamp(TimestampStyle style) {
         return timestamp(LocalDateTime.now(), style);
@@ -210,6 +202,8 @@ public final class DateFormatUtils {
 
     /**
      * 以当前本地时间生成时间戳字符串（{@link TimestampStyle#FULL}）
+     * <p>
+     * 示例输出: {@code 20250615103045}
      */
     public static String timestamp() {
         return timestamp(TimestampStyle.FULL);
@@ -217,6 +211,13 @@ public final class DateFormatUtils {
 
     /**
      * 以当前 UTC 时间生成时间戳字符串
+     * <p>
+     * 示例输出:
+     * <ul>
+     *   <li>{@link TimestampStyle#FULL}: {@code 20250615023045}</li>
+     *   <li>{@link TimestampStyle#MILLIS}: {@code 20250615023045123}</li>
+     *   <li>{@link TimestampStyle#COMPACT}: {@code 250615023045}</li>
+     * </ul>
      *
      * @param style 时间戳风格
      */
@@ -226,6 +227,8 @@ public final class DateFormatUtils {
 
     /**
      * 以当前 UTC 时间生成时间戳字符串（{@link TimestampStyle#FULL}）
+     * <p>
+     * 示例输出: {@code 20250615023045}
      */
     public static String timestampUtc() {
         return timestampUtc(TimestampStyle.FULL);
