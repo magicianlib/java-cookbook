@@ -127,24 +127,6 @@ public final class DateFormatUtils {
     public static final DateTimeFormatter DATE_TIME = DateTimeFormatter.ofPattern(DATE_TIME_PATTERN, Locale.getDefault());
 
     /**
-     * 时间戳格式: {@code yyyyMMddHHmmss} → {@code 20111203101530}
-     */
-    public static final String TIMESTAMP_PATTERN = "yyyyMMddHHmmss";
-    public static final DateTimeFormatter TIMESTAMP = DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN, Locale.getDefault());
-
-    /**
-     * 带毫秒的时间戳格式: {@code yyyyMMddHHmmssSSS} → {@code 20111203101530123}
-     */
-    public static final String TIMESTAMP_MILLIS_PATTERN = "yyyyMMddHHmmssSSS";
-    public static final DateTimeFormatter TIMESTAMP_MILLIS = DateTimeFormatter.ofPattern(TIMESTAMP_MILLIS_PATTERN, Locale.getDefault());
-
-    /**
-     * 简化时间戳格式（两位年份）: {@code yyMMddHHmmss} → {@code 111203101530}
-     */
-    public static final String SIMPLIFY_TIMESTAMP_PATTERN = "yyMMddHHmmss";
-    public static final DateTimeFormatter SIMPLIFY_TIMESTAMP = DateTimeFormatter.ofPattern(SIMPLIFY_TIMESTAMP_PATTERN, Locale.getDefault());
-
-    /**
      * 简化日期格式（两位年份）: {@code yyMMdd} → {@code 111203}
      */
     public static final String SIMPLIFY_DATE_PATTERN = "yyMMdd";
@@ -166,14 +148,6 @@ public final class DateFormatUtils {
 
     // ===== 快捷方法 =====
 
-    private static DateTimeFormatter resolveTimestampFormatter(TimestampStyle style) {
-        return switch (style) {
-            case FULL -> TIMESTAMP;
-            case MILLIS -> TIMESTAMP_MILLIS;
-            case COMPACT -> SIMPLIFY_TIMESTAMP;
-        };
-    }
-
     /**
      * 格式化为时间戳字符串
      * <p>
@@ -188,7 +162,7 @@ public final class DateFormatUtils {
      * @param style    时间戳风格
      */
     public static String timestamp(TemporalAccessor temporal, TimestampStyle style) {
-        return resolveTimestampFormatter(style).format(temporal);
+        return style.formatter.format(temporal);
     }
 
     /**

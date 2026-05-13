@@ -49,17 +49,21 @@ public class DateFormatUtilsTest {
     }
 
     @Test
-    public void testTIMESTAMP_Format() {
+    public void testTIMESTAMP_Full() {
         LocalDateTime dateTime = LocalDateTime.of(2025, 6, 15, 10, 30, 45);
-        String result = DateFormatUtils.TIMESTAMP.format(dateTime);
-        assertEquals("20250615103045", result);
+        assertEquals("20250615103045", FULL.formatter.format(dateTime));
     }
 
     @Test
-    public void testSIMPLIFY_TIMESTAMP_Format() {
+    public void testTIMESTAMP_Millis() {
+        LocalDateTime dateTime = LocalDateTime.of(2025, 6, 15, 10, 30, 45, 123_000_000);
+        assertEquals("20250615103045123", MILLIS.formatter.format(dateTime));
+    }
+
+    @Test
+    public void testTIMESTAMP_Compact() {
         LocalDateTime dateTime = LocalDateTime.of(2025, 6, 15, 10, 30, 45);
-        String result = DateFormatUtils.SIMPLIFY_TIMESTAMP.format(dateTime);
-        assertEquals("250615103045", result);
+        assertEquals("250615103045", COMPACT.formatter.format(dateTime));
     }
 
     @Test
@@ -140,18 +144,11 @@ public class DateFormatUtilsTest {
     }
 
     @Test
-    public void testTIMESTAMP_MILLIS_Format() {
-        LocalDateTime dateTime = LocalDateTime.of(2025, 6, 15, 10, 30, 45, 123_000_000);
-        String result = DateFormatUtils.TIMESTAMP_MILLIS.format(dateTime);
-        assertEquals("20250615103045123", result);
-    }
-
-    @Test
     public void testTimestamp_WithTemporalAndStyle() {
         LocalDateTime dateTime = LocalDateTime.of(2025, 6, 15, 10, 30, 45, 123_000_000);
-        assertEquals("20250615103045", DateFormatUtils.timestamp(dateTime, TimestampStyle.FULL));
-        assertEquals("20250615103045123", DateFormatUtils.timestamp(dateTime, TimestampStyle.MILLIS));
-        assertEquals("250615103045", DateFormatUtils.timestamp(dateTime, TimestampStyle.COMPACT));
+        assertEquals("20250615103045", DateFormatUtils.timestamp(dateTime, FULL));
+        assertEquals("20250615103045123", DateFormatUtils.timestamp(dateTime, MILLIS));
+        assertEquals("250615103045", DateFormatUtils.timestamp(dateTime, COMPACT));
     }
 
     @Test
@@ -159,14 +156,14 @@ public class DateFormatUtilsTest {
         String ts = DateFormatUtils.timestamp();
         assertNotNull(ts);
         assertEquals(14, ts.length());
-        assertDoesNotThrow(() -> LocalDateTime.parse(ts, DateFormatUtils.TIMESTAMP));
+        assertDoesNotThrow(() -> LocalDateTime.parse(ts, FULL.formatter));
     }
 
     @Test
     public void testTimestamp_Style() {
-        assertEquals(14, DateFormatUtils.timestamp(TimestampStyle.FULL).length());
-        assertEquals(17, DateFormatUtils.timestamp(TimestampStyle.MILLIS).length());
-        assertEquals(12, DateFormatUtils.timestamp(TimestampStyle.COMPACT).length());
+        assertEquals(14, DateFormatUtils.timestamp(FULL).length());
+        assertEquals(17, DateFormatUtils.timestamp(MILLIS).length());
+        assertEquals(12, DateFormatUtils.timestamp(COMPACT).length());
     }
 
     @Test
@@ -178,15 +175,15 @@ public class DateFormatUtilsTest {
 
     @Test
     public void testTimestampUtc_Style() {
-        assertEquals(14, DateFormatUtils.timestampUtc(TimestampStyle.FULL).length());
-        assertEquals(17, DateFormatUtils.timestampUtc(TimestampStyle.MILLIS).length());
-        assertEquals(12, DateFormatUtils.timestampUtc(TimestampStyle.COMPACT).length());
+        assertEquals(14, DateFormatUtils.timestampUtc(FULL).length());
+        assertEquals(17, DateFormatUtils.timestampUtc(MILLIS).length());
+        assertEquals(12, DateFormatUtils.timestampUtc(COMPACT).length());
     }
 
     @Test
     public void testTimestampUtc_MatchesUTC() {
         LocalDateTime utcNow = LocalDateTime.now(ZoneOffset.UTC);
-        assertEquals(DateFormatUtils.TIMESTAMP.format(utcNow), DateFormatUtils.timestampUtc());
+        assertEquals(FULL.formatter.format(utcNow), DateFormatUtils.timestampUtc());
     }
 
     @Test
@@ -218,9 +215,9 @@ public class DateFormatUtilsTest {
         assertEquals("HH:mm:ss", DateFormatUtils.ISO_LOCAL_TIME_PATTERN);
         assertEquals("yyyy-MM-dd'T'HH:mm:ss", DateFormatUtils.ISO_LOCAL_DATE_TIME_PATTERN);
         assertEquals("yyyy-MM-dd HH:mm:ss", DateFormatUtils.DATE_TIME_PATTERN);
-        assertEquals("yyyyMMddHHmmss", DateFormatUtils.TIMESTAMP_PATTERN);
-        assertEquals("yyyyMMddHHmmssSSS", DateFormatUtils.TIMESTAMP_MILLIS_PATTERN);
-        assertEquals("yyMMddHHmmss", DateFormatUtils.SIMPLIFY_TIMESTAMP_PATTERN);
+        assertEquals("yyyyMMddHHmmss", FULL.pattern);
+        assertEquals("yyyyMMddHHmmssSSS", MILLIS.pattern);
+        assertEquals("yyMMddHHmmss", COMPACT.pattern);
         assertEquals("yyMMdd", DateFormatUtils.SIMPLIFY_DATE_PATTERN);
         assertEquals("HH:mm:ss OOOO", DateFormatUtils.TIME_ZONE_PATTERN);
         assertEquals("yyyy-MM-dd HH:mm:ss OOOO", DateFormatUtils.DATE_TIME_ZONE_PATTERN);
