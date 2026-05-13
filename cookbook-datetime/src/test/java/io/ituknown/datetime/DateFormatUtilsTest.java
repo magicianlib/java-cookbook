@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -82,6 +83,62 @@ public class DateFormatUtilsTest {
     }
 
     @Test
+    public void testISO_OFFSET_DATE_TIME_MILLIS_Format() {
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(2025, 6, 15, 10, 30, 45, 0, ZoneId.of("Asia/Shanghai"));
+        String result = DateFormatUtils.ISO_OFFSET_DATE_TIME_MILLIS.format(zonedDateTime);
+        assertEquals("2025-06-15T10:30:45.000+08:00", result);
+    }
+
+    @Test
+    public void testISO_OFFSET_DATE_TIME_MILLIS_FormatUTC() {
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(2025, 6, 15, 10, 30, 45, 0, ZoneOffset.UTC);
+        String result = DateFormatUtils.ISO_OFFSET_DATE_TIME_MILLIS.format(zonedDateTime);
+        assertEquals("2025-06-15T10:30:45.000Z", result);
+    }
+
+    @Test
+    public void testISO_INSTANT_Format() {
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(2025, 6, 15, 10, 30, 45, 0, ZoneId.of("Asia/Shanghai"));
+        String result = DateFormatUtils.ISO_INSTANT.format(zonedDateTime);
+        assertEquals("2025-06-15T02:30:45.000Z", result);
+    }
+
+    @Test
+    public void testISO_INSTANT_FormatUTC() {
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(2025, 6, 15, 10, 30, 45, 0, ZoneOffset.UTC);
+        String result = DateFormatUtils.ISO_INSTANT.format(zonedDateTime);
+        assertEquals("2025-06-15T10:30:45.000Z", result);
+    }
+
+    @Test
+    public void testISO_OFFSET_DATE_TIME_Format() {
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(2025, 6, 15, 10, 30, 45, 0, ZoneId.of("Asia/Shanghai"));
+        String result = DateFormatUtils.ISO_OFFSET_DATE_TIME.format(zonedDateTime);
+        assertEquals("2025-06-15T10:30:45+08:00", result);
+    }
+
+    @Test
+    public void testISO_OFFSET_DATE_TIME_FormatUTC() {
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(2025, 6, 15, 10, 30, 45, 0, ZoneOffset.UTC);
+        String result = DateFormatUtils.ISO_OFFSET_DATE_TIME.format(zonedDateTime);
+        assertEquals("2025-06-15T10:30:45Z", result);
+    }
+
+    @Test
+    public void testISO_UTC_DATE_TIME_Format() {
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(2025, 6, 15, 10, 30, 45, 0, ZoneId.of("Asia/Shanghai"));
+        String result = DateFormatUtils.ISO_UTC_DATE_TIME.format(zonedDateTime);
+        assertEquals("2025-06-15T02:30:45Z", result);
+    }
+
+    @Test
+    public void testISO_UTC_DATE_TIME_FormatUTC() {
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(2025, 6, 15, 10, 30, 45, 0, ZoneOffset.UTC);
+        String result = DateFormatUtils.ISO_UTC_DATE_TIME.format(zonedDateTime);
+        assertEquals("2025-06-15T10:30:45Z", result);
+    }
+
+    @Test
     public void testTimestamp_WithTemporal() {
         LocalDateTime dateTime = LocalDateTime.of(2025, 6, 15, 10, 30, 45);
         assertEquals("20250615103045", DateFormatUtils.timestamp(dateTime, false));
@@ -137,5 +194,9 @@ public class DateFormatUtilsTest {
         assertEquals("yyMMdd", DateFormatUtils.SIMPLIFY_DATE_PATTERN);
         assertEquals("HH:mm:ss OOOO", DateFormatUtils.TIME_ZONE_PATTERN);
         assertEquals("yyyy-MM-dd HH:mm:ss OOOO", DateFormatUtils.DATE_TIME_ZONE_PATTERN);
+        assertEquals("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", DateFormatUtils.ISO_OFFSET_DATE_TIME_MILLIS_PATTERN);
+        assertEquals("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", DateFormatUtils.ISO_INSTANT_PATTERN);
+        assertEquals("yyyy-MM-dd'T'HH:mm:ssXXX", DateFormatUtils.ISO_OFFSET_DATE_TIME_PATTERN);
+        assertEquals("yyyy-MM-dd'T'HH:mm:ss'Z'", DateFormatUtils.ISO_UTC_DATE_TIME_PATTERN);
     }
 }

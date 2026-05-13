@@ -2,6 +2,7 @@ package io.ituknown.datetime;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Locale;
@@ -12,7 +13,27 @@ import java.util.Locale;
  * 提供常用的 {@link DateTimeFormatter} 常量及快捷格式化方法，
  * 涵盖 ISO 标准格式、自定义格式和带时区格式。
  *
+ * <h3>常用占位符速查</h3>
+ * <table>
+ *   <tr><th>占位符</th><th>含义</th><th>示例</th></tr>
+ *   <tr><td>{@code yyyy}</td><td>四位年份</td><td>2025</td></tr>
+ *   <tr><td>{@code yy}</td><td>两位年份</td><td>25</td></tr>
+ *   <tr><td>{@code MM}</td><td>月份（补零）</td><td>06</td></tr>
+ *   <tr><td>{@code dd}</td><td>日（补零）</td><td>15</td></tr>
+ *   <tr><td>{@code HH}</td><td>24 小时制（补零）</td><td>14</td></tr>
+ *   <tr><td>{@code hh}</td><td>12 小时制（补零）</td><td>02</td></tr>
+ *   <tr><td>{@code mm}</td><td>分钟（补零）</td><td>30</td></tr>
+ *   <tr><td>{@code ss}</td><td>秒（补零）</td><td>45</td></tr>
+ *   <tr><td>{@code SSS}</td><td>毫秒</td><td>123</td></tr>
+ *   <tr><td>{@code X}</td><td>时区偏移 {@code +HH}，UTC 显示为 {@code Z}</td><td>+08 / Z</td></tr>
+ *   <tr><td>{@code XX}</td><td>时区偏移 {@code +HHmm}，UTC 显示为 {@code Z}</td><td>+0800 / Z</td></tr>
+ *   <tr><td>{@code XXX}</td><td>时区偏移 {@code +HH:mm}，UTC 显示为 {@code Z}</td><td>+08:00 / Z</td></tr>
+ *   <tr><td>{@code OOOO}</td><td>本地化时区偏移</td><td>GMT+08:00</td></tr>
+ *   <tr><td>{@code 'T' / 'Z'}</td><td>字面量字符</td><td>T / Z</td></tr>
+ * </table>
+ *
  * @author magicianlib@gmail.com
+ * @see DateTimeFormatter
  */
 public final class DateFormatUtils {
 
@@ -44,6 +65,58 @@ public final class DateFormatUtils {
      */
     public static final String ISO_LOCAL_DATE_TIME_PATTERN = "yyyy-MM-dd'T'HH:mm:ss";
     public static final DateTimeFormatter ISO_LOCAL_DATE_TIME = DateTimeFormatter.ofPattern(ISO_LOCAL_DATE_TIME_PATTERN, Locale.getDefault());
+
+    // ----- 带偏移/UTC 的 ISO 8601 日期时间格式 -----
+    //
+    // 使用约束:
+    //   1. 含时区偏移（XXX）的格式要求输入对象携带时区信息，适用类型:
+    //      - java.time.ZonedDateTime
+    //      - java.time.OffsetDateTime
+    //      - java.time.Instant（配合 withZone 使用）
+    //      LocalDateTime / LocalDate / LocalTime 不携带时区，传入将抛出 DateTimeException。
+    //
+    //   2. 带 'Z' 后缀的格式（ISO_INSTANT / ISO_UTC_DATE_TIME）内部固定 UTC 时区:
+    //      - 传入 ZonedDateTime / OffsetDateTime 时会自动转换为 UTC 后再格式化。
+    //      - 传入 Instant 直接格式化，无需转换。
+    //      - 传入 LocalDateTime 同样会按 UTC 解释，但通常不应这样做——请使用带偏移的格式。
+
+    /**
+     * ISO 8601 带毫秒的偏移日期时间格式: {@code yyyy-MM-dd'T'HH:mm:ss.SSSXXX} → {@code 2011-12-03T10:15:30.000+08:00}
+     *
+     * @see #ISO_INSTANT 始终以 UTC + Z 输出的变体
+     */
+    public static final String ISO_OFFSET_DATE_TIME_MILLIS_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
+    public static final DateTimeFormatter ISO_OFFSET_DATE_TIME_MILLIS = DateTimeFormatter.ofPattern(ISO_OFFSET_DATE_TIME_MILLIS_PATTERN, Locale.getDefault());
+
+    /**
+     * ISO 8601 即时格式（UTC 带 Z）: {@code yyyy-MM-dd'T'HH:mm:ss.SSS'Z'} → {@code 2011-12-03T10:15:30.000Z}
+     * <p>
+     * 内部固定 UTC 时区，格式化时自动转换为 UTC 并追加 {@code Z} 后缀。
+     * 推荐搭配 {@code Instant} 或 {@code ZonedDateTime} 使用。
+     *
+     * @see #ISO_OFFSET_DATE_TIME_MILLIS 保留原始时区偏移的变体
+     */
+    public static final String ISO_INSTANT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+    public static final DateTimeFormatter ISO_INSTANT = DateTimeFormatter.ofPattern(ISO_INSTANT_PATTERN, Locale.getDefault()).withZone(ZoneOffset.UTC);
+
+    /**
+     * ISO 8601 偏移日期时间格式（无毫秒）: {@code yyyy-MM-dd'T'HH:mm:ssXXX} → {@code 2011-12-03T10:15:30+08:00}
+     *
+     * @see #ISO_UTC_DATE_TIME 始终以 UTC + Z 输出的变体
+     */
+    public static final String ISO_OFFSET_DATE_TIME_PATTERN = "yyyy-MM-dd'T'HH:mm:ssXXX";
+    public static final DateTimeFormatter ISO_OFFSET_DATE_TIME = DateTimeFormatter.ofPattern(ISO_OFFSET_DATE_TIME_PATTERN, Locale.getDefault());
+
+    /**
+     * ISO 8601 UTC 日期时间格式（无毫秒，带 Z）: {@code yyyy-MM-dd'T'HH:mm:ss'Z'} → {@code 2011-12-03T10:15:30Z}
+     * <p>
+     * 内部固定 UTC 时区，格式化时自动转换为 UTC 并追加 {@code Z} 后缀。
+     * 推荐搭配 {@code Instant} 或 {@code ZonedDateTime} 使用。
+     *
+     * @see #ISO_OFFSET_DATE_TIME 保留原始时区偏移的变体
+     */
+    public static final String ISO_UTC_DATE_TIME_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+    public static final DateTimeFormatter ISO_UTC_DATE_TIME = DateTimeFormatter.ofPattern(ISO_UTC_DATE_TIME_PATTERN, Locale.getDefault()).withZone(ZoneOffset.UTC);
 
     // ===== 自定义格式 =====
 
