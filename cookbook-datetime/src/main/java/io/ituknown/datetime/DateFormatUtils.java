@@ -133,6 +133,12 @@ public final class DateFormatUtils {
     public static final DateTimeFormatter TIMESTAMP = DateTimeFormatter.ofPattern(TIMESTAMP_PATTERN, Locale.getDefault());
 
     /**
+     * 带毫秒的时间戳格式: {@code yyyyMMddHHmmssSSS} → {@code 20111203101530123}
+     */
+    public static final String TIMESTAMP_MILLIS_PATTERN = "yyyyMMddHHmmssSSS";
+    public static final DateTimeFormatter TIMESTAMP_MILLIS = DateTimeFormatter.ofPattern(TIMESTAMP_MILLIS_PATTERN, Locale.getDefault());
+
+    /**
      * 简化时间戳格式（两位年份）: {@code yyMMddHHmmss} → {@code 111203101530}
      */
     public static final String SIMPLIFY_TIMESTAMP_PATTERN = "yyMMddHHmmss";
@@ -161,29 +167,68 @@ public final class DateFormatUtils {
     // ===== 快捷方法 =====
 
     /**
+     * 时间戳输出风格
+     */
+    public enum TimestampStyle {
+
+        /** 四位年份: {@code yyyyMMddHHmmss} → {@code 20250615103045} */
+        FULL,
+
+        /** 四位年份 + 毫秒: {@code yyyyMMddHHmmssSSS} → {@code 20250615103045123} */
+        MILLIS,
+
+        /** 两位年份: {@code yyMMddHHmmss} → {@code 250615103045} */
+        COMPACT
+    }
+
+    private static DateTimeFormatter resolveTimestampFormatter(TimestampStyle style) {
+        return switch (style) {
+            case FULL -> TIMESTAMP;
+            case MILLIS -> TIMESTAMP_MILLIS;
+            case COMPACT -> SIMPLIFY_TIMESTAMP;
+        };
+    }
+
+    /**
      * 格式化为时间戳字符串
      *
      * @param temporal 时间对象
-     * @param simplify 是否使用两位年份
+     * @param style    时间戳风格
      */
-    public static String timestamp(TemporalAccessor temporal, boolean simplify) {
-        return (simplify ? SIMPLIFY_TIMESTAMP : TIMESTAMP).format(temporal);
+    public static String timestamp(TemporalAccessor temporal, TimestampStyle style) {
+        return resolveTimestampFormatter(style).format(temporal);
     }
 
     /**
-     * 以当前时间生成时间戳字符串
+     * 以当前本地时间生成时间戳字符串
      *
-     * @param simplify 是否使用两位年份
+     * @param style 时间戳风格
      */
-    public static String timestamp(boolean simplify) {
-        return timestamp(LocalDateTime.now(), simplify);
+    public static String timestamp(TimestampStyle style) {
+        return timestamp(LocalDateTime.now(), style);
     }
 
     /**
-     * 以当前时间生成完整时间戳字符串
+     * 以当前本地时间生成时间戳字符串（{@link TimestampStyle#FULL}）
      */
     public static String timestamp() {
-        return timestamp(LocalDateTime.now(), false);
+        return timestamp(TimestampStyle.FULL);
+    }
+
+    /**
+     * 以当前 UTC 时间生成时间戳字符串
+     *
+     * @param style 时间戳风格
+     */
+    public static String timestampUtc(TimestampStyle style) {
+        return timestamp(LocalDateTime.now(ZoneOffset.UTC), style);
+    }
+
+    /**
+     * 以当前 UTC 时间生成时间戳字符串（{@link TimestampStyle#FULL}）
+     */
+    public static String timestampUtc() {
+        return timestampUtc(TimestampStyle.FULL);
     }
 
     /**
