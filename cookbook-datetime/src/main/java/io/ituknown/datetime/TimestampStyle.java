@@ -18,7 +18,10 @@ public enum TimestampStyle {
     MILLIS("yyyyMMddHHmmssSSS"),
 
     /** 两位年份: {@code yyMMddHHmmss} → {@code 250615103045} */
-    COMPACT("yyMMddHHmmss");
+    COMPACT("yyMMddHHmmss"),
+
+    /** 两位年份 + 毫秒: {@code yyMMddHHmmssSSS} → {@code 250615103045123} */
+    COMPACT_MILLIS("yyMMddHHmmssSSS");
 
     /** 格式模式 */
     public final String pattern;

@@ -151,11 +151,21 @@ public final class DateFormatUtils {
     /**
      * 格式化为时间戳字符串
      * <p>
+     * 支持的时间对象类型:
+     * <ul>
+     *   <li>{@link LocalDateTime}</li>
+     *   <li>{@link java.time.ZonedDateTime ZonedDateTime}</li>
+     *   <li>{@link java.time.OffsetDateTime OffsetDateTime}</li>
+     * </ul>
+     * {@link java.time.Instant Instant}、{@link java.time.LocalDate LocalDate}、{@link java.time.LocalTime LocalTime}
+     * 不支持，传入将抛出 {@link java.time.DateTimeException}。
+     * <p>
      * 示例输出:
      * <ul>
      *   <li>{@link TimestampStyle#FULL}: {@code 20250615103045}</li>
      *   <li>{@link TimestampStyle#MILLIS}: {@code 20250615103045123}</li>
      *   <li>{@link TimestampStyle#COMPACT}: {@code 250615103045}</li>
+     *   <li>{@link TimestampStyle#COMPACT_MILLIS}: {@code 250615103045123}</li>
      * </ul>
      *
      * @param temporal 时间对象
@@ -166,9 +176,22 @@ public final class DateFormatUtils {
     }
 
     /**
-     * 以当前本地时间生成时间戳字符串（{@link TimestampStyle#FULL}）
+     * 以指定时间生成时间戳字符串（{@link TimestampStyle#FULL}）
+     * <p>
+     * 支持的时间对象类型见 {@link #timestamp(TemporalAccessor, TimestampStyle)}。
      * <p>
      * 示例输出: {@code 20250615103045}
+     *
+     * @param temporal 时间对象
+     */
+    public static String timestamp(TemporalAccessor temporal) {
+        return timestamp(temporal, TimestampStyle.FULL);
+    }
+
+    /**
+     * 以当前本地时间生成时间戳字符串
+     *
+     * @param style 时间戳风格
      */
     public static String timestamp(TimestampStyle style) {
         return timestamp(LocalDateTime.now(), style);
@@ -197,6 +220,19 @@ public final class DateFormatUtils {
      */
     public static String timestampUtc(TimestampStyle style) {
         return timestamp(LocalDateTime.now(ZoneOffset.UTC), style);
+    }
+
+    /**
+     * 以指定时间生成 UTC 时间戳字符串（{@link TimestampStyle#FULL}）
+     * <p>
+     * 支持的时间对象类型见 {@link #timestamp(TemporalAccessor, TimestampStyle)}。
+     * <p>
+     * 示例输出: {@code 20250615023045}
+     *
+     * @param temporal 时间对象
+     */
+    public static String timestampUtc(TemporalAccessor temporal) {
+        return timestamp(temporal, TimestampStyle.FULL);
     }
 
     /**
