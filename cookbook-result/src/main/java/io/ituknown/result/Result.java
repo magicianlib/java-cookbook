@@ -9,6 +9,15 @@ import java.io.Serializable;
 
 /**
  * 统一响应结果封装
+ * <p>
+ * JSON 结构：
+ * <pre>{@code
+ * {
+ *   "code": 200,
+ *   "msg": "success",
+ *   "data": {}
+ * }
+ * }</pre>
  *
  * @param <T> 数据类型
  * @author magicianlib@gmail.com
@@ -19,21 +28,11 @@ public class Result<T> implements Serializable {
     @Serial
     private static final long serialVersionUID = 6820965203253182123L;
 
-    /**
-     * 状态码
-     */
+    /** 状态码 */
     private int code;
-    /**
-     * 响应信息
-     */
-    private String message;
-    /**
-     * 是否成功
-     */
-    private boolean success;
-    /**
-     * 响应数据
-     */
+    /** 响应信息 */
+    private String msg;
+    /** 响应数据 */
     private T data;
 
     @Override
@@ -41,7 +40,7 @@ public class Result<T> implements Serializable {
         try {
             return JacksonUtils.toJson(this);
         } catch (Exception e) {
-            return "Result{code=" + code + ", message='" + message + "', success=" + success + ", data=" + data + '}';
+            return "Result{code=" + code + ", msg='" + msg + "', data=" + data + '}';
         }
     }
 }

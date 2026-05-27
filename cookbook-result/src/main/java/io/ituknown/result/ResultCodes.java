@@ -1,24 +1,27 @@
 package io.ituknown.result;
 
 /**
- * 基础错误码
+ * 通用响应码，提供开箱即用的成功 / 失败响应码。
+ * <p>
+ * 业务模块如需自定义响应码，请实现 {@link ResultCode} 接口。
  *
  * @author magicianlib@gmail.com
+ * @see ResultCode
  */
-public enum BasicErrorCode implements ErrorCode {
-    SUCCESS(0, "Success", true),
-    FAILURE(1, "Failure"),
+public enum ResultCodes implements ResultCode {
+    SUCCESS(0, "success", true),
+    FAILURE(1, "failure"),
     ;
 
     private final int code;
     private final String message;
-    private final boolean success; // 默认为失败错误码
+    private final boolean success;
 
-    BasicErrorCode(int code, String message) {
+    ResultCodes(int code, String message) {
         this(code, message, false);
     }
 
-    BasicErrorCode(int code, String message, boolean success) {
+    ResultCodes(int code, String message, boolean success) {
         this.code = code;
         this.message = message;
         this.success = success;
