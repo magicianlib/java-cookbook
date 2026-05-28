@@ -9,8 +9,8 @@ package io.ituknown.result;
  * @see ResultCode
  */
 public enum ResultCodes implements ResultCode {
-    SUCCESS("0000", "success", true),
-    FAILURE("0001", "failure"),
+    SUCCESS("00000", "success", true),
+    FAILURE("00001", "failure"),
     ;
 
     private final String code;

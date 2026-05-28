@@ -13,7 +13,7 @@ import java.io.Serializable;
  * JSON 结构：
  * <pre>{@code
  * {
- *   "code": "0000",
+ *   "code": "00000",
  *   "msg": "success",
  *   "data": {}
  * }
