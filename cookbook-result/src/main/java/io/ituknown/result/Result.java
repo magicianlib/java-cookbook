@@ -13,7 +13,7 @@ import java.io.Serializable;
  * JSON 结构：
  * <pre>{@code
  * {
- *   "code": 200,
+ *   "code": "0",
  *   "msg": "success",
  *   "data": {}
  * }
@@ -29,7 +29,7 @@ public class Result<T> implements Serializable {
     private static final long serialVersionUID = 6820965203253182123L;
 
     /** 状态码 */
-    private int code;
+    private String code;
     /** 响应信息 */
     private String msg;
     /** 响应数据 */

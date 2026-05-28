@@ -9,26 +9,26 @@ package io.ituknown.result;
  * @see ResultCode
  */
 public enum ResultCodes implements ResultCode {
-    SUCCESS(0, "success", true),
-    FAILURE(1, "failure"),
+    SUCCESS("0000", "success", true),
+    FAILURE("0001", "failure"),
     ;
 
-    private final int code;
+    private final String code;
     private final String message;
     private final boolean success;
 
-    ResultCodes(int code, String message) {
+    ResultCodes(String code, String message) {
         this(code, message, false);
     }
 
-    ResultCodes(int code, String message, boolean success) {
+    ResultCodes(String code, String message, boolean success) {
         this.code = code;
         this.message = message;
         this.success = success;
     }
 
     @Override
-    public int code() {
+    public String code() {
         return code;
     }
 

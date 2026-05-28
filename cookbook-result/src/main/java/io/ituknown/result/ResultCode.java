@@ -10,26 +10,26 @@ package io.ituknown.result;
  * public enum UserResultCode implements ResultCode {
  *
  *     // ---- 用户模块 10xxx ----
- *     USER_NOT_FOUND(10001, "用户不存在"),
- *     PASSWORD_ERROR(10002, "密码错误"),
- *     ACCOUNT_DISABLED(10003, "账号已禁用"),
+ *     USER_NOT_FOUND("10001", "用户不存在"),
+ *     PASSWORD_ERROR("10002", "密码错误"),
+ *     ACCOUNT_DISABLED("10003", "账号已禁用"),
  *     ;
  *
- *     final int code;
+ *     final String code;
  *     final String message;
  *     final boolean success;
  *
- *     UserResultCode(int code, String message) {
+ *     UserResultCode(String code, String message) {
  *         this(code, message, false);
  *     }
  *
- *     UserResultCode(int code, String message, boolean success) {
+ *     UserResultCode(String code, String message, boolean success) {
  *         this.code = code;
  *         this.message = message;
  *         this.success = success;
  *     }
  *
- *     @Override public int code() { return code; }
+ *     @Override public String code() { return code; }
  *     @Override public String message() { return message; }
  *     @Override public boolean success() { return success; }
  * }
@@ -52,7 +52,7 @@ package io.ituknown.result;
 public interface ResultCode {
 
     /** 响应码 */
-    int code();
+    String code();
 
     /** 响应信息 */
     String message();
