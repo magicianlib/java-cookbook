@@ -32,29 +32,39 @@ public final class JacksonConfig {
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
         {
-            // LocalTime 序列化和反序列化配置
-            JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(DateFormatUtils.ISO_LOCAL_TIME_PATTERN);
+            // LocalTime → "10:30:45"
+            JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(DateFormatUtils.TIME_PATTERN);
             objectMapper.configOverride(LocalTime.class).setFormat(format);
         }
         {
-            // LocalDate 序列化和反序列化配置
-            JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(DateFormatUtils.ISO_LOCAL_DATE_PATTERN);
+            // LocalDate → "2025-06-15"
+            JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(DateFormatUtils.DATE_PATTERN);
             objectMapper.configOverride(LocalDate.class).setFormat(format);
         }
         {
-            // LocalDateTime 序列化和反序列化配置
+            // LocalDateTime → "2025-06-15 10:30:45"
             JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(DateFormatUtils.DATE_TIME_PATTERN);
             objectMapper.configOverride(LocalDateTime.class).setFormat(format);
         }
         {
-            // OffsetDateTime 序列化和反序列化配置
-            JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(DateFormatUtils.DATE_TIME_ZONE_PATTERN);
+            // OffsetDateTime → "2025-06-15T10:30:45+08:00"
+            JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(DateFormatUtils.ISO_OFFSET_DATE_TIME_PATTERN);
             objectMapper.configOverride(OffsetDateTime.class).setFormat(format);
         }
         {
-            // OffsetTime 序列化和反序列化配置
-            JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(DateFormatUtils.TIME_ZONE_PATTERN);
+            // OffsetTime → "10:30:45+08:00"
+            JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(DateFormatUtils.ISO_OFFSET_TIME_PATTERN);
             objectMapper.configOverride(OffsetTime.class).setFormat(format);
+        }
+        {
+            // ZonedDateTime → "2025-06-15 10:30:45.000 +08:00 [Asia/Shanghai]"
+            JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(DateFormatUtils.ZONED_DATE_TIME_MILLIS_PATTERN);
+            objectMapper.configOverride(ZonedDateTime.class).setFormat(format);
+        }
+        {
+            // Instant → "2025-06-15T02:30:45Z"
+            JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(DateFormatUtils.ISO_UTC_DATE_TIME_PATTERN);
+            objectMapper.configOverride(Instant.class).setFormat(format);
         }
     }
 
