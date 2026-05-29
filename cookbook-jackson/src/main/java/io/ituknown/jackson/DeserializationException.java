@@ -15,8 +15,8 @@ public class DeserializationException extends RuntimeException {
     @Serial
     private static final long serialVersionUID = -6514424812979501022L;
 
-    private static final String DEFAULT_ERROR = "Failed to deserialize";
-    private static final String SPECIFIED_CLASS_ERROR = "Failed to deserialize to class [%s]";
+    private static final String DEFAULT_ERROR = "Failed to deserialize data";
+    private static final String SPECIFIED_CLASS_ERROR = "Failed to deserialize data to type [%s]";
 
     private Class<?> targetClass;
 

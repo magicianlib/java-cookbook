@@ -228,7 +228,7 @@ public enum JacksonXmlUtils {
         try {
             return xmlMapper.readValue(xml, typeReference);
         } catch (IOException e) {
-            throw new DeserializationException(typeReference.getClass(), e);
+            throw new DeserializationException(typeReference.getType(), e);
         }
     }
 
@@ -244,7 +244,7 @@ public enum JacksonXmlUtils {
         try {
             return xmlMapper.readValue(inputStream, clazz);
         } catch (IOException e) {
-            throw new DeserializationException(e);
+            throw new DeserializationException(clazz, e);
         }
     }
 
@@ -260,7 +260,7 @@ public enum JacksonXmlUtils {
         try {
             return xmlMapper.readValue(xml, xmlMapper.constructType(type));
         } catch (IOException e) {
-            throw new DeserializationException(e);
+            throw new DeserializationException(type, e);
         }
     }
 
@@ -292,7 +292,7 @@ public enum JacksonXmlUtils {
         try {
             return xmlMapper.readValue(xml, typeReference);
         } catch (IOException e) {
-            throw new DeserializationException(typeReference.getClass(), e);
+            throw new DeserializationException(typeReference.getType(), e);
         }
     }
 
@@ -336,11 +336,11 @@ public enum JacksonXmlUtils {
     }
 
     public static <T> T toObj(String xml, final XmlMapper xmlMapper, Class<T> parametrized, Class<?>... parameterClasses) {
+        JavaType javaType = xmlMapper.getTypeFactory().constructParametricType(parametrized, parameterClasses);
         try {
-            JavaType javaType = xmlMapper.getTypeFactory().constructParametricType(parametrized, parameterClasses);
             return xmlMapper.readValue(xml, javaType);
         } catch (IOException e) {
-            throw new DeserializationException(e);
+            throw new DeserializationException(javaType, e);
         }
     }
 

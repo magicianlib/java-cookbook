@@ -14,8 +14,8 @@ public class SerializationException extends RuntimeException {
     @Serial
     private static final long serialVersionUID = 6475435719302659535L;
 
-    private static final String DEFAULT_ERROR = "Failed to serialize";
-    private static final String SPECIFIED_CLASS_ERROR = "Failed to serialize class [%s]";
+    private static final String DEFAULT_ERROR = "Failed to serialize object";
+    private static final String SPECIFIED_CLASS_ERROR = "Failed to serialize instance of [%s]";
 
     private Class<?> sourceClass;
 

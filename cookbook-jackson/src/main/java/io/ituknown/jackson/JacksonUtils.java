@@ -186,7 +186,7 @@ public enum JacksonUtils {
         try {
             return objectMapper.readValue(json, typeReference);
         } catch (IOException e) {
-            throw new DeserializationException(typeReference.getType().getClass(), e);
+            throw new DeserializationException(typeReference.getType(), e);
         }
     }
 
@@ -234,7 +234,7 @@ public enum JacksonUtils {
         try {
             return objectMapper.readValue(json, typeReference);
         } catch (IOException e) {
-            throw new DeserializationException(typeReference.getType().getClass(), e);
+            throw new DeserializationException(typeReference.getType(), e);
         }
     }
 
@@ -279,7 +279,7 @@ public enum JacksonUtils {
         try {
             return objectMapper.readValue(json, javaType);
         } catch (IOException e) {
-            throw new DeserializationException(e);
+            throw new DeserializationException(javaType, e);
         }
     }
 
@@ -295,11 +295,11 @@ public enum JacksonUtils {
     }
 
     public static <C extends Collection<E>, E> C toCollection(String json, Class<C> collection, Class<E> element, final ObjectMapper objectMapper) {
+        CollectionType type = objectMapper.getTypeFactory().constructCollectionType(collection, element);
         try {
-            CollectionType type = objectMapper.getTypeFactory().constructCollectionType(collection, element);
             return objectMapper.readValue(json, type);
         } catch (Exception e) {
-            throw new DeserializationException(e);
+            throw new DeserializationException(type, e);
         }
     }
 
@@ -336,11 +336,11 @@ public enum JacksonUtils {
     }
 
     public static <K, V, H extends Map<K, V>> H toMap(String json, Class<H> map, Class<K> key, Class<V> value, final ObjectMapper objectMapper) {
+        MapType type = objectMapper.getTypeFactory().constructMapType(map, key, value);
         try {
-            MapType type = objectMapper.getTypeFactory().constructMapType(map, key, value);
             return objectMapper.readValue(json, type);
         } catch (Exception e) {
-            throw new DeserializationException(e);
+            throw new DeserializationException(type, e);
         }
     }
 
@@ -371,12 +371,12 @@ public enum JacksonUtils {
     }
 
     public static <K, V, H extends Map<K, V>, C extends Collection<H>> C toCollectionMap(String json, Class<C> collection, Class<H> map, Class<K> key, Class<V> value, final ObjectMapper objectMapper) {
+        MapType mapType = objectMapper.getTypeFactory().constructMapType(map, key, value);
+        CollectionType collectionType = objectMapper.getTypeFactory().constructCollectionType(collection, mapType);
         try {
-            MapType mapType = objectMapper.getTypeFactory().constructMapType(map, key, value);
-            CollectionType collectionType = objectMapper.getTypeFactory().constructCollectionType(collection, mapType);
             return objectMapper.readValue(json, collectionType);
         } catch (Exception e) {
-            throw new DeserializationException(e);
+            throw new DeserializationException(collectionType, e);
         }
     }
 

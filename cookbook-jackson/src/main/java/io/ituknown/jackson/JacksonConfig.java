@@ -11,7 +11,13 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.ituknown.datetime.DateFormatUtils;
 import io.ituknown.jackson.serializer.JacksonBeanNullValueSerializerModifier;
 
-import java.time.*;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.ZonedDateTime;
 
 /**
  * Jackson Config
@@ -31,41 +37,20 @@ public final class JacksonConfig {
         // 禁用 JSR310 将日期时间写为时间戳的特性 默认行为，必须禁用才能使用后面的字符串格式
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        {
-            // LocalTime → "10:30:45"
-            JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(DateFormatUtils.TIME_PATTERN);
-            objectMapper.configOverride(LocalTime.class).setFormat(format);
-        }
-        {
-            // LocalDate → "2025-06-15"
-            JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(DateFormatUtils.DATE_PATTERN);
-            objectMapper.configOverride(LocalDate.class).setFormat(format);
-        }
-        {
-            // LocalDateTime → "2025-06-15 10:30:45"
-            JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(DateFormatUtils.DATE_TIME_PATTERN);
-            objectMapper.configOverride(LocalDateTime.class).setFormat(format);
-        }
-        {
-            // OffsetDateTime → "2025-06-15T10:30:45+08:00"
-            JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(DateFormatUtils.ISO_OFFSET_DATE_TIME_PATTERN);
-            objectMapper.configOverride(OffsetDateTime.class).setFormat(format);
-        }
-        {
-            // OffsetTime → "10:30:45+08:00"
-            JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(DateFormatUtils.ISO_OFFSET_TIME_PATTERN);
-            objectMapper.configOverride(OffsetTime.class).setFormat(format);
-        }
-        {
-            // ZonedDateTime → "2025-06-15 10:30:45.000 +08:00 [Asia/Shanghai]"
-            JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(DateFormatUtils.ZONED_DATE_TIME_MILLIS_PATTERN);
-            objectMapper.configOverride(ZonedDateTime.class).setFormat(format);
-        }
-        {
-            // Instant → "2025-06-15T02:30:45Z"
-            JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(DateFormatUtils.ISO_UTC_DATE_TIME_PATTERN);
-            objectMapper.configOverride(Instant.class).setFormat(format);
-        }
+        // LocalTime → "10:30:45"
+        configureFormat(objectMapper, LocalTime.class, DateFormatUtils.TIME_PATTERN);
+        // LocalDate → "2025-06-15"
+        configureFormat(objectMapper, LocalDate.class, DateFormatUtils.DATE_PATTERN);
+        // LocalDateTime → "2025-06-15 10:30:45"
+        configureFormat(objectMapper, LocalDateTime.class, DateFormatUtils.DATE_TIME_PATTERN);
+        // OffsetDateTime → "2025-06-15T10:30:45+08:00"
+        configureFormat(objectMapper, OffsetDateTime.class, DateFormatUtils.ISO_OFFSET_DATE_TIME_PATTERN);
+        // OffsetTime → "10:30:45+08:00"
+        configureFormat(objectMapper, OffsetTime.class, DateFormatUtils.ISO_OFFSET_TIME_PATTERN);
+        // ZonedDateTime → "2025-06-15 10:30:45.000 +08:00 [Asia/Shanghai]"
+        configureFormat(objectMapper, ZonedDateTime.class, DateFormatUtils.ZONED_DATE_TIME_MILLIS_PATTERN);
+        // Instant → "2025-06-15T02:30:45Z"
+        configureFormat(objectMapper, Instant.class, DateFormatUtils.ISO_UTC_DATE_TIME_PATTERN);
     }
 
     /**
@@ -109,5 +94,10 @@ public final class JacksonConfig {
         module.addDeserializer(type, deserializer);
 
         objectMapper.registerModule(module);
+    }
+
+    private static void configureFormat(ObjectMapper objectMapper, Class<?> type, String pattern) {
+        JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(pattern);
+        objectMapper.configOverride(type).setFormat(format);
     }
 }

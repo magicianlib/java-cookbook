@@ -16,12 +16,13 @@ import java.io.IOException;
  */
 public class SensitiveSerializer extends JsonSerializer<String> implements ContextualSerializer {
 
-    private SensitiveType type;
+    private final SensitiveType type;
 
     /**
      * 默认构造函数，Jackson 实例化时需要
      */
     public SensitiveSerializer() {
+        this.type = null;
     }
 
     /**

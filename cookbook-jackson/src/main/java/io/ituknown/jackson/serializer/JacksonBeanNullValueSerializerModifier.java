@@ -26,27 +26,27 @@ public class JacksonBeanNullValueSerializerModifier extends BeanSerializerModifi
 
             if (javaType.isMapLikeType()) {
                 // Map Fill {}
-                writer.assignNullSerializer(new NullMapSerializer());
+                writer.assignNullSerializer(NullMapSerializer.INSTANCE);
 
             } else if (javaType.isArrayType() || javaType.isCollectionLikeType()) {
                 // Collection Fill []
-                writer.assignNullSerializer(new NullCollectionSerializer());
+                writer.assignNullSerializer(NullCollectionSerializer.INSTANCE);
 
             } else if (Boolean.class.isAssignableFrom(rawClass)) {
                 // Boolean Fill false
-                writer.assignNullSerializer(new NullBooleanSerializer());
+                writer.assignNullSerializer(NullBooleanSerializer.INSTANCE);
 
             } else if (BigDecimal.class.isAssignableFrom(rawClass)) {
                 // BigDecimal Fill ZERO
-                writer.assignNullSerializer(new NullBigDecimalSerializer());
+                writer.assignNullSerializer(NullBigDecimalSerializer.INSTANCE);
 
             } else if (Number.class.isAssignableFrom(rawClass)) {
                 // Number Fill 0 (Integer, Long, Double, etc.)
-                writer.assignNullSerializer(new NullNumberSerializer());
+                writer.assignNullSerializer(NullNumberSerializer.INSTANCE);
 
             } else if (String.class.isAssignableFrom(rawClass)) {
                 // String Fill ""
-                writer.assignNullSerializer(new NullStringSerializer());
+                writer.assignNullSerializer(NullStringSerializer.INSTANCE);
 
             }
         }
@@ -55,6 +55,8 @@ public class JacksonBeanNullValueSerializerModifier extends BeanSerializerModifi
 
 
     public static class NullMapSerializer extends JsonSerializer<Object> {
+        public static final NullMapSerializer INSTANCE = new NullMapSerializer();
+
         @Override
         public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
             // {}
@@ -64,6 +66,8 @@ public class JacksonBeanNullValueSerializerModifier extends BeanSerializerModifi
     }
 
     public static class NullCollectionSerializer extends JsonSerializer<Object> {
+        public static final NullCollectionSerializer INSTANCE = new NullCollectionSerializer();
+
         @Override
         public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
             // []
@@ -73,6 +77,8 @@ public class JacksonBeanNullValueSerializerModifier extends BeanSerializerModifi
     }
 
     public static class NullBooleanSerializer extends JsonSerializer<Object> {
+        public static final NullBooleanSerializer INSTANCE = new NullBooleanSerializer();
+
         @Override
         public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
             gen.writeBoolean(false);
@@ -80,6 +86,8 @@ public class JacksonBeanNullValueSerializerModifier extends BeanSerializerModifi
     }
 
     public static class NullBigDecimalSerializer extends JsonSerializer<Object> {
+        public static final NullBigDecimalSerializer INSTANCE = new NullBigDecimalSerializer();
+
         @Override
         public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
             gen.writeString("0");
@@ -87,6 +95,8 @@ public class JacksonBeanNullValueSerializerModifier extends BeanSerializerModifi
     }
 
     public static class NullNumberSerializer extends JsonSerializer<Object> {
+        public static final NullNumberSerializer INSTANCE = new NullNumberSerializer();
+
         @Override
         public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
             gen.writeNumber(0);
@@ -94,6 +104,8 @@ public class JacksonBeanNullValueSerializerModifier extends BeanSerializerModifi
     }
 
     public static class NullStringSerializer extends JsonSerializer<Object> {
+        public static final NullStringSerializer INSTANCE = new NullStringSerializer();
+
         @Override
         public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
             gen.writeString("");
