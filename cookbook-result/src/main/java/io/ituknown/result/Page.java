@@ -1,7 +1,5 @@
 package io.ituknown.result;
 
-import lombok.Getter;
-
 import java.util.List;
 import java.util.Objects;
 
@@ -26,11 +24,7 @@ import java.util.Objects;
  * @param <T> 数据元素类型
  * @author magicianlib@gmail.com
  */
-@Getter
-public class Page<T> {
-
-    private final List<T> list;
-    private final Pagination pagination;
+public record Page<T>(List<T> list, Pagination pagination) {
 
     /**
      * 便捷构造器，内部创建 {@link Pagination}
@@ -41,8 +35,7 @@ public class Page<T> {
      * @param total    总条数
      */
     public Page(List<T> list, int current, int pageSize, long total) {
-        this.list = list != null ? list : List.of();
-        this.pagination = new Pagination(total, pageSize, current);
+        this(list != null ? list : List.of(), new Pagination(total, pageSize, current));
     }
 
     /**

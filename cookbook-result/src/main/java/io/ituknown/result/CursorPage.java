@@ -1,7 +1,5 @@
 package io.ituknown.result;
 
-import lombok.Getter;
-
 import java.util.List;
 import java.util.Objects;
 
@@ -26,11 +24,7 @@ import java.util.Objects;
  * @param <C> 游标类型（如 {@code String}、{@code Long} 等）
  * @author magicianlib@gmail.com
  */
-@Getter
-public class CursorPage<T, C> {
-
-    private final List<T> list;
-    private final CursorPagination<C> pagination;
+public record CursorPage<T, C>(List<T> list, CursorPagination<C> pagination) {
 
     /**
      * 便捷构造器，内部创建 {@link CursorPagination}
@@ -41,8 +35,7 @@ public class CursorPage<T, C> {
      * @param pageSize   每页数量
      */
     public CursorPage(List<T> list, C nextCursor, boolean hasMore, int pageSize) {
-        this.list = list != null ? list : List.of();
-        this.pagination = new CursorPagination<>(hasMore, nextCursor, pageSize);
+        this(list != null ? list : List.of(), new CursorPagination<>(hasMore, nextCursor, pageSize));
     }
 
     /**

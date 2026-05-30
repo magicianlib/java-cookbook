@@ -1,6 +1,7 @@
 package io.ituknown.result;
 
 import io.ituknown.jackson.JacksonUtils;
+import io.ituknown.validator.ValidatorUtils;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,8 +22,8 @@ public abstract class AbstractRequest implements Serializable {
     /** 客户端应用ID */
     private String appId;
 
-    /** 请求ID */
-    private String tranceId;
+    /** 链路ID */
+    private String traceId;
 
     /** 是否需要打印请求日志 */
     protected boolean needLog = true;
@@ -30,5 +31,9 @@ public abstract class AbstractRequest implements Serializable {
     @Override
     public String toString() {
         return JacksonUtils.toJson(this);
+    }
+
+    public void validate() {
+        ValidatorUtils.validate(this);
     }
 }

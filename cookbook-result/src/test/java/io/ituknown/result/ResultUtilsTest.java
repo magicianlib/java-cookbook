@@ -13,7 +13,7 @@ class ResultUtilsTest {
     @Test
     void success_noData() {
         Result<Void> result = ResultUtils.success();
-        assertEquals(200, result.getCode());
+        assertEquals("00000", result.getCode());
         assertEquals("success", result.getMsg());
         assertNull(result.getData());
     }
@@ -21,7 +21,7 @@ class ResultUtilsTest {
     @Test
     void success_withData() {
         Result<String> result = ResultUtils.success("hello");
-        assertEquals(200, result.getCode());
+        assertEquals("00000", result.getCode());
         assertEquals("success", result.getMsg());
         assertEquals("hello", result.getData());
     }
@@ -29,7 +29,7 @@ class ResultUtilsTest {
     @Test
     void success_withList() {
         Result<List<Integer>> result = ResultUtils.success(List.of(1, 2, 3));
-        assertEquals(200, result.getCode());
+        assertEquals("00000", result.getCode());
         assertEquals(List.of(1, 2, 3), result.getData());
     }
 
@@ -40,13 +40,13 @@ class ResultUtilsTest {
         List<String> list = List.of("a", "b");
         Result<Page<String>> result = ResultUtils.successPage(list, 1, 10, 25);
 
-        assertEquals(200, result.getCode());
+        assertEquals("00000", result.getCode());
         assertEquals("success", result.getMsg());
 
         Page<String> data = result.getData();
-        assertEquals(list, data.getList());
+        assertEquals(list, data.list());
 
-        Pagination pagination = data.getPagination();
+        Pagination pagination = data.pagination();
         assertEquals(25, pagination.getTotal());
         assertEquals(10, pagination.getPageSize());
         assertEquals(1, pagination.getCurrent());
@@ -56,14 +56,14 @@ class ResultUtilsTest {
     @Test
     void successPage_exactDivision() {
         Result<Page<String>> result = ResultUtils.successPage(List.of("a"), 2, 10, 20);
-        assertEquals(2, result.getData().getPagination().getPages());
+        assertEquals(2, result.getData().pagination().getPages());
     }
 
     @Test
     void successPage_nullList_defaultsToEmpty() {
         Result<Page<String>> result = ResultUtils.successPage(null, 1, 10, 0);
-        assertNotNull(result.getData().getList());
-        assertTrue(result.getData().getList().isEmpty());
+        assertNotNull(result.getData().list());
+        assertTrue(result.getData().list().isEmpty());
     }
 
     @Test
@@ -78,16 +78,16 @@ class ResultUtilsTest {
         List<String> list = List.of("a", "b");
         Result<CursorPage<String, String>> result = ResultUtils.successCursor(list, "eyJpZCI6MTB9", true, 20);
 
-        assertEquals(200, result.getCode());
+        assertEquals("00000", result.getCode());
         assertEquals("success", result.getMsg());
 
         CursorPage<String, String> data = result.getData();
-        assertEquals(list, data.getList());
+        assertEquals(list, data.list());
 
-        CursorPagination<String> pagination = data.getPagination();
-        assertTrue(pagination.isHasMore());
-        assertEquals("eyJpZCI6MTB9", pagination.getNextCursor());
-        assertEquals(20, pagination.getPageSize());
+        CursorPagination<String> pagination = data.pagination();
+        assertTrue(pagination.hasMore());
+        assertEquals("eyJpZCI6MTB9", pagination.nextCursor());
+        assertEquals(20, pagination.pageSize());
     }
 
     @Test
@@ -95,25 +95,25 @@ class ResultUtilsTest {
         List<String> list = List.of("last");
         Result<CursorPage<String, String>> result = ResultUtils.successCursor(list, null, false, 10);
 
-        CursorPagination<String> pagination = result.getData().getPagination();
-        assertFalse(pagination.isHasMore());
-        assertNull(pagination.getNextCursor());
-        assertEquals(10, pagination.getPageSize());
+        CursorPagination<String> pagination = result.getData().pagination();
+        assertFalse(pagination.hasMore());
+        assertNull(pagination.nextCursor());
+        assertEquals(10, pagination.pageSize());
     }
 
     @Test
     void successCursor_longCursor() {
         Result<CursorPage<String, Long>> result = ResultUtils.successCursor(List.of("a"), 42L, true, 20);
 
-        CursorPagination<Long> pagination = result.getData().getPagination();
-        assertEquals(42L, pagination.getNextCursor());
+        CursorPagination<Long> pagination = result.getData().pagination();
+        assertEquals(42L, pagination.nextCursor());
     }
 
     @Test
     void successCursor_nullList_defaultsToEmpty() {
         Result<CursorPage<String, String>> result = ResultUtils.successCursor(null, null, false, 10);
-        assertNotNull(result.getData().getList());
-        assertTrue(result.getData().getList().isEmpty());
+        assertNotNull(result.getData().list());
+        assertTrue(result.getData().list().isEmpty());
     }
 
     @Test
@@ -126,7 +126,7 @@ class ResultUtilsTest {
     @Test
     void failure_noArgs() {
         Result<Void> result = ResultUtils.failure();
-        assertEquals(500, result.getCode());
+        assertEquals("00001", result.getCode());
         assertEquals("failure", result.getMsg());
         assertNull(result.getData());
     }
@@ -134,7 +134,7 @@ class ResultUtilsTest {
     @Test
     void failure_customMsg() {
         Result<Void> result = ResultUtils.failure("参数错误");
-        assertEquals(500, result.getCode());
+        assertEquals("00001", result.getCode());
         assertEquals("参数错误", result.getMsg());
         assertNull(result.getData());
     }
@@ -143,35 +143,35 @@ class ResultUtilsTest {
 
     @Test
     void create_customResultCode() {
-        ResultCode custom = new TestResultCode(10001, "自定义错误", false);
+        ResultCode custom = new TestResultCode("10001", "自定义错误", false);
         Result<Void> result = ResultUtils.create(custom);
-        assertEquals(10001, result.getCode());
+        assertEquals("10001", result.getCode());
         assertEquals("自定义错误", result.getMsg());
         assertNull(result.getData());
     }
 
     @Test
     void create_customResultCodeWithData() {
-        ResultCode custom = new TestResultCode(10002, "带数据", false);
+        ResultCode custom = new TestResultCode("10002", "带数据", false);
         Result<Integer> result = ResultUtils.create(custom, 42);
-        assertEquals(10002, result.getCode());
+        assertEquals("10002", result.getCode());
         assertEquals("带数据", result.getMsg());
         assertEquals(42, result.getData());
     }
 
     @Test
     void create_customResultCodeWithMsg() {
-        ResultCode custom = new TestResultCode(10003, "原始信息", false);
+        ResultCode custom = new TestResultCode("10003", "原始信息", false);
         Result<Void> result = ResultUtils.create(custom, "覆盖信息");
-        assertEquals(10003, result.getCode());
+        assertEquals("10003", result.getCode());
         assertEquals("覆盖信息", result.getMsg());
     }
 
     @Test
     void create_customResultCodeWithMsgAndData() {
-        ResultCode custom = new TestResultCode(10004, "原始信息", true);
+        ResultCode custom = new TestResultCode("10004", "原始信息", true);
         Result<Long> result = ResultUtils.create(custom, "覆盖信息", 123L);
-        assertEquals(10004, result.getCode());
+        assertEquals("10004", result.getCode());
         assertEquals("覆盖信息", result.getMsg());
         assertEquals(123L, result.getData());
     }
@@ -182,12 +182,12 @@ class ResultUtilsTest {
     void toString_validJson() {
         Result<String> result = ResultUtils.success("test");
         String str = result.toString();
-        assertTrue(str.contains("\"code\":200"));
+        assertTrue(str.contains("\"code\":\"00000\""));
         assertTrue(str.contains("\"msg\":\"success\""));
         assertTrue(str.contains("\"data\":\"test\""));
     }
 
     // ========== helper ==========
 
-    record TestResultCode(int code, String message, boolean success) implements ResultCode {}
+    record TestResultCode(String code, String message, boolean success) implements ResultCode {}
 }

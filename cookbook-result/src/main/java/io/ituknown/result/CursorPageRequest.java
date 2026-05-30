@@ -1,5 +1,6 @@
 package io.ituknown.result;
 
+import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,10 +16,12 @@ import java.io.Serial;
 @Setter
 public class CursorPageRequest<C> extends AbstractRequest {
     @Serial
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 681913112366327366L;
 
     /** 游标，首次请求传 null */
     private C cursor;
+
     /** 每页数量 */
+    @Min(1)
     private int pageSize = 10;
 }

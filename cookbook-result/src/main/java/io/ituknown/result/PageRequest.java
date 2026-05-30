@@ -1,5 +1,6 @@
 package io.ituknown.result;
 
+import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,7 +18,10 @@ public class PageRequest extends AbstractRequest {
     private static final long serialVersionUID = 1L;
 
     /** 当前页码（从 1 开始） */
+    @Min(1)
     private int current = 1;
+
     /** 每页数量 */
+    @Min(1)
     private int pageSize = 10;
 }

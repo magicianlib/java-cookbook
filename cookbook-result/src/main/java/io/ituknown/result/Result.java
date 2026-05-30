@@ -32,6 +32,8 @@ public class Result<T> implements Serializable {
     private String code;
     /** 响应信息 */
     private String msg;
+    /** 链路ID */
+    private String traceId;
     /** 响应数据 */
     private T data;
 
