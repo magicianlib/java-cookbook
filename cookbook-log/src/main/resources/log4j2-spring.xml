@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Log4j2 配置（Spring Boot 环境）
+
+    使用前提：
+    - 排除 Spring Boot 默认的 logback 依赖，引入 log4j2 starter
+    - 引入 disruptor 依赖以启用异步日志（AsyncRoot）
+
+    日志文件按天滚动，单文件超过 10MB 时按序号分割。
+    自动清理超过 30 天的压缩日志，避免磁盘被撑满。
+    错误日志额外输出到独立的 error.log，方便快速定位问题。
+
+    异步队列满时策略（建议在 JVM 参数中配置）：
+    -Dlog4j2.AsyncQueueFullPolicy=Discard
+    -Dlog4j2.DiscardThreshold=INFO
+    队列满时丢弃 INFO 及以下级别，保证 WARN/ERROR 不丢失。
+-->
+<Configuration status="WARN">
+    <Properties>
+        <!-- 应用名，用于日志文件目录隔离 -->
+        <Property name="APP_ID">${spring:spring.application.name}</Property>
+        <!-- 日志文件根目录，优先取 JVM 系统属性 -Dlogging.file.dir，其次取 Spring 配置 -->
+        <Property name="LOG_FILE_DIR">${sys:logging.file.dir:-${spring:logging.file.dir}}</Property>
+        <!-- 输出格式：时间 [线程] 级别 日志名 [traceId] [userId] - 消息 -->
+        <!-- %notEmpty 避免无 MDC 时输出空括号 -->
+        <Property name="PATTERN">%date [%thread] %-5level %logger{40}%notEmpty{ [%X{traceId}]}%notEmpty{ [%X{userId}]} - %msg%n</Property>
+    </Properties>
+    <Appenders>
+        <!-- 控制台输出，容器化部署（K8s/Docker）保留以采集 stdout；传统 VM 部署可移除减少 I/O -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${PATTERN}"/>
+        </Console>
+
+        <!-- 业务日志，记录所有级别的业务日志 -->
+        <RollingFile name="BizAppender"
+                     fileName="${LOG_FILE_DIR}/${APP_ID}/app.log"
+                     filePattern="${LOG_FILE_DIR}/${APP_ID}/app.log.%d{yyyy-MM-dd}-%i.gz">
+            <PatternLayout pattern="${PATTERN}" charset="UTF-8"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="10MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30">
+                <Delete basePath="${LOG_FILE_DIR}/${APP_ID}" maxDepth="1">
+                    <IfFileName glob="app.log.*.gz"/>
+                    <IfLastModified age="30d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+        <!-- 错误日志，仅记录 ERROR 级别，便于独立排查 -->
+        <RollingFile name="ErrorAppender"
+                     fileName="${LOG_FILE_DIR}/${APP_ID}/error.log"
+                     filePattern="${LOG_FILE_DIR}/${APP_ID}/error.log.%d{yyyy-MM-dd}-%i.gz">
+            <PatternLayout pattern="${PATTERN}" charset="UTF-8"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="10MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30">
+                <Delete basePath="${LOG_FILE_DIR}/${APP_ID}" maxDepth="1">
+                    <IfFileName glob="error.log.*.gz"/>
+                    <IfLastModified age="30d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <!-- 第三方框架日志 -->
+
+        <!--
+            additivity="false"：日志只写入当前 Logger 的 Appender，不向上传播给 Root。
+            若不设 false，同一条日志会同时写入当前 Appender 和 Root Appender，导致重复输出。
+        -->
+
+        <!-- Hibernate SQL，生产环境建议 INFO，需要查看 SQL 时改为 DEBUG -->
+        <Logger name="org.hibernate.SQL" level="INFO" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="BizAppender"/>
+        </Logger>
+
+        <!-- Hikari 连接池，生产环境建议 INFO，需要连接诊断时改为 DEBUG -->
+        <Logger name="com.zaxxer.hikari" level="INFO" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="BizAppender"/>
+        </Logger>
+
+        <!-- Spring 框架，additivity 默认 true，日志会传播到 Root 的 Appender -->
+        <Logger name="org.springframework" level="INFO"/>
+
+        <!-- 根日志（异步），业务代码默认走这里 -->
+        <AsyncRoot level="INFO">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="BizAppender"/>
+            <!-- 错误日志额外输出一份到 ErrorAppender -->
+            <AppenderRef ref="ErrorAppender" level="ERROR"/>
+        </AsyncRoot>
+    </Loggers>
+</Configuration>
