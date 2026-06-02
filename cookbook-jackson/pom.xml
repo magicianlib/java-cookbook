@@ -13,7 +13,16 @@
     <packaging>jar</packaging>
 
     <properties>
-        <jackson.version>2.20.1</jackson.version>
+        <jackson.version>2.20.0</jackson.version>
+        <!--
+        jackson-dataformat-msgpack 是 Jackson 官方生态的第三方扩展插件，深度依赖 Jackson 底层核心 API。
+        所以一定要注意 msgpack 与 jackson 的版本对应关系，具体可以在 releases 信息中确认：
+        https://github.com/msgpack/msgpack-java/releases
+
+        另外，也可以在 maven 仓库中选择具体版本查看 pom.xml 确认 jackson-databind 版本：
+        https://mvnrepository.com/artifact/org.msgpack/jackson-dataformat-msgpack
+        -->
+        <jackson.msgpack.version>0.9.12</jackson.msgpack.version>
     </properties>
 
     <dependencies>
@@ -41,6 +50,12 @@
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
             <version>${jackson.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.msgpack</groupId>
+            <artifactId>jackson-dataformat-msgpack</artifactId>
+            <version>${jackson.msgpack.version}</version>
         </dependency>
 
         <dependency>
