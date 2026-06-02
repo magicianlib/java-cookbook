@@ -94,7 +94,7 @@ class JacksonUtilsTest {
         String json = JacksonUtils.toJson(sample);
         assertTrue(json.contains("\"name\":\"test\""));
         assertTrue(json.contains("\"age\":20"));
-        assertTrue(json.contains("\"amount\":\"99.99\""));
+        assertTrue(json.contains("\"amount\":99.99"));
     }
 
     @Test
@@ -270,7 +270,7 @@ class JacksonUtilsTest {
         JsonNode node = JacksonUtils.toJsonNode(sample);
         assertEquals("test", node.get("name").asText());
         assertEquals(20, node.get("age").asInt());
-        assertEquals("1.00", node.get("amount").asText());
+        assertEquals(0, new BigDecimal("1.00").compareTo(node.get("amount").decimalValue()));
     }
 
     // ========== Date format ==========
@@ -302,10 +302,10 @@ class JacksonUtilsTest {
     // ========== BigDecimal ==========
 
     @Test
-    void toJson_bigDecimal_serializedAsString() {
+    void toJson_bigDecimal_serializedAsNumber() {
         Sample sample = new Sample("test", 20, new BigDecimal("1.01"));
         String json = JacksonUtils.toJson(sample);
-        assertTrue(json.contains("\"amount\":\"1.01\""));
+        assertTrue(json.contains("\"amount\":1.01"));
     }
 
     @Test

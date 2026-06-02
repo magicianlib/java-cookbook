@@ -1,27 +1,26 @@
 package io.ituknown.jackson;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.MapType;
-import io.ituknown.datetime.DateFormatUtils;
-import io.ituknown.jackson.serializer.BigDecimalAsStringJsonSerializer;
-import lombok.Getter;
-import lombok.Setter;
 import org.msgpack.jackson.dataformat.MessagePackFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static io.ituknown.jackson.JacksonConfig.applyCommonBuilderConfig;
+import static io.ituknown.jackson.JacksonConfig.configureObjectMapperForJsr310;
 
 /**
  * Jackson MessagePack 序列化/反序列化工具类
@@ -49,16 +48,6 @@ import java.util.*;
  */
 public enum MessagePackUtils {
     ;
-
-    @Getter
-    @Setter
-    public static class User {
-        private int id;
-        private int age;
-        private String name;
-        private String email;
-        private String password;
-    }
 
     private static final ObjectMapper MAPPER_WITH_FORMAT = createObjectMapper(true);
     private static final ObjectMapper MAPPER_WITHOUT_FORMAT = createObjectMapper(false);
@@ -94,36 +83,11 @@ public enum MessagePackUtils {
     public static ObjectMapper createObjectMapper(boolean format) {
         JsonMapper.Builder builder = JsonMapper.builder(new MessagePackFactory());
 
-        // 格式化输出
-        builder.configure(SerializationFeature.INDENT_OUTPUT, format);
-
-        // 忽略未知字段
-        builder.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-
-        // 序列化时忽略空值
-        builder.defaultPropertyInclusion(
-                JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL)
-        );
-
-        // 设置时区
-        builder.defaultTimeZone(TimeZone.getDefault());
-
-        // 忽略 transient 字段
-        builder.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true);
-
-        // java.util.Date 日期格式 处理
-        builder.defaultDateFormat(new SimpleDateFormat(DateFormatUtils.DATE_TIME_PATTERN));
+        // 通用 builder 配置
+        applyCommonBuilderConfig(builder, format);
 
         ObjectMapper mapper = builder.build();
-
-        // java.time.* 日期格式处理
-        JacksonConfig.configureObjectMapperForJsr310(mapper);
-
-        // Null 值处理
-        JacksonConfig.configureNullValueSerialization(mapper);
-
-        // BigDecimal 自定义序列化
-        JacksonConfig.registerModule(mapper, BigDecimal.class, new BigDecimalAsStringJsonSerializer());
+        configureObjectMapperForJsr310(mapper);
 
         return mapper;
     }
@@ -1146,6 +1110,9 @@ public enum MessagePackUtils {
 
     /**
      * 注册多态子类型，用于基于类型名称的反序列化
+     *
+     * <p><b>线程安全警告：</b>此方法会修改共享的静态 {@link ObjectMapper} 实例，
+     * 应仅在应用初始化阶段、并发访问开始之前调用。在多线程环境下调用可能导致不一致行为。</p>
      *
      * @param clazz 子类型 class
      * @param type  类型名称标识

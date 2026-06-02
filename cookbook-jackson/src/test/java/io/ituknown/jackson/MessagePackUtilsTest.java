@@ -312,7 +312,7 @@ class MessagePackUtilsTest {
         ObjectNode node = MessagePackUtils.toObjectNode(bytes);
         assertEquals("test", node.get("name").asText());
         assertEquals(20, node.get("age").asInt());
-        assertEquals("1.00", node.get("amount").asText());
+        assertEquals(0, new BigDecimal("1.00").compareTo(node.get("amount").decimalValue()));
     }
 
     @Test
@@ -461,7 +461,7 @@ class MessagePackUtilsTest {
         JsonNode node = MessagePackUtils.toJsonNode(sample);
         assertEquals("test", node.get("name").asText());
         assertEquals(20, node.get("age").asInt());
-        assertEquals("1.00", node.get("amount").asText());
+        assertEquals(0, new BigDecimal("1.00").compareTo(node.get("amount").decimalValue()));
     }
 
     // ========== roundTrip 完整往返测试 ==========

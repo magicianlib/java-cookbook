@@ -1,23 +1,18 @@
 package io.ituknown.jackson;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.SerializerFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.ituknown.datetime.DateFormatUtils;
 import io.ituknown.jackson.serializer.JacksonBeanNullValueSerializerModifier;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.time.ZonedDateTime;
+import java.text.SimpleDateFormat;
+import java.time.*;
+import java.util.TimeZone;
 
 /**
  * Jackson Config
@@ -27,7 +22,7 @@ import java.time.ZonedDateTime;
 public final class JacksonConfig {
 
     /**
-     * 配置 Java8 日期处理格式
+     * 配置 Java8（{@code java.time.*}） 日期处理格式
      *
      * @param objectMapper 实例
      */
@@ -51,6 +46,11 @@ public final class JacksonConfig {
         configureFormat(objectMapper, ZonedDateTime.class, DateFormatUtils.ZONED_DATE_TIME_MILLIS_PATTERN);
         // Instant → "2025-06-15T02:30:45Z"
         configureFormat(objectMapper, Instant.class, DateFormatUtils.ISO_UTC_DATE_TIME_PATTERN);
+    }
+
+    private static void configureFormat(ObjectMapper objectMapper, Class<?> type, String pattern) {
+        JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(pattern);
+        objectMapper.configOverride(type).setFormat(format);
     }
 
     /**
@@ -84,9 +84,9 @@ public final class JacksonConfig {
     /**
      * 注册自定义反序列化器
      *
-     * @param objectMapper  实例
-     * @param type          目标类型
-     * @param deserializer  反序列化器
+     * @param objectMapper 实例
+     * @param type         目标类型
+     * @param deserializer 反序列化器
      */
     public static <T> void registerModule(ObjectMapper objectMapper, Class<T> type, JsonDeserializer<? extends T> deserializer) {
 
@@ -96,8 +96,38 @@ public final class JacksonConfig {
         objectMapper.registerModule(module);
     }
 
-    private static void configureFormat(ObjectMapper objectMapper, Class<?> type, String pattern) {
-        JsonFormat.Value format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING).withPattern(pattern);
-        objectMapper.configOverride(type).setFormat(format);
+    /**
+     * 对 MapperBuilder 应用通用配置（适用于 JSON、XML、MessagePack 等所有格式）
+     *
+     * <p>配置项包括：</p>
+     * <ul>
+     *     <li>忽略未知属性</li>
+     *     <li>序列化时跳过 {@code null} 值</li>
+     *     <li>设置默认时区</li>
+     *     <li>忽略 {@code transient} 字段</li>
+     *     <li>设置 {@code java.util.Date} 日期格式</li>
+     * </ul>
+     *
+     * @param builder MapperBuilder 实例（JsonMapper.Builder、XmlMapper.Builder 等）
+     */
+    public static void applyCommonBuilderConfig(MapperBuilder<?, ?> builder, boolean format) {
+        // 格式化输出
+        builder.configure(SerializationFeature.INDENT_OUTPUT, format);
+        // 忽略未知字段
+        builder.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+        // 序列化时忽略空值
+        builder.defaultPropertyInclusion(
+                JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL)
+        );
+
+        // 忽略 transient 字段
+        builder.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true);
+
+        // 设置时区
+        builder.defaultTimeZone(TimeZone.getDefault());
+
+        // java.util.Date 日期格式处理
+        builder.defaultDateFormat(new SimpleDateFormat(DateFormatUtils.DATE_TIME_PATTERN));
     }
 }

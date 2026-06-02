@@ -1,25 +1,20 @@
 package io.ituknown.jackson;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
-import io.ituknown.datetime.DateFormatUtils;
-import io.ituknown.jackson.serializer.BigDecimalAsStringJsonSerializer;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.lang.reflect.Type;
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.TimeZone;
+
+import static io.ituknown.jackson.JacksonConfig.applyCommonBuilderConfig;
+import static io.ituknown.jackson.JacksonConfig.configureObjectMapperForJsr310;
 
 /**
  * Jackson XML 序列化/反序列化工具类
@@ -37,6 +32,14 @@ public enum JacksonXmlUtils {
      * 用于生成不带 XML 声明的 XML
      */
     private static final XmlMapper XML_WITHOUT_DECLARATION = createXmlMapper(false, false);
+    /**
+     * 用于生成带 XML 声明的格式化 XML
+     */
+    private static final XmlMapper XML_FORMATTED_WITH_DECLARATION = createXmlMapper(true, true);
+    /**
+     * 用于生成不带 XML 声明的格式化 XML
+     */
+    private static final XmlMapper XML_FORMATTED_WITHOUT_DECLARATION = createXmlMapper(false, true);
 
     public static XmlMapper getXmlMapper() {
         return getXmlMapper(false);
@@ -49,6 +52,20 @@ public enum JacksonXmlUtils {
      * </pre></p>
      */
     public static XmlMapper getXmlMapper(boolean includeDeclaration) {
+        return includeDeclaration ? XML_WITH_DECLARATION : XML_WITHOUT_DECLARATION;
+    }
+
+    /**
+     * 获取 XML 实例，指定是否需要 XML 声明和格式化输出
+     *
+     * @param includeDeclaration 是否包含 XML 声明
+     * @param format             是否开启格式化输出
+     * @return 配置好的 XmlMapper 实例
+     */
+    public static XmlMapper getXmlMapper(boolean includeDeclaration, boolean format) {
+        if (format) {
+            return includeDeclaration ? XML_FORMATTED_WITH_DECLARATION : XML_FORMATTED_WITHOUT_DECLARATION;
+        }
         return includeDeclaration ? XML_WITH_DECLARATION : XML_WITHOUT_DECLARATION;
     }
 
@@ -69,39 +86,15 @@ public enum JacksonXmlUtils {
     public static XmlMapper createXmlMapper(boolean includeDeclaration, boolean format) {
         XmlMapper.Builder builder = XmlMapper.builder();
 
-        // 格式化输出
-        builder.configure(SerializationFeature.INDENT_OUTPUT, format);
-
         // XML 声明
         builder.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, includeDeclaration);
 
-        // 忽略未知字段
-        builder.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-
-        // 序列化时忽略空值
-        builder.defaultPropertyInclusion(
-                JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL)
-        );
-
-        // 设置时区
-        builder.defaultTimeZone(TimeZone.getDefault());
-
-        // 忽略 transient 字段
-        builder.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true);
-
-        // java.util.Date 日期格式 处理
-        builder.defaultDateFormat(new SimpleDateFormat(DateFormatUtils.DATE_TIME_PATTERN));
+        // 通用 builder 配置
+        applyCommonBuilderConfig(builder, format);
 
         XmlMapper mapper = builder.build();
+        configureObjectMapperForJsr310(mapper);
 
-        // java.time.* 日期格式处理
-        JacksonConfig.configureObjectMapperForJsr310(mapper);
-
-        // Null 值处理
-        JacksonConfig.configureNullValueSerialization(mapper);
-
-        // BigDecimal 自定义序列化
-        JacksonConfig.registerModule(mapper, BigDecimal.class, new BigDecimalAsStringJsonSerializer());
         return mapper;
     }
 

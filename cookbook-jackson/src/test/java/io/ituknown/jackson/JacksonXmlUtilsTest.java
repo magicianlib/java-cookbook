@@ -98,4 +98,24 @@ class JacksonXmlUtilsTest {
     void toXml_throwsSerializationException_onFailure() {
         assertThrows(SerializationException.class, () -> JacksonXmlUtils.toXml(new Object()));
     }
+
+    // ========== getXmlMapper with format ==========
+
+    @Test
+    void getXmlMapper_withFormat_returnsDifferentInstance() {
+        XmlMapper formatted = JacksonXmlUtils.getXmlMapper(false, true);
+        XmlMapper unformatted = JacksonXmlUtils.getXmlMapper(false, false);
+        assertNotSame(formatted, unformatted);
+    }
+
+    @Test
+    void getXmlMapper_withFormat_producesIndentedXml() {
+        User user = new User("test", 20, new BigDecimal("1.00"));
+        String formattedXml = JacksonXmlUtils.toXml(user, JacksonXmlUtils.getXmlMapper(true, true));
+        String unformattedXml = JacksonXmlUtils.toXml(user, JacksonXmlUtils.getXmlMapper(true, false));
+
+        assertTrue(formattedXml.contains("\n"));
+        assertTrue(formattedXml.startsWith("<?xml"));
+        assertFalse(unformattedXml.contains("\n"));
+    }
 }
