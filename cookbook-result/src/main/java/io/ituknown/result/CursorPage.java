@@ -40,6 +40,18 @@ public record CursorPage<T, C>(List<T> list, CursorPagination<C> pagination) {
     }
 
     /**
+     * 原始构造器
+     *
+     * @param list       当前页数据，为 null 时自动转为空集合
+     * @param pagination 分页元数据，不允许为 null
+     * @throws NullPointerException pagination 为 null 时
+     */
+    public CursorPage(List<T> list, CursorPagination<C> pagination) {
+        this.list = list != null ? list : List.of();
+        this.pagination = Objects.requireNonNull(pagination);
+    }
+
+    /**
      * 将数据库多查出的（N+1）条数据，转换为标准游标分页结果。
      * <p>
      * 不会修改传入的原始列表。
@@ -63,17 +75,5 @@ public record CursorPage<T, C>(List<T> list, CursorPagination<C> pagination) {
 
         C nextCursor = hasMore ? cursorExtractor.apply(data.get(data.size() - 1)) : null;
         return new CursorPage<>(data, nextCursor, hasMore, pageSize);
-    }
-
-    /**
-     * 原始构造器
-     *
-     * @param list       当前页数据，为 null 时自动转为空集合
-     * @param pagination 分页元数据，不允许为 null
-     * @throws NullPointerException pagination 为 null 时
-     */
-    public CursorPage(List<T> list, CursorPagination<C> pagination) {
-        this.list = list != null ? list : List.of();
-        this.pagination = Objects.requireNonNull(pagination);
     }
 }
