@@ -73,7 +73,7 @@ public record CursorPage<T, C>(List<T> list, CursorPagination<C> pagination) {
         boolean hasMore = rawList.size() > pageSize;
         List<T> data = hasMore ? rawList.subList(0, pageSize) : rawList;
 
-        C nextCursor = hasMore ? cursorExtractor.apply(data.get(data.size() - 1)) : null;
+        C nextCursor = hasMore ? cursorExtractor.apply(data.getLast()) : null;
         return new CursorPage<>(data, nextCursor, hasMore, pageSize);
     }
 }
