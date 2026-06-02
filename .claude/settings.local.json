@@ -3,14 +3,16 @@
     "allow": [
       "Bash(mvn test *)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)",
-      "Bash(mvn compile *)",
       "Bash(git commit *)",
       "Bash(git push *)",
+      "Bash(git status *)",
+      "Bash(mvn compile *)",
+      "Bash(mvn install *)",
       "Bash(mvn dependency:tree -pl cookbook-jackson)",
       "Bash(mvn dependency:tree -pl cookbook-jackson -am)",
-      "Bash(git status *)",
-      "Bash(mvn install *)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(./mvnw test *)",
+      "Bash(./gradlew :cookbook-jackson:compileJava *)",
       "Skill(systematic-debugging)",
       "Skill(brainstorming)"
     ]
