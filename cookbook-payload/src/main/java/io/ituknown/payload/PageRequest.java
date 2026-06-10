@@ -1,4 +1,4 @@
-package io.ituknown.result;
+package io.ituknown.payload;
 
 import jakarta.validation.constraints.Min;
 import lombok.Getter;

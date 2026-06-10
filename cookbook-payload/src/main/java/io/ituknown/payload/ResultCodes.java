@@ -1,4 +1,4 @@
-package io.ituknown.result;
+package io.ituknown.payload;
 
 /**
  * 通用响应码，提供开箱即用的成功 / 失败响应码。

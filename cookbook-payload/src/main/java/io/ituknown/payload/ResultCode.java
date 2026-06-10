@@ -1,4 +1,4 @@
-package io.ituknown.result;
+package io.ituknown.payload;
 
 /**
  * 响应码接口，由各业务模块实现以定义自己的响应码枚举。

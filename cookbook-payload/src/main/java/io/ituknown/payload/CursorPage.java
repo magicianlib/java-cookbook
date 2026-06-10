@@ -1,4 +1,4 @@
-package io.ituknown.result;
+package io.ituknown.payload;
 
 import java.util.List;
 import java.util.Objects;

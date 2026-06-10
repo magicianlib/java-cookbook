@@ -1,4 +1,4 @@
-package io.ituknown.result;
+package io.ituknown.payload;
 
 import io.ituknown.jackson.JacksonUtils;
 import io.ituknown.validator.ValidatorUtils;

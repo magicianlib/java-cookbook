@@ -13,7 +13,7 @@
         <module>cookbook-okhttp</module>
         <module>cookbook-httpclient5</module>
         <module>cookbook-crypto</module>
-        <module>cookbook-result</module>
+        <module>cookbook-payload</module>
         <module>cookbook-fesod</module>
         <module>cookbook-falconmonitor</module>
         <module>cookbook-commons</module>
@@ -70,7 +70,7 @@
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>cookbook-result</artifactId>
+                <artifactId>cookbook-payload</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
