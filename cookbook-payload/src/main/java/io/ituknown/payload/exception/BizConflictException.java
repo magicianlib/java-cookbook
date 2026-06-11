@@ -5,7 +5,7 @@ import io.ituknown.payload.ResultCodes;
 /**
  * 冲突异常，表示资源已存在或状态冲突。
  */
-public final class BizConflictException extends BizException {
+public class BizConflictException extends BizException {
 
     @java.io.Serial
     private static final long serialVersionUID = 1L;

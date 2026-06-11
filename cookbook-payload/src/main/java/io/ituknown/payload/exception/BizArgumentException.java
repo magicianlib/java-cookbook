@@ -5,7 +5,7 @@ import io.ituknown.payload.ResultCodes;
 /**
  * 参数异常，表示请求参数不合法。
  */
-public final class BizArgumentException extends BizException {
+public class BizArgumentException extends BizException {
 
     @java.io.Serial
     private static final long serialVersionUID = 1L;

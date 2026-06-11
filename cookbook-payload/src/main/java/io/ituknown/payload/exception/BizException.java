@@ -10,16 +10,11 @@ import java.util.Objects;
 /**
  * 业务异常基类，所有 {@code Biz*} 异常类均继承此类。
  *
- * <p>该类为 {@code sealed}，仅允许同一包内的已知子类继承，
- * 保证异常体系封闭、可穷举。
- *
  * <p>子类只需提供各自的默认 {@link ResultCode}，无需重复声明所有构造方法。
  * 核心构造方法为 {@link #BizException(ResultCode, String, Throwable)}，
  * 子类直接调用即可完成扩展。
  */
-public sealed class BizException extends RuntimeException
-        permits BizArgumentException, BizUnauthorizedException, BizForbiddenException,
-        BizNotFoundException, BizConflictException {
+public class BizException extends RuntimeException {
 
     @java.io.Serial
     private static final long serialVersionUID = 1L;

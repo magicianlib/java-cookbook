@@ -5,7 +5,7 @@ import io.ituknown.payload.ResultCodes;
 /**
  * 认证异常，表示未登录或凭证无效。
  */
-public final class BizUnauthorizedException extends BizException {
+public class BizUnauthorizedException extends BizException {
 
     @java.io.Serial
     private static final long serialVersionUID = 1L;

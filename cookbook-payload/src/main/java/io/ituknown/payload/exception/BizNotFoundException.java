@@ -5,7 +5,7 @@ import io.ituknown.payload.ResultCodes;
 /**
  * 资源未找到异常。
  */
-public final class BizNotFoundException extends BizException {
+public class BizNotFoundException extends BizException {
 
     @java.io.Serial
     private static final long serialVersionUID = 1L;
