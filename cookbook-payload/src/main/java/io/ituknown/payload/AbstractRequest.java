@@ -1,12 +1,10 @@
 package io.ituknown.payload;
 
-import io.ituknown.jackson.JacksonUtils;
 import io.ituknown.validator.ValidatorUtils;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serial;
-import java.io.Serializable;
 
 /**
  * 请求基类，提供通用的请求追踪字段。
@@ -15,9 +13,9 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-public abstract class AbstractRequest implements Serializable {
+public abstract class AbstractRequest extends PrintFriendliness {
     @Serial
-    private static final long serialVersionUID = -4848830183604183658L;
+    private static final long serialVersionUID = 1L;
 
     /** 客户端应用ID */
     private String appId;
@@ -27,11 +25,6 @@ public abstract class AbstractRequest implements Serializable {
 
     /** 是否需要打印请求日志 */
     protected boolean needLog = true;
-
-    @Override
-    public String toString() {
-        return this.getClass().getSimpleName() + ": " + JacksonUtils.toJson(this);
-    }
 
     public void validate() {
         ValidatorUtils.validate(this);
