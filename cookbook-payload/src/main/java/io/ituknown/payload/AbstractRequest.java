@@ -30,7 +30,7 @@ public abstract class AbstractRequest implements Serializable {
 
     @Override
     public String toString() {
-        return JacksonUtils.toJson(this);
+        return this.getClass().getSimpleName() + ": " + JacksonUtils.toJson(this);
     }
 
     public void validate() {
