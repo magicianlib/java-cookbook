@@ -10,20 +10,19 @@
     <packaging>jar</packaging>
 
     <properties>
-        <fesod.version>1.3.0</fesod.version>
+        <fesod.version>2.0.2-incubating</fesod.version>
     </properties>
 
     <dependencies>
-        <!-- fastexcel apache 版本还在孵化中，暂时先启用 fastexcel -->
-        <!--<dependency>
-            <groupId>org.apache.fesod</groupId>
-            <artifactId>fesod</artifactId>
-            <version>${fesod.version}</version>
-        </dependency>-->
         <dependency>
-            <groupId>cn.idev.excel</groupId>
-            <artifactId>fastexcel</artifactId>
+            <groupId>org.apache.fesod</groupId>
+            <artifactId>fesod-sheet</artifactId>
             <version>${fesod.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
         </dependency>
 
         <dependency>
