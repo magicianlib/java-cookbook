@@ -40,7 +40,15 @@ public abstract non-sealed class TemplateExporter<P, D> extends AbstractExporter
     /** 列表 fill 固定开启 forceNewRow，保证多批不覆盖、模板下方内容持续下推 */
     private static final FillConfig FORCE_NEW_ROW = FillConfig.builder().forceNewRow(true).build();
 
-    /** 模板文件 classpath 路径，如 {@code "templates/order.xlsx"} */
+    /**
+     * 模板文件的 classpath 路径，如 {@code "templates/order.xlsx"}。
+     * <p>模板是一份带占位符的 {@code .xlsx}，作为<b>表头来源</b>，定义表头、样式与整体布局。占位符语法：
+     * <ul>
+     *   <li>列表占位符 {@code {.字段名}}（如 {@code {.name}}）——由 {@link #loadData} 返回的 {@code List} 填充；</li>
+     *   <li>单条占位符 {@code {字段名}}（如 {@code {total}}）——由 {@link #summary} 返回的对象填充。</li>
+     * </ul>
+     * <p>模板流由 {@link #openClasspathTemplate} 从 classpath 读取。
+     */
     public abstract String headTemplate();
 
     /**

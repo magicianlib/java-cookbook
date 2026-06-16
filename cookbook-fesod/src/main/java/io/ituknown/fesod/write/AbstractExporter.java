@@ -9,12 +9,12 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * 同步导出抽象基类（公共骨架）。
  * <p>
- * 定义子类公共契约，并提供统一的写入调度（{@link #write}）。具体写入方式（Class 注解逐行写入、
+ * 定义子类公共契约，并提供统一的写入调度（{@link #write(String, OutputStream)} /
+ * {@link #write(String)}），二者均返回 {@link ExportResult}。具体写入方式（Class 注解逐行写入、
  * 模板填充）由模式基类 {@link ClassExporter} / {@link TemplateExporter} 通过重写
  * {@link #doWrite} 多态实现。
  * <p>
@@ -86,19 +86,29 @@ public abstract sealed class AbstractExporter<P, D>
     /**
      * 模式 A：写入调用方传入的 OutputStream。
      * <p>{@code final} —— 分发逻辑由框架控制，子类通过 {@link #doWrite} 注入具体写法。
+     * <p>无产物文件，返回的 {@link ExportResult#file()} 为 empty；但仍带 {@link ExporterContext}
+     * （统计 + 累积的业务数据）。
+     *
+     * @return 导出结果，含过程上下文（无文件）
      */
-    public final void write(String bizParams, OutputStream out) {
+    public final ExportResult write(String bizParams, OutputStream out) {
         P payload = buildPayload(bizParams);
         ExporterContext ctx = ExporterContext.start(bizType());
         doWrite(payload, out, ctx);
         ctx.finish();
+        return ExportResult.ofStream(ctx);
     }
 
     /**
-     * 模式 B：框架生成临时文件，写完后回调给调用方，回调返回后立即删除。
+     * 模式 B：框架生成临时文件并写入，返回 {@link ExportResult}（含产物文件 + 过程上下文）。
      * <p>{@code final} —— 复用 {@link #write(String, OutputStream)}，分发自动生效。
+     * <p><b>文件所有权</b>转交给返回的 {@link ExportResult}：调用方应在用完文件后
+     * {@link ExportResult#close()}（推荐 {@code try-with-resources}）以删除临时文件、避免泄漏；
+     * 写入失败时由本方法立即清理临时文件。{@code deleteOnExit} 兜底应对 JVM 异常退出。
+     *
+     * @return 导出结果，含产物文件与过程上下文
      */
-    public final void write(String bizParams, Consumer<Path> fileConsumer) {
+    public final ExportResult write(String bizParams) {
         Path temp;
         try {
             temp = Files.createTempFile("fesod-write-", "." + excelType().getValue());
@@ -108,17 +118,24 @@ public abstract sealed class AbstractExporter<P, D>
         temp.toFile().deleteOnExit();            // JVM 退出兜底（应对 Windows 文件锁）
 
         try (OutputStream out = Files.newOutputStream(temp)) {
-            write(bizParams, out);               // 复用流式写入
+            ExportResult result = write(bizParams, out);    // 复用流式写入
             out.flush();
-            fileConsumer.accept(temp);           // 调用方在 lambda 内使用文件
-        } catch (IOException e) {
-            throw new IllegalStateException("写入临时文件失败", e);
-        } finally {
-            try {
-                Files.deleteIfExists(temp);      // 用完即删
-            } catch (IOException e) {
-                LOGGER.warn("删除临时文件失败: {}", temp, e);   // 不掩盖业务异常
+            return ExportResult.ofFile(result.context(), temp);   // 成功：所有权转交 ExportResult
+        } catch (Exception e) {                              // IO 或运行时异常均清理
+            deleteTempFile(temp);
+            if (e instanceof RuntimeException re) {
+                throw re;
             }
+            throw new IllegalStateException("写入临时文件失败", e);
+        }
+    }
+
+    /** 静默删除临时文件，失败仅告警、不抛异常 */
+    private static void deleteTempFile(Path temp) {
+        try {
+            Files.deleteIfExists(temp);
+        } catch (IOException e) {
+            LOGGER.warn("删除临时文件失败: {}", temp, e);
         }
     }
 }

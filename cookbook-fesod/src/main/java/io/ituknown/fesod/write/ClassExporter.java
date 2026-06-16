@@ -20,7 +20,12 @@ import java.util.List;
  */
 public abstract non-sealed class ClassExporter<P, D> extends AbstractExporter<P, D> {
 
-    /** 行 Bean 的 Class（与 {@link #loadData} 的 {@code D} 编译期对齐） */
+    /**
+     * 行 Bean 的 {@link Class}，作为<b>表头来源</b>。
+     * <p>fesod 据 Bean 字段上的 {@link org.apache.fesod.sheet.annotation.ExcelProperty} 注解
+     * 推断 Excel 的列结构（列名、顺序、类型）。返回类型 {@code Class<D>} 与 {@link #loadData}
+     * 返回的 {@code List<D>} 编译期对齐，保证表头类型与数据行类型一致。
+     */
     public abstract Class<D> headClass();
 
     @Override
