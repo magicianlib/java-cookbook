@@ -26,7 +26,7 @@ public abstract non-sealed class ClassExporter<P, D> extends AbstractExporter<P,
      * 推断 Excel 的列结构（列名、顺序、类型）。返回类型 {@code Class<D>} 与 {@link #loadData}
      * 返回的 {@code List<D>} 编译期对齐，保证表头类型与数据行类型一致。
      */
-    public abstract Class<D> headClass();
+    protected abstract Class<D> headClass();
 
     @Override
     protected void doWrite(P payload, OutputStream out, ExporterContext ctx) {

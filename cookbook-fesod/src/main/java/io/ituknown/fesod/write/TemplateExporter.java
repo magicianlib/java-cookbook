@@ -37,7 +37,9 @@ import java.util.Optional;
  */
 public abstract non-sealed class TemplateExporter<P, D> extends AbstractExporter<P, D> {
 
-    /** 列表 fill 固定开启 forceNewRow，保证多批不覆盖、模板下方内容持续下推 */
+    /**
+     * 列表 fill 固定开启 forceNewRow，保证多批不覆盖、模板下方内容持续下推
+     */
     private static final FillConfig FORCE_NEW_ROW = FillConfig.builder().forceNewRow(true).build();
 
     /**
@@ -49,7 +51,7 @@ public abstract non-sealed class TemplateExporter<P, D> extends AbstractExporter
      * </ul>
      * <p>模板流由 {@link #openClasspathTemplate} 从 classpath 读取。
      */
-    public abstract String headTemplate();
+    protected abstract String headTemplate();
 
     /**
      * 单条/汇总数据（模板中非列表占位符，如 {@code {total}}、{@code {signer}}）。
@@ -89,9 +91,7 @@ public abstract non-sealed class TemplateExporter<P, D> extends AbstractExporter
 
             // 规则 2：列表 fill 完后，最后 fill 单条/汇总数据；summary 从 ctx 读中间结果
             Optional<Object> summary = summary(payload, ctx);
-            if (summary.isPresent()) {
-                writer.fill(summary.get(), sheet);
-            }
+            summary.ifPresent(o -> writer.fill(o, sheet));
 
             writer.finish();
         } catch (IOException e) {
@@ -99,7 +99,9 @@ public abstract non-sealed class TemplateExporter<P, D> extends AbstractExporter
         }
     }
 
-    /** 从 classpath 读取模板流，路径不存在时抛 {@link IllegalStateException} */
+    /**
+     * 从 classpath 读取模板流，路径不存在时抛 {@link IllegalStateException}
+     */
     protected InputStream openClasspathTemplate(String path) {
         InputStream in = getClass().getClassLoader().getResourceAsStream(path);
         if (in == null) {

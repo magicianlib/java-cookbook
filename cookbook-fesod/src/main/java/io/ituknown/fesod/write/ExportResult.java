@@ -30,7 +30,9 @@ public final class ExportResult implements AutoCloseable {
 
     private final ExporterContext context;
 
-    /** 产物文件；{@code null} 表示流式模式无文件 */
+    /**
+     * 产物文件；{@code null} 表示流式模式无文件
+     */
     private final Path file;
 
     ExportResult(ExporterContext context, Path file) {
@@ -38,27 +40,37 @@ public final class ExportResult implements AutoCloseable {
         this.file = file;
     }
 
-    /** 流式构造：无产物文件 */
+    /**
+     * 流式构造：无产物文件
+     */
     static ExportResult ofStream(ExporterContext context) {
         return new ExportResult(context, null);
     }
 
-    /** 文件构造：带产物文件（所有权转交本对象，{@link #close()} 时删除） */
+    /**
+     * 文件构造：带产物文件（所有权转交本对象，{@link #close()} 时删除）
+     */
     static ExportResult ofFile(ExporterContext context, Path file) {
         return new ExportResult(context, file);
     }
 
-    /** 过程上下文：统计（行数/耗时）+ accumulate 累积的业务数据 */
+    /**
+     * 过程上下文：统计（行数/耗时）+ accumulate 累积的业务数据
+     */
     public ExporterContext context() {
         return context;
     }
 
-    /** 流式模式返回 empty；文件模式返回框架生成的临时文件 */
+    /**
+     * 流式模式返回 empty；文件模式返回框架生成的临时文件
+     */
     public Optional<Path> file() {
         return Optional.ofNullable(file);
     }
 
-    /** 是否为文件模式（即 {@link #file()} 有值） */
+    /**
+     * 是否为文件模式（即 {@link #file()} 有值）
+     */
     public boolean hasFile() {
         return file != null;
     }

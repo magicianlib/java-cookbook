@@ -35,24 +35,38 @@ public class ExporterContext {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExporterContext.class);
 
-    /** 业务类型 */
+    /**
+     * 业务类型
+     */
     protected final ExportBizType bizType;
-    /** 开始时间（毫秒） */
+    /**
+     * 开始时间（毫秒）
+     */
     protected final long startTime;
-    /** 已写入数据量 */
+    /**
+     * 已写入数据量
+     */
     protected long rows;
-    /** 处理耗时（毫秒），{@link #finish()} 时计算 */
+    /**
+     * 处理耗时（毫秒），{@link #finish()} 时计算
+     */
     protected long elapsedMs;
 
-    /** 业务自定义过程属性（loadData 累积、summary 等读取）。已初始化，不计入构造参数。 */
+    /**
+     * 业务自定义过程属性（loadData 累积、summary 等读取）。已初始化，不计入构造参数。
+     */
     private final Map<String, Object> attributes = new HashMap<>();
 
-    /** 创建并记录开始时间 */
+    /**
+     * 创建并记录开始时间
+     */
     public static ExporterContext start(ExportBizType bizType) {
         return new ExporterContext(bizType, System.currentTimeMillis());
     }
 
-    /** 累加已写入数据量 */
+    /**
+     * 累加已写入数据量
+     */
     public void addRows(int n) {
         this.rows += n;
     }
@@ -78,7 +92,9 @@ public class ExporterContext {
         return value == null ? defaultValue : type.cast(value);
     }
 
-    /** 结束统计：计算耗时并打印摘要日志 */
+    /**
+     * 结束统计：计算耗时并打印摘要日志
+     */
     public void finish() {
         this.elapsedMs = System.currentTimeMillis() - startTime;
         LOGGER.info("Excel 写入完成 | bizType={} | rows={} | elapsedMs={}", bizType, rows, elapsedMs);

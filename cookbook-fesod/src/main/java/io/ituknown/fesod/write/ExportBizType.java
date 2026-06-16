@@ -13,9 +13,13 @@ package io.ituknown.fesod.write;
  */
 public enum ExportBizType {
 
-    /** 示例：用户列表导出（{@link ClassExporter} 注解模式） */
+    /**
+     * 示例：用户列表导出（{@link ClassExporter} 注解模式）
+     */
     USER_EXPORT,
 
-    /** 示例：订单导出（{@link TemplateExporter} 模板填充模式） */
+    /**
+     * 示例：订单导出（{@link TemplateExporter} 模板填充模式）
+     */
     ORDER_EXPORT
 }

@@ -24,7 +24,7 @@ import java.util.List;
  * 本类为 {@code sealed}，<b>只允许</b> {@link ClassExporter} / {@link TemplateExporter} 继承——
  * 业务实现必须从这两个模式基类入手，不能直接继承本类。两个模式基类为 {@code non-sealed}，
  * 可被业务任意继承。
- *
+ * <p>
  * <b>子类需实现：</b>
  * <ul>
  *   <li>{@link #bizType()} —— 声明业务类型（供外部定位）；</li>
@@ -44,11 +44,15 @@ public abstract sealed class AbstractExporter<P, D>
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractExporter.class);
 
-    /** 业务类型，供外部定位子类 */
+    /**
+     * 业务类型，供外部定位子类
+     */
     public abstract ExportBizType bizType();
 
-    /** 将外部传入的 bizParams 字符串转换为请求对象 P */
-    public abstract P buildPayload(String bizParams);
+    /**
+     * 将外部传入的 bizParams 字符串转换为请求对象 P
+     */
+    protected abstract P buildPayload(String bizParams);
 
     /**
      * 加载一批数据。
@@ -61,7 +65,7 @@ public abstract sealed class AbstractExporter<P, D>
      * @param payload 由 {@link #buildPayload} 转换而来的请求对象
      * @param ctx     本次导出的过程上下文
      */
-    public abstract List<D> loadData(P payload, ExporterContext ctx);
+    protected abstract List<D> loadData(P payload, ExporterContext ctx);
 
     /**
      * 具体写入方式。由模式基类（{@link ClassExporter} / {@link TemplateExporter}）多态实现，
@@ -73,13 +77,17 @@ public abstract sealed class AbstractExporter<P, D>
      */
     protected abstract void doWrite(P payload, OutputStream out, ExporterContext ctx);
 
-    /** 默认 sheet 名 */
-    public String sheetName() {
+    /**
+     * 默认 sheet 名
+     */
+    protected String sheetName() {
         return "Sheet1";
     }
 
-    /** 默认 Excel 类型 */
-    public ExcelTypeEnum excelType() {
+    /**
+     * 默认 Excel 类型
+     */
+    protected ExcelTypeEnum excelType() {
         return ExcelTypeEnum.XLSX;
     }
 
@@ -130,7 +138,9 @@ public abstract sealed class AbstractExporter<P, D>
         }
     }
 
-    /** 静默删除临时文件，失败仅告警、不抛异常 */
+    /**
+     * 静默删除临时文件，失败仅告警、不抛异常
+     */
     private static void deleteTempFile(Path temp) {
         try {
             Files.deleteIfExists(temp);
