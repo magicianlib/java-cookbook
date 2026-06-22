@@ -11,8 +11,8 @@ import de.mkammerer.argon2.Argon2Helper;
  *
  * @author magicianlib@gmail.com
  */
-public enum Argon2Utils {
-    ;
+public final class Argon2Utils {
+
     private static final Argon2 ARGON2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2id);
 
     /**
@@ -34,11 +34,15 @@ public enum Argon2Utils {
      */
     public static final int DEFAULT_PARALLELISM = Runtime.getRuntime().availableProcessors() * 2;
 
+    private Argon2Utils() {
+    }
+
     /**
-     * 加密
+     * 密码加密（使用默认参数）。
      *
      * @param plaintext 明文密码
-     * @return encrypt 密文
+     * @return encrypt 密文（含盐值与参数，可直接存储）
+     * @throws IllegalArgumentException plaintext 为 null
      */
     public static String encrypt(String plaintext) {
         return encrypt(plaintext, DEFAULT_ITERATIONS, DEFAULT_MEMORY, DEFAULT_PARALLELISM);
@@ -51,9 +55,11 @@ public enum Argon2Utils {
      * @param iterations  迭代次数
      * @param memory      最大使用内存（byte）
      * @param parallelism 并行度，推荐使用机器核心数的 2 倍
-     * @return encrypt 密文
+     * @return encrypt 密文（含盐值与参数，可直接存储）
+     * @throws IllegalArgumentException plaintext 为 null
      */
     public static String encrypt(String plaintext, int iterations, int memory, int parallelism) {
+        Require.requireNonNull(plaintext, "plaintext");
         char[] passwordChars = plaintext.toCharArray();
         try {
             return ARGON2.hash(iterations, memory, parallelism, passwordChars);
@@ -68,8 +74,12 @@ public enum Argon2Utils {
      *
      * @param ciphertext 密文
      * @param plaintext  明文
+     * @return true 表示密码匹配
+     * @throws IllegalArgumentException ciphertext 或 plaintext 为 null
      */
     public static boolean verify(String ciphertext, String plaintext) {
+        Require.requireNonNull(ciphertext, "ciphertext");
+        Require.requireNonNull(plaintext, "plaintext");
         char[] passwordChars = plaintext.toCharArray();
         try {
             // Argon2 会自动从存储的 ciphertext 字符串中解析出盐值和参数进行比对
@@ -85,6 +95,8 @@ public enum Argon2Utils {
      * <p>
      * 设定：encrypt 最大耗时 1000ms，最大使用 64MB 内存，并行度为机器核心数的 2 倍
      * </p>
+     *
+     * @return 推荐迭代次数
      */
     public static int recommendedIterations() {
         return Argon2Helper.findIterations(ARGON2, 1000, DEFAULT_MEMORY, DEFAULT_PARALLELISM);

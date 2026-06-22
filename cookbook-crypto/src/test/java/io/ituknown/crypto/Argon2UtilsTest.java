@@ -23,4 +23,10 @@ public class Argon2UtilsTest {
         boolean verification = Argon2Utils.verify("$argon2id$v=19$m=65536,t=186,p=32$/xUYiLE4HF9iTl6T2viyQg$97K5YJ6BweRacFTXNpLPk2q7su4zU9JpFM4CgXYmjBs", "hello world");
         Assertions.assertTrue(verification);
     }
+
+    @Test
+    public void testNullArgsRejected() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Argon2Utils.encrypt(null));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> Argon2Utils.verify(null, null));
+    }
 }

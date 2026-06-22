@@ -12,6 +12,11 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
+/**
+ * AES 对称加解密工具类（AES/GCM/NoPadding）。
+ *
+ * @author magicianlib@gmail.com
+ */
 public final class AesUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(AesUtils.class);
 
@@ -38,6 +43,9 @@ public final class AesUtils {
      */
     private static final int TAG_BIT_LENGTH = 128;
 
+    private AesUtils() {
+    }
+
     /**
      * 生成随机密钥
      * <p>
@@ -47,7 +55,9 @@ public final class AesUtils {
      * 2. {@code AES-192}：循环 12 轮处理<br/>
      * 3. {@code AES-256}：循环 14 轮处理，安全性最高，军事级加密（推荐）
      *
-     * @param keySize 密钥长度
+     * @param keySize 密钥长度（位）
+     * @return AES 密钥
+     * @throws NoSuchAlgorithmException 不支持 AES 算法
      */
     public static SecretKey generateKey(int keySize) throws NoSuchAlgorithmException {
         LOGGER.debug("Generating AES key with size: {} bits", keySize);
@@ -61,64 +71,110 @@ public final class AesUtils {
         }
     }
 
+    /**
+     * 生成随机密钥并返回其十六进制与 Base64 编码形式。
+     *
+     * @param keySize 密钥长度（位）
+     * @return 编码后的密钥（含 hex 与 base64 两种形式）
+     * @throws NoSuchAlgorithmException 不支持 AES 算法
+     */
     public static Key generateEncodedKey(int keySize) throws NoSuchAlgorithmException {
         SecretKey secretKey = generateKey(keySize);
         byte[] encoded = secretKey.getEncoded();
-        String hexKey = Hex.toHexString(encoded);
-        String base64Key = Base64.toString(secretKey.getEncoded());
-        return new Key(hexKey, base64Key);
+        return new Key(Hex.toHexString(encoded), Base64.toString(encoded));
     }
 
     /**
-     * 加密
+     * 加密（核心方法）。返回「IV + 密文 + 认证标签」拼接的字节数组（IV 公开，无需保密）。
      *
-     * @param plaintext  待加密明文
-     * @param key        密钥
-     * @param production 处理 byte 流
+     * @param plaintext 明文字节
+     * @param key       密钥
+     * @return IV + 密文 拼接的字节数组
+     * @throws IllegalArgumentException plaintext 或 key 为 null
+     * @throws NoSuchAlgorithmException 不支持 AES/GCM
+     * @throws NoSuchPaddingException   不支持 GCM 填充
+     * @throws InvalidAlgorithmParameterException GCM 参数非法
+     * @throws InvalidKeyException      密钥非法
+     * @throws IllegalBlockSizeException 加密块大小非法
+     * @throws BadPaddingException      填充非法
      */
-    public static <R> R encrypt(String plaintext, SecretKey key, Production<R> production) throws Exception {
-        if (plaintext == null || key == null) {
-            LOGGER.error("Encryption failed: Plaintext or Key is null");
-            throw new IllegalArgumentException("Plaintext and Key must not be null");
-        }
+    public static byte[] encrypt(byte[] plaintext, SecretKey key)
+            throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException,
+            InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        Require.requireNonNull(plaintext, "plaintext");
+        Require.requireNonNull(key, "key");
 
-        try {
-            byte[] iv = new byte[IV_BYTE_LENGTH];
-            new SecureRandom().nextBytes(iv);
+        byte[] iv = new byte[IV_BYTE_LENGTH];
+        new SecureRandom().nextBytes(iv);
 
-            // IV 是公开的，可以直接输出
-            LOGGER.info("Encrypting data using {}, IV: {}", ALGORITHM, Hex.toHexString(iv));
+        // IV 是公开的，可以直接输出
+        LOGGER.info("Encrypting data using {}, IV: {}", ALGORITHM, Hex.toHexString(iv));
 
-            Cipher cipher = Cipher.getInstance(ALGORITHM);
-            cipher.init(Cipher.ENCRYPT_MODE, key, new GCMParameterSpec(TAG_BIT_LENGTH, iv));
-            byte[] ciphertext = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.ENCRYPT_MODE, key, new GCMParameterSpec(TAG_BIT_LENGTH, iv));
+        byte[] ciphertext = cipher.doFinal(plaintext);
 
-            // 将 IV 和 密文 拼接在一起，方便解密时读取
-            byte[] combined = new byte[iv.length + ciphertext.length];
-            System.arraycopy(iv, 0, combined, 0, iv.length);
-            System.arraycopy(ciphertext, 0, combined, iv.length, ciphertext.length);
+        // 将 IV 和 密文 拼接在一起，方便解密时读取
+        byte[] combined = new byte[iv.length + ciphertext.length];
+        System.arraycopy(iv, 0, combined, 0, iv.length);
+        System.arraycopy(ciphertext, 0, combined, iv.length, ciphertext.length);
 
-            LOGGER.info("Encryption successful, total length: {} bytes", combined.length);
-            return production.apply(combined);
-        } catch (Exception e) {
-            LOGGER.error("AES encryption failed: {}", e.getMessage());
-            throw e;
-        }
-    }
-
-    public static String encryptToBase64String(String plaintext, SecretKey key) throws Exception {
-        return encrypt(plaintext, key, Base64::toString);
-    }
-
-    public static String encryptToHexString(String plaintext, SecretKey key) throws Exception {
-        return encrypt(plaintext, key, Hex::toHexString);
+        LOGGER.info("Encryption successful, total length: {} bytes", combined.length);
+        return combined;
     }
 
     /**
-     * 解密
+     * 加密（UTF-8 明文）。
      *
-     * @param combined 密文
+     * @param plaintext 明文（UTF-8 字符串）
+     * @param key       密钥
+     * @return IV + 密文 拼接的字节数组
+     */
+    public static byte[] encrypt(String plaintext, SecretKey key)
+            throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException,
+            InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        return encrypt(plaintext.getBytes(StandardCharsets.UTF_8), key);
+    }
+
+    /**
+     * 加密便捷方法：UTF-8 明文 → Base64 密文。
+     *
+     * @param plaintext 明文（UTF-8 字符串）
+     * @param key       密钥
+     * @return Base64 密文
+     */
+    public static String encryptToBase64String(String plaintext, SecretKey key)
+            throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException,
+            InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        return Base64.toString(encrypt(plaintext, key));
+    }
+
+    /**
+     * 加密便捷方法：UTF-8 明文 → 十六进制密文。
+     *
+     * @param plaintext 明文（UTF-8 字符串）
+     * @param key       密钥
+     * @return 十六进制密文
+     */
+    public static String encryptToHexString(String plaintext, SecretKey key)
+            throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException,
+            InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        return Hex.toHexString(encrypt(plaintext, key));
+    }
+
+    /**
+     * 解密。输入为 {@link #encrypt(byte[], SecretKey)} 产出的「IV + 密文」拼接字节数组，返回 UTF-8 明文。
+     *
+     * @param combined IV + 密文 拼接的字节数组
      * @param key      密钥
+     * @return UTF-8 明文
+     * @throws IllegalArgumentException combined 为 null 或长度小于 IV 长度
+     * @throws NoSuchAlgorithmException 不支持 AES/GCM
+     * @throws NoSuchPaddingException   不支持 GCM 填充
+     * @throws InvalidAlgorithmParameterException GCM 参数非法
+     * @throws InvalidKeyException      密钥非法
+     * @throws IllegalBlockSizeException 密文块大小非法
+     * @throws BadPaddingException      密钥不匹配或密文被篡改（GCM tag 校验失败）
      */
     public static String decrypt(byte[] combined, SecretKey key) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         if (combined == null || combined.length < IV_BYTE_LENGTH) {
@@ -141,7 +197,7 @@ public final class AesUtils {
             cipher.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(TAG_BIT_LENGTH, iv));
 
             byte[] decryptedText = cipher.doFinal(ciphertext);
-            return new String(decryptedText);
+            return new String(decryptedText, StandardCharsets.UTF_8);
         } catch (AEADBadTagException e) {
             // GCM 模式特有的异常：说明数据被篡改或密钥错误
             LOGGER.error("AES decryption failed: Tag mismatch! Data may be tampered or wrong key.");
@@ -152,22 +208,50 @@ public final class AesUtils {
         }
     }
 
+    /**
+     * 解密便捷方法：Base64 密文 → UTF-8 明文。
+     *
+     * @param base64String Base64 密文
+     * @param key          密钥
+     * @return UTF-8 明文
+     */
     public static String decryptFromBase64String(String base64String, SecretKey key) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
-        byte[] combined = Base64.toByte(base64String);
-        return decrypt(combined, key);
+        return decrypt(Base64.toByte(base64String), key);
     }
 
+    /**
+     * 解密便捷方法：十六进制密文 → UTF-8 明文。
+     *
+     * @param hexString 十六进制密文
+     * @param key       密钥
+     * @return UTF-8 明文
+     */
     public static String decryptFromHexString(String hexString, SecretKey key) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
-        byte[] combined = Hex.toByteArray(hexString);
-        return decrypt(combined, key);
+        return decrypt(Hex.toByteArray(hexString), key);
     }
 
+    /**
+     * AES 密钥的十六进制与 Base64 双编码形式。
+     *
+     * @param hexString   密钥的十六进制编码
+     * @param base64String 密钥的 Base64 编码
+     */
     public record Key(String hexString, String base64String) {
+        /**
+         * 由十六进制编码还原 AES 密钥。
+         *
+         * @return AES 密钥
+         */
         public SecretKey fromHex() {
             byte[] decodedKey = Hex.toByteArray(hexString);
             return new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
         }
 
+        /**
+         * 由 Base64 编码还原 AES 密钥。
+         *
+         * @return AES 密钥
+         */
         public SecretKey fromBase64() {
             byte[] decodedKey = Base64.toByte(base64String);
             return new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
