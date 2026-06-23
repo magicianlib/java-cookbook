@@ -1,5 +1,7 @@
 package io.ituknown.log;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
@@ -84,5 +87,20 @@ class Log4j2SpringConfigLoadingTest {
         } finally {
             shutdown(ctx);
         }
+    }
+
+    @Test
+    void errorRoutesToBothFiles(@TempDir Path logDir) throws Exception {
+        LoggerContext ctx = loadConfig(logDir);
+        try {
+            Logger logger = LogManager.getLogger("io.ituknown.log.RouteTest");
+            logger.error("route-error-marker");
+        } finally {
+            shutdown(ctx);
+        }
+        String appLog = Files.readString(resolve(logDir, "app.log"));
+        String errorLog = Files.readString(resolve(logDir, "error.log"));
+        assertTrue(appLog.contains("route-error-marker"), "ERROR 应写入 app.log");
+        assertTrue(errorLog.contains("route-error-marker"), "ERROR 应写入 error.log");
     }
 }
