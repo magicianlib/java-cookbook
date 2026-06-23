@@ -103,4 +103,27 @@ class Log4j2SpringConfigLoadingTest {
         assertTrue(appLog.contains("route-error-marker"), "ERROR 应写入 app.log");
         assertTrue(errorLog.contains("route-error-marker"), "ERROR 应写入 error.log");
     }
+
+    @Test
+    void infoRoutesOnlyToAppLog(@TempDir Path logDir) throws Exception {
+        LoggerContext ctx = loadConfig(logDir);
+        try {
+            Logger logger = LogManager.getLogger("io.ituknown.log.RouteTest");
+            logger.info("route-info-marker");
+            logger.warn("route-warn-marker");
+        } finally {
+            shutdown(ctx);
+        }
+        String appLog = Files.readString(resolve(logDir, "app.log"));
+        assertTrue(appLog.contains("route-info-marker"), "INFO 应写入 app.log");
+        assertTrue(appLog.contains("route-warn-marker"), "WARN 应写入 app.log");
+
+        // error.log 仅收 ERROR；本轮无 ERROR，文件可能为空或未创建
+        Path errorLogPath = resolve(logDir, "error.log");
+        if (Files.exists(errorLogPath)) {
+            String errorLog = Files.readString(errorLogPath);
+            assertFalse(errorLog.contains("route-info-marker"), "INFO 不应写入 error.log");
+            assertFalse(errorLog.contains("route-warn-marker"), "WARN 不应写入 error.log");
+        }
+    }
 }
