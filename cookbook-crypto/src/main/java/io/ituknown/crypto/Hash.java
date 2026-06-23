@@ -6,6 +6,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * 单向散列（Hash）工具类，提供 MD5、SHA 家族与国密 SM3。
@@ -19,11 +22,8 @@ import java.security.Provider;
  * @see Hmac
  */
 public enum Hash {
-    /** 推荐。 */
     SHA256("SHA-256"),
-    /** 推荐。 */
     SHA384("SHA-384"),
-    /** 推荐。 */
     SHA512("SHA-512"),
     /** 国密 SM3（256 位）。 */
     SM3("SM3"),
@@ -45,10 +45,39 @@ public enum Hash {
      */
     private static final Provider BC = new BouncyCastleProvider();
 
+    private static final Map<String, Hash> CACHE;
+
+    static {
+        Map<String, Hash> map = new HashMap<>(values().length);
+        for (Hash hash : values()) {
+            map.put(hash.algorithm.toLowerCase(Locale.ROOT), hash);
+        }
+        CACHE = map;
+    }
+
     private final String algorithm;
 
     Hash(String algorithm) {
         this.algorithm = algorithm;
+    }
+
+    /**
+     * 按标准算法名称解析为对应的 {@link Hash} 枚举（忽略大小写）。
+     * <p>
+     * 匹配对象是各枚举的标准算法名 {@code algorithm}（如 {@code "SHA-256"}、{@code "SHA-512"}、{@code "SM3"}、
+     * {@code "MD5"}、{@code "SHA-1"}），<b>不是</b>枚举常量名（如 {@code "SHA256"}）。
+     * 例如 {@code Hash.of("sha-256")} 返回 {@link #SHA256}。
+     * <p>
+     * 未找到匹配项时返回 {@code null}，<b>不抛出异常</b>；入参为 {@code null} 同样返回 {@code null}。
+     *
+     * @param algorithm 标准算法名称（忽略大小写）
+     * @return 匹配的枚举；不存在则返回 {@code null}
+     */
+    public static Hash of(String algorithm) {
+        if (algorithm == null) {
+            return null;
+        }
+        return CACHE.get(algorithm.toLowerCase(Locale.ROOT));
     }
 
     /**

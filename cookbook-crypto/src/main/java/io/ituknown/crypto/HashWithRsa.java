@@ -7,6 +7,9 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * 常见的 HashWithRsa 组合算法，用于数据签名与验签。
@@ -38,11 +41,8 @@ import java.security.SignatureException;
  * @see RsaUtils
  */
 public enum HashWithRsa {
-    /** 推荐。 */
     SHA256withRSA,
-    /** 推荐。 */
     SHA384withRSA,
-    /** 推荐。 */
     SHA512withRSA,
     /**
      * @deprecated MD5 已被密码学攻破，仅保留用于兼容已有数据；新场景请使用 {@link #SHA256withRSA} 及以上。
@@ -55,6 +55,34 @@ public enum HashWithRsa {
     @Deprecated
     SHA1withRSA,
     ;
+
+    private static final Map<String, HashWithRsa> CACHE;
+
+    static {
+        Map<String, HashWithRsa> map = new HashMap<>(values().length);
+        for (HashWithRsa alg : values()) {
+            map.put(alg.name().toLowerCase(Locale.ROOT), alg);
+        }
+        CACHE = map;
+    }
+
+    /**
+     * 按算法名称解析为对应的 {@link HashWithRsa} 枚举（忽略大小写）。
+     * <p>
+     * 本类未单独定义算法名字段，因此匹配对象即<b>枚举常量名</b>（如 {@code "SHA256withRSA"}、{@code "MD5withRSA"}），
+     * 也就是 {@link #name()} 的返回值。例如 {@code HashWithRsa.of("sha256withrsa")} 返回 {@link #SHA256withRSA}。
+     * <p>
+     * 未找到匹配项时返回 {@code null}，<b>不抛出异常</b>；入参为 {@code null} 同样返回 {@code null}。
+     *
+     * @param algorithm 算法名称（忽略大小写，即枚举常量名）
+     * @return 匹配的枚举；不存在则返回 {@code null}
+     */
+    public static HashWithRsa of(String algorithm) {
+        if (algorithm == null) {
+            return null;
+        }
+        return CACHE.get(algorithm.toLowerCase(Locale.ROOT));
+    }
 
     /**
      * 私钥签名。

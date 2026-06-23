@@ -76,4 +76,19 @@ public class HashWithRsaTest {
             Assertions.assertTrue(alg.verify(kp.getPublic(), "hello,world", sig), alg.name());
         }
     }
+
+    /** of() 按枚举常量名解析（忽略大小写）；未匹配或入参为 null 时返回 null，不抛异常。 */
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testOf() {
+        Assertions.assertEquals(HashWithRsa.SHA256withRSA, HashWithRsa.of("SHA256withRSA"));
+        Assertions.assertEquals(HashWithRsa.SHA256withRSA, HashWithRsa.of("sha256withrsa"));
+        Assertions.assertEquals(HashWithRsa.SHA512withRSA, HashWithRsa.of("SHA512withRSA"));
+        Assertions.assertEquals(HashWithRsa.MD5withRSA, HashWithRsa.of("MD5withRSA"));
+        Assertions.assertEquals(HashWithRsa.SHA1withRSA, HashWithRsa.of("SHA1withRSA"));
+        // 不存在
+        Assertions.assertNull(HashWithRsa.of("unknown"));
+        // null 入参不抛异常
+        Assertions.assertNull(HashWithRsa.of(null));
+    }
 }

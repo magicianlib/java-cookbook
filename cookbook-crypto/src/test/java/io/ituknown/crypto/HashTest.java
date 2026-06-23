@@ -62,4 +62,22 @@ public class HashTest {
         Assertions.assertEquals(16, Hash.MD5.hash("abc").length);
         Assertions.assertEquals(20, Hash.SHA1.hash("abc").length);
     }
+
+    /** of() 按标准算法名解析（忽略大小写）；未匹配或入参为 null 时返回 null，不抛异常。 */
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testOf() {
+        Assertions.assertEquals(Hash.SHA256, Hash.of("SHA-256"));
+        Assertions.assertEquals(Hash.SHA256, Hash.of("sha-256"));
+        Assertions.assertEquals(Hash.SHA512, Hash.of("SHA-512"));
+        Assertions.assertEquals(Hash.SM3, Hash.of("SM3"));
+        Assertions.assertEquals(Hash.MD5, Hash.of("MD5"));
+        Assertions.assertEquals(Hash.SHA1, Hash.of("SHA-1"));
+        // 入参为算法标准名，而非枚举常量名
+        Assertions.assertNull(Hash.of("SHA256"));
+        // 不存在
+        Assertions.assertNull(Hash.of("unknown"));
+        // null 入参不抛异常
+        Assertions.assertNull(Hash.of(null));
+    }
 }

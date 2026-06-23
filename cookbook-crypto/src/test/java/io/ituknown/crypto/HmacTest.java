@@ -65,4 +65,19 @@ public class HmacTest {
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> Hmac.HmacSHA256.hmac(null, (byte[]) null));
     }
+
+    /** of() 按枚举常量名解析（忽略大小写）；未匹配或入参为 null 时返回 null，不抛异常。 */
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testOf() {
+        Assertions.assertEquals(Hmac.HmacSHA256, Hmac.of("HmacSHA256"));
+        Assertions.assertEquals(Hmac.HmacSHA256, Hmac.of("hmacsha256"));
+        Assertions.assertEquals(Hmac.HmacSHA512, Hmac.of("HmacSHA512"));
+        Assertions.assertEquals(Hmac.HmacMD5, Hmac.of("HmacMD5"));
+        Assertions.assertEquals(Hmac.HmacSHA1, Hmac.of("HmacSHA1"));
+        // 不存在
+        Assertions.assertNull(Hmac.of("unknown"));
+        // null 入参不抛异常
+        Assertions.assertNull(Hmac.of(null));
+    }
 }
