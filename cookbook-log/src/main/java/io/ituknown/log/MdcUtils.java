@@ -66,6 +66,15 @@ public final class MdcUtils {
         }
     }
 
+    public static String getTrace() {
+        String mdc = getMdc();
+        if (StringUtils.isBlank(mdc)) {
+            withTrace();
+            mdc = getMdc();
+        }
+        return StringUtils.substringAfterLast(mdc, "|");
+    }
+
     /**
      * 获取当前 traceId。
      *
