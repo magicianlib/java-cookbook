@@ -225,11 +225,245 @@ class HttpClientUtilsTest {
         assertEquals("test-download.txt", result.getFilePath().getFileName().toString());
     }
 
+    // ========== POST JSON ==========
+
+    @Test
+    void testPostJsonString() {
+        String json = "{\"name\":\"test\"}";
+        StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-echo").json(json).asString();
+        assertEquals("echo:" + json, result.getEntity());
+    }
+
+    @Test
+    void testPostJsonStringWithConfig() {
+        String json = "{\"name\":\"test\"}";
+        HttpRequestConfig config = new HttpRequestConfig();
+        StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-echo").json(json).config(config).asString();
+        assertEquals("echo:" + json, result.getEntity());
+    }
+
+    @Test
+    void testPostJsonBytes() {
+        byte[] json = "{\"key\":\"value\"}".getBytes(StandardCharsets.UTF_8);
+        StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-echo").json(json).asString();
+        assertEquals("echo:" + new String(json, StandardCharsets.UTF_8), result.getEntity());
+    }
+
+    @Test
+    void testPostJsonBytesWithConfig() {
+        byte[] json = "{\"key\":\"value\"}".getBytes(StandardCharsets.UTF_8);
+        HttpRequestConfig config = new HttpRequestConfig();
+        StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-echo").json(json).config(config).asString();
+        assertEquals("echo:" + new String(json, StandardCharsets.UTF_8), result.getEntity());
+    }
+
+    @Test
+    void testPostJsonStringStream() {
+        String json = "{\"stream\":true}";
+        AtomicReference<String> captured = new AtomicReference<>();
+        HttpClientUtils.post(baseUrl + "/post-echo").json(json).stream(in -> {
+            try {
+                captured.set(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+        assertEquals("echo:" + json, captured.get());
+    }
+
+    @Test
+    void testPostJsonBytesStream() {
+        byte[] json = "{\"stream\":true}".getBytes(StandardCharsets.UTF_8);
+        AtomicReference<String> captured = new AtomicReference<>();
+        HttpClientUtils.post(baseUrl + "/post-echo").json(json).stream(in -> {
+            try {
+                captured.set(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+        assertEquals("echo:" + new String(json, StandardCharsets.UTF_8), captured.get());
+    }
+
+    // ========== POST ==========
+
+    @Test
+    void testPostString() {
+        StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-echo").body("plain text", ContentType.TEXT_PLAIN).asString();
+        assertEquals("echo:plain text", result.getEntity());
+    }
+
+    @Test
+    void testPostStringWithConfig() {
+        HttpRequestConfig config = new HttpRequestConfig();
+        StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-echo").body("data", ContentType.TEXT_PLAIN).config(config).asString();
+        assertEquals("echo:data", result.getEntity());
+    }
+
+    @Test
+    void testPostBytes() {
+        byte[] content = "binary-data".getBytes(StandardCharsets.UTF_8);
+        StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-echo").body(content, ContentType.APPLICATION_OCTET_STREAM).asString();
+        assertEquals("echo:binary-data", result.getEntity());
+    }
+
+    @Test
+    void testPostBytesWithConfig() {
+        byte[] content = "binary-data".getBytes(StandardCharsets.UTF_8);
+        HttpRequestConfig config = new HttpRequestConfig();
+        StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-echo").body(content, ContentType.APPLICATION_OCTET_STREAM).config(config).asString();
+        assertEquals("echo:binary-data", result.getEntity());
+    }
+
+    @Test
+    void testPostStringStream() {
+        AtomicReference<String> captured = new AtomicReference<>();
+        HttpClientUtils.post(baseUrl + "/post-echo").body("stream-text", ContentType.TEXT_PLAIN).stream(in -> {
+            try {
+                captured.set(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+        assertEquals("echo:stream-text", captured.get());
+    }
+
+    @Test
+    void testPostBytesStream() {
+        byte[] content = "stream-binary".getBytes(StandardCharsets.UTF_8);
+        AtomicReference<String> captured = new AtomicReference<>();
+        HttpClientUtils.post(baseUrl + "/post-echo").body(content, ContentType.APPLICATION_OCTET_STREAM).stream(in -> {
+            try {
+                captured.set(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+        assertEquals("echo:stream-binary", captured.get());
+    }
+
+    // ========== POST Form ==========
+
+    @Test
+    void testPostForm() {
+        List<BasicNameValuePair> params = new ArrayList<>();
+        params.add(new BasicNameValuePair("username", "admin"));
+        params.add(new BasicNameValuePair("password", "123456"));
+        StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-form").form(params).asString();
+        String entity = result.getEntity();
+        assertTrue(entity.startsWith("form:"));
+        assertTrue(entity.contains("username=admin"));
+        assertTrue(entity.contains("password=123456"));
+    }
+
+    @Test
+    void testPostFormWithConfig() {
+        List<BasicNameValuePair> params = new ArrayList<>();
+        params.add(new BasicNameValuePair("key", "value"));
+        HttpRequestConfig config = new HttpRequestConfig();
+        StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-form").form(params).config(config).asString();
+        assertTrue(result.getEntity().contains("key=value"));
+    }
+
+    @Test
+    void testPostFormStream() {
+        List<BasicNameValuePair> params = new ArrayList<>();
+        params.add(new BasicNameValuePair("q", "java"));
+        AtomicReference<String> captured = new AtomicReference<>();
+        HttpClientUtils.post(baseUrl + "/post-form").form(params).stream(in -> {
+            try {
+                captured.set(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+        assertTrue(captured.get().contains("q=java"));
+    }
+
+    // ========== POST Multipart ==========
+
+    @Test
+    void testPostMultipart() {
+        org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder builder =
+                org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder.create()
+                        .addTextBody("field1", "value1", ContentType.TEXT_PLAIN)
+                        .addTextBody("field2", "value2", ContentType.TEXT_PLAIN);
+        StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-multipart").multipart(builder).asString();
+        String entity = result.getEntity();
+        assertTrue(entity.startsWith("multipart:"));
+        assertTrue(entity.contains("multipart/form-data"));
+    }
+
+    @Test
+    void testPostMultipartWithConfig() {
+        org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder builder =
+                org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder.create()
+                        .addTextBody("name", "test", ContentType.TEXT_PLAIN);
+        HttpRequestConfig config = new HttpRequestConfig();
+        StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-multipart").multipart(builder).config(config).asString();
+        assertTrue(result.getEntity().contains("multipart/form-data"));
+    }
+
+    @Test
+    void testPostMultipartStream() {
+        org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder builder =
+                org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder.create()
+                        .addTextBody("data", "hello", ContentType.TEXT_PLAIN);
+        AtomicReference<String> captured = new AtomicReference<>();
+        HttpClientUtils.post(baseUrl + "/post-multipart").multipart(builder).stream(in -> {
+            try {
+                captured.set(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+        assertTrue(captured.get().contains("multipart/form-data"));
+    }
+
+    // ========== POST File ==========
+
+    @Test
+    void testPostFile() throws IOException {
+        Path tempFile = Files.createTempFile(tempDir, "upload", ".txt");
+        Files.writeString(tempFile, "file-content-here");
+        StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-file").file(tempFile.toFile()).asString();
+        assertTrue(result.getEntity().startsWith("received:"));
+        assertTrue(result.getEntity().endsWith("bytes"));
+    }
+
+    @Test
+    void testPostFileWithContentType() throws IOException {
+        Path tempFile = Files.createTempFile(tempDir, "upload", ".json");
+        Files.writeString(tempFile, "{\"data\":1}");
+        StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-file").file(tempFile.toFile(), ContentType.APPLICATION_JSON).asString();
+        assertTrue(result.getEntity().startsWith("received:"));
+    }
+
+    @Test
+    void testPostFileStream() throws IOException {
+        Path tempFile = Files.createTempFile(tempDir, "upload", ".txt");
+        Files.writeString(tempFile, "stream-file-content");
+        AtomicReference<String> captured = new AtomicReference<>();
+        HttpClientUtils.post(baseUrl + "/post-file").file(tempFile.toFile()).stream(in -> {
+            try {
+                captured.set(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+        assertTrue(captured.get().startsWith("received:"));
+    }
+
     // ========== Error handling ==========
 
     @Test
     void testGetServerError() {
         assertThrows(HttpException.class, () -> HttpClientUtils.get(baseUrl + "/error").asString());
+    }
+
+    @Test
+    void testPostJsonServerError() {
+        assertThrows(HttpException.class, () -> HttpClientUtils.post(baseUrl + "/error").json("{}").asString());
     }
 
     @Test

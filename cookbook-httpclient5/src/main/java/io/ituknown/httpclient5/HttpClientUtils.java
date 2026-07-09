@@ -10,11 +10,23 @@ import io.ituknown.httpclient5.response.StringResponseHandler;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
+import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.io.entity.ByteArrayEntity;
+import org.apache.hc.core5.http.io.entity.FileEntity;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 
+import java.io.File;
 import java.io.InputStream;
+import java.net.URLConnection;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -31,6 +43,11 @@ public final class HttpClientUtils {
         return new RequestBuilder("POST", url);
     }
 
+    private static ContentType guessContentType(File file) {
+        String type = URLConnection.guessContentTypeFromName(file.getName());
+        return ContentType.create(type != null ? type : "application/octet-stream");
+    }
+
     public static final class RequestBuilder {
 
         private final String method;
@@ -42,6 +59,52 @@ public final class HttpClientUtils {
         RequestBuilder(String method, String url) {
             this.method = method;
             this.url = url;
+        }
+
+        // ---- body setter (仅 POST) ----
+
+        public RequestBuilder json(String json) {
+            return setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
+        }
+
+        public RequestBuilder json(byte[] json) {
+            return setEntity(new ByteArrayEntity(json, ContentType.APPLICATION_JSON));
+        }
+
+        public RequestBuilder form(List<? extends NameValuePair> params) {
+            return form(params, StandardCharsets.UTF_8);
+        }
+
+        public RequestBuilder form(List<? extends NameValuePair> params, Charset charset) {
+            return setEntity(new UrlEncodedFormEntity(params, charset));
+        }
+
+        public RequestBuilder multipart(MultipartEntityBuilder builder) {
+            return setEntity(builder.build());
+        }
+
+        public RequestBuilder file(File file) {
+            return file(file, guessContentType(file));
+        }
+
+        public RequestBuilder file(File file, ContentType contentType) {
+            return setEntity(new FileEntity(file, contentType));
+        }
+
+        public RequestBuilder body(String content, ContentType contentType) {
+            return setEntity(new StringEntity(content, contentType));
+        }
+
+        public RequestBuilder body(byte[] content, ContentType contentType) {
+            return setEntity(new ByteArrayEntity(content, contentType));
+        }
+
+        private RequestBuilder setEntity(HttpEntity entity) {
+            if (!"POST".equals(method)) {
+                throw new IllegalStateException("GET request does not support a request body");
+            }
+            this.entity = entity;
+            return this;
         }
 
         public RequestBuilder config(HttpRequestConfig config) {
