@@ -80,6 +80,22 @@ class HttpRequestConfigTest {
     }
 
     @Test
+    void copyPreservesPopulatedHeaders() {
+        HttpRequestConfig src = new HttpRequestConfig();
+        src.addHeader("A", "1");
+        src.addHeader("B", "2");
+
+        HttpRequestConfig copy = src.copy();
+
+        assertEquals(2, copy.getHeaders().size());
+        assertEquals("1", copy.getHeaders().get("A"));
+        assertEquals("2", copy.getHeaders().get("B"));
+        // independence
+        copy.addHeader("C", "3");
+        assertEquals(2, src.getHeaders().size());
+    }
+
+    @Test
     void copyProducesMutableIndependentInstance() {
         HttpRequestConfig copy = HttpRequestConfig.DEFAULT.copy();
         copy.addHeader("X-Test", "value");

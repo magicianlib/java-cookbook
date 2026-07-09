@@ -60,7 +60,11 @@ public class HeaderHelper {
                 } catch (Exception e) {
                     charset = StandardCharsets.UTF_8;
                 }
-                return URLDecoder.decode(encoded, charset);
+                try {
+                    return URLDecoder.decode(encoded, charset);
+                } catch (Exception e) {
+                    // malformed pct-encoding: fall through to standard filename= parse
+                }
             }
         }
 

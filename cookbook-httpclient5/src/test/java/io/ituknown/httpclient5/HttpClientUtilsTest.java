@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpServer;
 import io.ituknown.httpclient5.response.FileEntityResponse;
 import io.ituknown.httpclient5.response.Headers;
 import io.ituknown.httpclient5.response.StringEntityResponse;
+import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.junit.jupiter.api.AfterAll;
@@ -134,6 +135,14 @@ class HttpClientUtilsTest {
             exchange.getResponseBody().write(body);
             exchange.close();
         });
+
+        server.createContext("/echo-request-header", exchange -> {
+            String val = exchange.getRequestHeaders().getFirst("X-Test-Header");
+            byte[] body = (val == null ? "" : val).getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
     }
 
     // ========== GET ==========
@@ -154,6 +163,14 @@ class HttpClientUtilsTest {
 
         assertEquals("ok", result.getEntity());
         assertEquals("test-value", result.getHeaders().getField("X-Custom").value());
+    }
+
+    @Test
+    void testBuilderHeaderMerge() {
+        StringEntityResponse result = HttpClientUtils.get(baseUrl + "/echo-request-header")
+                .header("X-Test-Header", "builder-merge-value")
+                .asString();
+        assertEquals("builder-merge-value", result.getEntity());
     }
 
     @Test
@@ -392,8 +409,8 @@ class HttpClientUtilsTest {
 
     @Test
     void testPostMultipart() {
-        org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder builder =
-                org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder.create()
+        MultipartEntityBuilder builder =
+                MultipartEntityBuilder.create()
                         .addTextBody("field1", "value1", ContentType.TEXT_PLAIN)
                         .addTextBody("field2", "value2", ContentType.TEXT_PLAIN);
         StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-multipart").multipart(builder).asString();
@@ -404,8 +421,8 @@ class HttpClientUtilsTest {
 
     @Test
     void testPostMultipartWithConfig() {
-        org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder builder =
-                org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder.create()
+        MultipartEntityBuilder builder =
+                MultipartEntityBuilder.create()
                         .addTextBody("name", "test", ContentType.TEXT_PLAIN);
         HttpRequestConfig config = new HttpRequestConfig();
         StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-multipart").multipart(builder).config(config).asString();
@@ -414,8 +431,8 @@ class HttpClientUtilsTest {
 
     @Test
     void testPostMultipartStream() {
-        org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder builder =
-                org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder.create()
+        MultipartEntityBuilder builder =
+                MultipartEntityBuilder.create()
                         .addTextBody("data", "hello", ContentType.TEXT_PLAIN);
         AtomicReference<String> captured = new AtomicReference<>();
         HttpClientUtils.post(baseUrl + "/post-multipart").multipart(builder).stream(in -> {
@@ -463,6 +480,14 @@ class HttpClientUtilsTest {
     }
 
     // ========== Error handling ==========
+
+    @Test
+    void testGetBuilderRejectsBodySetter() {
+        assertThrows(IllegalStateException.class,
+                () -> HttpClientUtils.get(baseUrl + "/get").json("{}"));
+        assertThrows(IllegalStateException.class,
+                () -> HttpClientUtils.get(baseUrl + "/get").body("x", ContentType.TEXT_PLAIN));
+    }
 
     @Test
     void testGetServerError() {

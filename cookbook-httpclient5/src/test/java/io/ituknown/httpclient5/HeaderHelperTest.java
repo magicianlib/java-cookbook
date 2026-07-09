@@ -64,6 +64,13 @@ class HeaderHelperTest {
     }
 
     @Test
+    void fileNameParseMalformedFilenameStarFallsBackToFilename() {
+        Header header = new BasicHeader("Content-Disposition",
+                "attachment; filename=\"ok.txt\"; filename*=UTF-8''%ZZ");
+        assertEquals("ok.txt", HeaderHelper.fileNameParse(header));
+    }
+
+    @Test
     void fileNameParseUnknownCharsetFallsBackToUtf8() {
         Header header = new BasicHeader("Content-Disposition", "attachment; filename*=WTF-8''%E6%B5%8B.txt");
         assertEquals("测.txt", HeaderHelper.fileNameParse(header));
