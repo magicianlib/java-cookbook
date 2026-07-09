@@ -126,6 +126,14 @@ class HttpClientUtilsTest {
             exchange.getResponseBody().write(body);
             exchange.close();
         });
+
+        server.createContext("/redirect-302", exchange -> {
+            exchange.getResponseHeaders().put("Location", List.of(baseUrl + "/get"));
+            byte[] body = "redirect-body".getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(302, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
     }
 
     // ========== GET ==========
@@ -471,5 +479,15 @@ class HttpClientUtilsTest {
         Path target = tempDir.resolve("should-not-exist.txt");
         assertThrows(HttpException.class, () -> HttpClientUtils.get(baseUrl + "/error").downloadTo(target.toString()));
         assertFalse(Files.exists(target));
+    }
+
+    @Test
+    void testRedirectNotTreatedAsError() {
+        HttpRequestConfig config = new HttpRequestConfig();
+        config.setRedirects(false);
+        // 302 在 >= 400 阈值下不再当错误抛出
+        StringEntityResponse result = HttpClientUtils.get(baseUrl + "/redirect-302").config(config).asString();
+        assertNotNull(result);
+        assertEquals("redirect-body", result.getEntity());
     }
 }

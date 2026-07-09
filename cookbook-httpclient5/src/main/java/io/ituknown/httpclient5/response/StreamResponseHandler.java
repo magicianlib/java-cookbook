@@ -24,7 +24,7 @@ public class StreamResponseHandler implements HttpClientResponseHandler<Headers>
 
     @Override
     public Headers handleResponse(ClassicHttpResponse response) throws IOException {
-        if (response.getCode() >= 300) {
+        if (response.getCode() >= 400) {
             EntityUtils.consume(response.getEntity());
             throw new HttpResponseException(response.getCode(), response.getReasonPhrase());
         }

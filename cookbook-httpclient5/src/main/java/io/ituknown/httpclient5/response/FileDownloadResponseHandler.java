@@ -31,7 +31,7 @@ public class FileDownloadResponseHandler implements HttpClientResponseHandler<Fi
 
     @Override
     public FileEntityResponse handleResponse(ClassicHttpResponse response) throws IOException {
-        if (response.getCode() >= 300) {
+        if (response.getCode() >= 400) {
             EntityUtils.consume(response.getEntity());
             LOGGER.warn("Download failed, status code: {}, reason: {}", response.getCode(), response.getReasonPhrase());
             throw new HttpResponseException(response.getCode(), response.getReasonPhrase());

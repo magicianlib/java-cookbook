@@ -24,24 +24,27 @@ public class StringResponseHandler extends AbstractHttpClientResponseHandler<Str
     public StringEntityResponse handleResponse(ClassicHttpResponse response) throws IOException {
         int statusCode = response.getCode();
 
-        try {
-            StringEntityResponse result = super.handleResponse(response);
-            result.setHeaders(HeaderHelper.resolveHeader(response));
-
-            if (LOGGER.isInfoEnabled()) {
-                String entity = result.getEntity();
-                String logContent = (entity != null && entity.length() > 1000)
-                        ? entity.substring(0, 1000) + "... [truncated, total: " + entity.length() + "]"
-                        : entity;
-
-                LOGGER.info("HTTP Success [{}], Content: {}", statusCode, logContent);
-            }
-
-            return result;
-        } catch (HttpResponseException e) {
-            LOGGER.warn("HTTP Failed [{}], Reason: {}", statusCode, e.getMessage());
-            throw e;
+        if (statusCode >= 400) {
+            EntityUtils.consume(response.getEntity());
+            LOGGER.warn("HTTP Failed [{}], Reason: {}", statusCode, response.getReasonPhrase());
+            throw new HttpResponseException(statusCode, response.getReasonPhrase());
         }
+
+        HttpEntity entity = response.getEntity();
+        StringEntityResponse result = (entity == null)
+                ? new StringEntityResponse(null)
+                : handleEntity(entity);
+        result.setHeaders(HeaderHelper.resolveHeader(response));
+
+        if (LOGGER.isInfoEnabled()) {
+            String body = result.getEntity();
+            String logContent = (body != null && body.length() > 1000)
+                    ? body.substring(0, 1000) + "... [truncated, total: " + body.length() + "]"
+                    : body;
+            LOGGER.info("HTTP Success [{}], Content: {}", statusCode, logContent);
+        }
+
+        return result;
     }
 
     @Override
