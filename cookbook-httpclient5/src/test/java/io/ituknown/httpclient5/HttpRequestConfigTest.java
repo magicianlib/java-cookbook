@@ -72,4 +72,25 @@ class HttpRequestConfigTest {
         assertTrue(HttpRequestConfig.DEFAULT.isRedirects());
         assertTrue(HttpRequestConfig.DEFAULT.getHeaders().isEmpty());
     }
+
+    @Test
+    void defaultHeadersImmutable() {
+        assertThrows(UnsupportedOperationException.class,
+                () -> HttpRequestConfig.DEFAULT.addHeader("X", "y"));
+    }
+
+    @Test
+    void copyProducesMutableIndependentInstance() {
+        HttpRequestConfig copy = HttpRequestConfig.DEFAULT.copy();
+        copy.addHeader("X-Test", "value");
+        copy.setRedirects(false);
+        copy.setResponseTimeout(9_000L);
+
+        assertTrue(HttpRequestConfig.DEFAULT.getHeaders().isEmpty());
+        assertTrue(HttpRequestConfig.DEFAULT.isRedirects());
+        assertEquals(3_000L, HttpRequestConfig.DEFAULT.getResponseTimeout());
+        assertEquals(1, copy.getHeaders().size());
+        assertFalse(copy.isRedirects());
+        assertEquals(9_000L, copy.getResponseTimeout());
+    }
 }
