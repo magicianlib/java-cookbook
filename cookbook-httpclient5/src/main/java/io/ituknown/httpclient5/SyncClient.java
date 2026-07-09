@@ -11,13 +11,14 @@ import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.util.TimeValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
@@ -101,27 +102,7 @@ class SyncClient {
                     headerJoiner.add(header.getName() + ": " + header.getValue());
                 }
 
-                String payload = "Binary/Large Content";
-
-                if (requestBase.getEntity() != null) {
-
-                    HttpEntity entity = requestBase.getEntity();
-
-                    // Entity 必须是常见的可读文本类型
-                    if (entity.isRepeatable()) {
-                        try {
-                            // 限制读取长度，避免 EntityUtils.toString 加载超大文件到内存
-                            String content = EntityUtils.toString(entity, StandardCharsets.UTF_8);
-                            if (content != null) {
-                                payload = content.length() > 1000
-                                        ? content.substring(0, 1000) + "... [Total: " + content.length() + "]"
-                                        : content;
-                            }
-                        } catch (Exception e) {
-                            payload = "[Error reading payload: " + e.getMessage() + "]";
-                        }
-                    }
-                }
+                String payload = resolvePayloadForLog(requestBase.getEntity());
 
                 LOGGER.info("HTTP Request: [{} {}] | Payload: {} | Timeout: {}ms | Proxy: {} | Headers: [{}]",
                         requestBase.getMethod(),
@@ -143,5 +124,46 @@ class SyncClient {
 
             throw new HttpException(e);
         }
+    }
+
+    /**
+     * 为日志生成请求体摘要：最多读取 1000 字节，避免大文件全量加载进内存。
+     * 非 repeatable 或非文本 content-type 不读取，直接返回占位符。
+     */
+    static String resolvePayloadForLog(HttpEntity entity) {
+        if (entity == null || !entity.isRepeatable()) {
+            return "Binary/Large Content";
+        }
+        if (!isTextLike(entity)) {
+            return "Binary/Large Content";
+        }
+        try (InputStream in = entity.getContent()) {
+            byte[] sample = in.readNBytes(1000);
+            if (sample.length == 0) {
+                return "";
+            }
+            String content = new String(sample, StandardCharsets.UTF_8);
+            long total = entity.getContentLength();
+            if (total > 1000 || (total < 0 && sample.length == 1000)) {
+                return content + "... [truncated, total: " + (total > 0 ? total : "unknown") + "]";
+            }
+            return content;
+        } catch (Exception e) {
+            return "[Error reading payload: " + e.getMessage() + "]";
+        }
+    }
+
+    private static boolean isTextLike(HttpEntity entity) {
+        String ct = entity.getContentType();
+        if (ct == null) {
+            return false;
+        }
+        String lower = ct.toLowerCase(Locale.ROOT);
+        return lower.startsWith("text/")
+                || lower.contains("application/json")
+                || lower.contains("application/xml")
+                || lower.contains("+json")
+                || lower.contains("+xml")
+                || lower.contains("application/x-www-form-urlencoded");
     }
 }
