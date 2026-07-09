@@ -12,7 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 public class HeaderHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(HeaderHelper.class);
@@ -31,36 +33,44 @@ public class HeaderHelper {
     }
 
     /**
-     * 从请求头提取文件名
+     * 从 Content-Disposition 头提取文件名。
+     * RFC 5987 扩展格式 filename*=charset''pct-encoded 优先于标准 filename=，且大小写不敏感。
      */
     public static String fileNameParse(Header header) {
         if (header == null) {
             return null;
         }
-
-        // 使用 HC5 自带的解析器解析标准 Filename
-        // 格式: attachment; Filename="example.txt"
         String headerValue = header.getValue();
         if (headerValue == null) {
             return null;
         }
+
+        // RFC 5987 扩展格式: filename*=charset''pct-encoded (大小写不敏感, 优先)
+        String lower = headerValue.toLowerCase(Locale.ROOT);
+        int starIdx = lower.indexOf("filename*=");
+        if (starIdx >= 0) {
+            String raw = headerValue.substring(starIdx + "filename*=".length()).split(";")[0].trim();
+            int sep = raw.toLowerCase(Locale.ROOT).indexOf("''");
+            if (sep >= 0) {
+                String charsetName = raw.substring(0, sep);
+                String encoded = raw.substring(sep + 2);
+                Charset charset;
+                try {
+                    charset = Charset.forName(charsetName);
+                } catch (Exception e) {
+                    charset = StandardCharsets.UTF_8;
+                }
+                return URLDecoder.decode(encoded, charset);
+            }
+        }
+
+        // 标准格式: filename="..." (HC5 解析器, 大小写不敏感)
         ParserCursor cursor = new ParserCursor(0, headerValue.length());
         for (HeaderElement element : BasicHeaderValueParser.INSTANCE.parseElements(headerValue, cursor)) {
             for (NameValuePair param : element.getParameters()) {
                 if (param.getName().equalsIgnoreCase("Filename")) {
                     return param.getValue();
                 }
-            }
-        }
-
-        // 手动处理 RFC 5987 扩展格式 (Filename*)
-        // 格式: attachment; Filename*=UTF-8''%e6%b5%8b%e8%af%95.txt
-        String value = header.getValue();
-        if (value.contains("Filename*=")) {
-            int start = value.indexOf("Filename*=");
-            String raw = value.substring(start + 10).split(";")[0].trim();
-            if (raw.toLowerCase().startsWith("utf-8''")) {
-                return URLDecoder.decode(raw.substring(7), StandardCharsets.UTF_8);
             }
         }
 

@@ -51,6 +51,25 @@ class HeaderHelperTest {
     }
 
     @Test
+    void fileNameParseLowercaseFilenameStar() {
+        Header header = new BasicHeader("Content-Disposition", "attachment; filename*=utf-8''%E6%B5%8B%E8%AF%95.txt");
+        assertEquals("测试.txt", HeaderHelper.fileNameParse(header));
+    }
+
+    @Test
+    void fileNameParseStarPrecedenceOverFilename() {
+        Header header = new BasicHeader("Content-Disposition",
+                "attachment; filename=\"a.txt\"; filename*=UTF-8''b.txt");
+        assertEquals("b.txt", HeaderHelper.fileNameParse(header));
+    }
+
+    @Test
+    void fileNameParseUnknownCharsetFallsBackToUtf8() {
+        Header header = new BasicHeader("Content-Disposition", "attachment; filename*=WTF-8''%E6%B5%8B.txt");
+        assertEquals("测.txt", HeaderHelper.fileNameParse(header));
+    }
+
+    @Test
     void fileNameParseNullHeader() {
         assertNull(HeaderHelper.fileNameParse(null));
     }
