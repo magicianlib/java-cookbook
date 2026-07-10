@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 /**
- * 三个 *ResponseHandler 的公共骨架：先做「状态码 >= 400 → 消费实体并抛 HttpResponseException」的统一失败处理，
+ * 响应处理器公共骨架：先做「状态码 >= 400 → 消费实体并抛 HttpResponseException」的统一失败处理，
  * 再把成功（2xx/3xx）响应交给 {@link #handleSuccessful}。子类只关心成功路径，失败语义集中在此处。
  */
 abstract class AbstractHttpResponseHandler<T> implements HttpClientResponseHandler<T> {

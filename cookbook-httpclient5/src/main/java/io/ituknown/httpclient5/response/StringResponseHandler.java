@@ -18,16 +18,22 @@ public class StringResponseHandler extends AbstractHttpResponseHandler<StringEnt
     @Override
     protected StringEntityResponse handleSuccessful(ClassicHttpResponse response, int statusCode) throws IOException {
         HttpEntity entity = response.getEntity();
-        StringEntityResponse result = (entity == null)
-                ? new StringEntityResponse(null)
-                : handleEntity(entity);
+        StringEntityResponse result;
+        if (entity == null) {
+            result = new StringEntityResponse(null);
+        } else {
+            result = handleEntity(entity);
+        }
         result.setHeaders(HeaderHelper.resolveHeader(response));
 
         if (LOGGER.isInfoEnabled()) {
             String body = result.getEntity();
-            String logContent = (body != null && body.length() > 1000)
-                    ? body.substring(0, 1000) + "... [truncated, total: " + body.length() + "]"
-                    : body;
+            String logContent;
+            if (body != null && body.length() > 1000) {
+                logContent = body.substring(0, 1000) + "... [truncated, total: " + body.length() + "]";
+            } else {
+                logContent = body;
+            }
             LOGGER.info("HTTP Success [{}], Content: {}", statusCode, logContent);
         }
 

@@ -95,7 +95,10 @@ public class HeaderHelper {
                 return null;
             }
             String name = path.substring(path.lastIndexOf('/') + 1);
-            return name.isBlank() ? null : name;
+            if (name.isBlank()) {
+                return null;
+            }
+            return name;
         } catch (Exception e) {
             LOGGER.debug("Failed to parse URL path: {}", url);
             return null;

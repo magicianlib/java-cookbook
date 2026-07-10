@@ -104,21 +104,33 @@ class SyncClient {
 
                 String payload = resolvePayloadForLog(requestBase.getEntity());
 
+                String proxy = config.getProxy();
+                if (proxy == null) {
+                    proxy = "NONE";
+                }
+
                 LOGGER.info("HTTP Request: [{} {}] | Payload: {} | Timeout: {}ms | Proxy: {} | Headers: [{}]",
                         requestBase.getMethod(),
                         url,
                         payload,
                         config.getResponseTimeout(),
-                        config.getProxy() != null ? config.getProxy() : "NONE",
+                        proxy,
                         headerJoiner
                 );
             }
 
             return INSTANCE.execute(requestBase, context, responseHandler);
         } catch (Exception e) {
+            String failedUrl;
+            if (url != null) {
+                failedUrl = url.toString();
+            } else {
+                failedUrl = "Unknown URI";
+            }
+
             LOGGER.error("HTTP Execution Error [{} {}]: {}",
                     requestBase.getMethod(),
-                    url != null ? url : "Unknown URI",
+                    failedUrl,
                     e.getMessage(),
                     e);
 
@@ -145,7 +157,13 @@ class SyncClient {
             String content = new String(sample, StandardCharsets.UTF_8);
             long total = entity.getContentLength();
             if (total > 1000 || (total < 0 && sample.length == 1000)) {
-                return content + "... [truncated, total: " + (total > 0 ? total : "unknown") + "]";
+                String totalLabel;
+                if (total > 0) {
+                    totalLabel = Long.toString(total);
+                } else {
+                    totalLabel = "unknown";
+                }
+                return content + "... [truncated, total: " + totalLabel + "]";
             }
             return content;
         } catch (Exception e) {

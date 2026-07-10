@@ -45,7 +45,10 @@ public final class HttpClientUtils {
 
     private static ContentType guessContentType(File file) {
         String type = URLConnection.guessContentTypeFromName(file.getName());
-        return ContentType.create(type != null ? type : "application/octet-stream");
+        if (type == null) {
+            type = "application/octet-stream";
+        }
+        return ContentType.create(type);
     }
 
     public static final class RequestBuilder {
@@ -149,7 +152,12 @@ public final class HttpClientUtils {
         }
 
         private HttpRequestConfig effectiveConfig() {
-            HttpRequestConfig base = (config != null) ? config : HttpRequestConfig.DEFAULT;
+            HttpRequestConfig base;
+            if (config != null) {
+                base = config;
+            } else {
+                base = HttpRequestConfig.DEFAULT;
+            }
             HttpRequestConfig effective = base.copy();
             headers.forEach(effective::addHeader);
             return effective;
