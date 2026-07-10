@@ -38,7 +38,13 @@ public class RemoteNameFileDownloadResponseHandler implements HttpClientResponse
             LOGGER.warn("Failed to parse name from Header and URL, using fallback: {}", detectedName);
         }
 
-        Path filePath = targetDir.resolve(detectedName);
+        // 防止服务器返回的文件名（绝对路径或含 ../）逃逸出目标目录（CWE-22）：
+        // resolve 对绝对名会直接返回该绝对路径，对 ../ 则合后越界，配合 REPLACE_EXISTING 可覆盖任意可写文件。
+        Path filePath = targetDir.resolve(detectedName).normalize();
+        if (!filePath.startsWith(targetDir.normalize())) {
+            throw new IOException("Refused unsafe remote file name (escapes target dir): " + detectedName);
+        }
+
         return new FileDownloadResponseHandler(filePath).handleResponse(response);
     }
 }

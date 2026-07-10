@@ -120,6 +120,15 @@ class HttpClientUtilsTest {
             exchange.close();
         });
 
+        // 恶意服务器：filename 含 ../ 企图越界写文件（CWE-22）
+        server.createContext("/download-traversal", exchange -> {
+            byte[] body = "evil-content".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().put("Content-Disposition", List.of("attachment; filename=\"../malicious-escape.txt\""));
+            exchange.sendResponseHeaders(200, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+
         server.createContext("/error", exchange -> {
             exchange.getRequestBody().readAllBytes();
             byte[] body = "Internal Server Error".getBytes(StandardCharsets.UTF_8);
@@ -248,6 +257,19 @@ class HttpClientUtilsTest {
         FileEntityResponse result = HttpClientUtils.get(baseUrl + "/download").config(config).downloadToRemoteName(tempDir);
         assertTrue(result.getFileSize() > 0);
         assertEquals("test-download.txt", result.getFilePath().getFileName().toString());
+    }
+
+    @Test
+    void testDownloadRemoteNameRejectsPathTraversal() throws IOException {
+        Path escaped = tempDir.resolve("../malicious-escape.txt").normalize();
+        Files.deleteIfExists(escaped); // 清理历史残留，保证断言干净
+
+        // 服务器返回 filename="../malicious-escape.txt"，必须被拒绝而非越界写出
+        assertThrows(HttpException.class,
+                () -> HttpClientUtils.get(baseUrl + "/download-traversal").downloadToRemoteName(tempDir));
+
+        assertFalse(Files.exists(escaped));
+        assertFalse(Files.exists(tempDir.resolve("malicious-escape.txt")));
     }
 
     // ========== POST JSON ==========

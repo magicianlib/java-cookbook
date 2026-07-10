@@ -81,6 +81,22 @@ class HeadersTest {
     }
 
     @Test
+    void getFieldsByNameReturnsUnmodifiableList() {
+        Headers headers = new Headers();
+        headers.addField(new MinimalField("Set-Cookie", "a=1"));
+        headers.addField(new MinimalField("Set-Cookie", "b=2"));
+
+        List<MinimalField> fields = headers.getFields("Set-Cookie");
+        assertEquals(2, fields.size());
+        assertThrows(UnsupportedOperationException.class,
+                () -> fields.add(new MinimalField("Set-Cookie", "c=3")));
+        assertThrows(UnsupportedOperationException.class, () -> fields.clear());
+
+        // 内部状态未被破坏：依然两条
+        assertEquals(2, headers.getFields("Set-Cookie").size());
+    }
+
+    @Test
     void addFieldNull() {
         Headers headers = new Headers();
         headers.addField(null);

@@ -49,7 +49,7 @@ public class Headers implements Iterable<MinimalField> {
         if (list == null || list.isEmpty()) {
             return Collections.emptyList();
         }
-        return list;
+        return Collections.unmodifiableList(list);
     }
 
     @Override
