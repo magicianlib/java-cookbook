@@ -1,5 +1,11 @@
 package io.ituknown.httpclient5.response;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
 public class StringEntityResponse {
     public StringEntityResponse(String entity) {
         this.entity = entity;
@@ -7,23 +13,8 @@ public class StringEntityResponse {
 
     private Headers headers;
 
+    @Setter(AccessLevel.NONE)
     private String entity;
-
-    public Headers getHeaders() {
-        return headers;
-    }
-
-    public void setHeaders(Headers headers) {
-        this.headers = headers;
-    }
-
-    public String getEntity() {
-        return entity;
-    }
-
-    public void setEntity(String entity) {
-        this.entity = entity;
-    }
 
     @Override
     public String toString() {

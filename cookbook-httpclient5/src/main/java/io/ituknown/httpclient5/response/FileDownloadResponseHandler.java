@@ -1,11 +1,8 @@
 package io.ituknown.httpclient5.response;
 
 import io.ituknown.httpclient5.HeaderHelper;
-import org.apache.hc.client5.http.HttpResponseException;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.io.HttpClientResponseHandler;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
-public class FileDownloadResponseHandler implements HttpClientResponseHandler<FileEntityResponse> {
+public class FileDownloadResponseHandler extends AbstractHttpResponseHandler<FileEntityResponse> {
     private static final Logger LOGGER = LoggerFactory.getLogger(FileDownloadResponseHandler.class);
 
     private final Path filePath;
@@ -30,13 +27,7 @@ public class FileDownloadResponseHandler implements HttpClientResponseHandler<Fi
     }
 
     @Override
-    public FileEntityResponse handleResponse(ClassicHttpResponse response) throws IOException {
-        if (response.getCode() >= 400) {
-            EntityUtils.consume(response.getEntity());
-            LOGGER.warn("Download failed, status code: {}, reason: {}", response.getCode(), response.getReasonPhrase());
-            throw new HttpResponseException(response.getCode(), response.getReasonPhrase());
-        }
-
+    protected FileEntityResponse handleSuccessful(ClassicHttpResponse response, int statusCode) throws IOException {
         FileEntityResponse result = new FileEntityResponse();
         result.setHeaders(HeaderHelper.resolveHeader(response));
 
@@ -54,12 +45,11 @@ public class FileDownloadResponseHandler implements HttpClientResponseHandler<Fi
             Files.createDirectories(parent);
         }
 
+        // Files.copy 已将输入流读到 EOF，entity 随之耗尽，无需再 EntityUtils.consume
         try (final InputStream in = entity.getContent()) {
             long bytesCopied = Files.copy(in, filePath, StandardCopyOption.REPLACE_EXISTING);
             result.setFileSize(bytesCopied);
             result.setFilePath(filePath);
-
-            EntityUtils.consume(entity);
         } catch (IOException e) {
             LOGGER.error("Failed to save file [{}]. Cleaning up fragment...", filePath, e);
             try {
