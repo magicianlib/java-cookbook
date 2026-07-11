@@ -105,6 +105,21 @@ class HttpClientUtilsTest {
             exchange.close();
         });
 
+        server.createContext("/put-echo", exchange -> {
+            String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            byte[] body = (exchange.getRequestMethod() + ":" + requestBody).getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+
+        server.createContext("/delete", exchange -> {
+            byte[] body = ("method:" + exchange.getRequestMethod()).getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, body.length);
+            exchange.getResponseBody().write(body);
+            exchange.close();
+        });
+
         server.createContext("/download", exchange -> {
             byte[] body = "file-content-here".getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().put("Content-Disposition", List.of("attachment; Filename=\"test-download.txt\""));
@@ -501,6 +516,71 @@ class HttpClientUtilsTest {
         assertTrue(captured.get().startsWith("received:"));
     }
 
+    // ========== PUT ==========
+
+    @Test
+    void testPutJson() {
+        String json = "{\"name\":\"update\"}";
+        StringEntityResponse result = HttpClientUtils.put(baseUrl + "/put-echo").json(json).asString();
+        assertEquals("PUT:" + json, result.getEntity());
+    }
+
+    @Test
+    void testPutJsonWithConfig() {
+        String json = "{\"name\":\"update\"}";
+        RequestOptions config = new RequestOptions();
+        StringEntityResponse result = HttpClientUtils.put(baseUrl + "/put-echo").json(json).config(config).asString();
+        assertEquals("PUT:" + json, result.getEntity());
+    }
+
+    @Test
+    void testPutString() {
+        StringEntityResponse result = HttpClientUtils.put(baseUrl + "/put-echo").body("plain", ContentType.TEXT_PLAIN).asString();
+        assertEquals("PUT:plain", result.getEntity());
+    }
+
+    @Test
+    void testPutJsonStream() {
+        String json = "{\"stream\":true}";
+        AtomicReference<String> captured = new AtomicReference<>();
+        HttpClientUtils.put(baseUrl + "/put-echo").json(json).stream(in -> {
+            try {
+                captured.set(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+        assertEquals("PUT:" + json, captured.get());
+    }
+
+    // ========== DELETE ==========
+
+    @Test
+    void testDelete() {
+        StringEntityResponse result = HttpClientUtils.delete(baseUrl + "/delete").asString();
+        assertEquals("method:DELETE", result.getEntity());
+    }
+
+    @Test
+    void testDeleteWithConfig() {
+        RequestOptions config = new RequestOptions();
+        StringEntityResponse result = HttpClientUtils.delete(baseUrl + "/delete").config(config).asString();
+        assertEquals("method:DELETE", result.getEntity());
+    }
+
+    @Test
+    void testDeleteStream() {
+        AtomicReference<String> captured = new AtomicReference<>();
+        HttpClientUtils.delete(baseUrl + "/delete").stream(in -> {
+            try {
+                captured.set(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+        assertEquals("method:DELETE", captured.get());
+    }
+
     // ========== Error handling ==========
 
     @Test
@@ -512,6 +592,14 @@ class HttpClientUtilsTest {
     }
 
     @Test
+    void testDeleteBuilderRejectsBodySetter() {
+        assertThrows(IllegalStateException.class,
+                () -> HttpClientUtils.delete(baseUrl + "/delete").json("{}"));
+        assertThrows(IllegalStateException.class,
+                () -> HttpClientUtils.delete(baseUrl + "/delete").body("x", ContentType.TEXT_PLAIN));
+    }
+
+    @Test
     void testGetServerError() {
         assertThrows(HttpException.class, () -> HttpClientUtils.get(baseUrl + "/error").asString());
     }
@@ -519,6 +607,11 @@ class HttpClientUtilsTest {
     @Test
     void testPostJsonServerError() {
         assertThrows(HttpException.class, () -> HttpClientUtils.post(baseUrl + "/error").json("{}").asString());
+    }
+
+    @Test
+    void testPutServerError() {
+        assertThrows(HttpException.class, () -> HttpClientUtils.put(baseUrl + "/error").json("{}").asString());
     }
 
     @Test

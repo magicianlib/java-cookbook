@@ -7,8 +7,10 @@ import io.ituknown.httpclient5.response.RemoteNameFileDownloadResponseHandler;
 import io.ituknown.httpclient5.response.StreamResponseHandler;
 import io.ituknown.httpclient5.response.StringEntityResponse;
 import io.ituknown.httpclient5.response.StringResponseHandler;
+import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpPut;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
 import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
 import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
@@ -43,6 +45,14 @@ public final class HttpClientUtils {
         return new RequestBuilder("POST", url);
     }
 
+    public static RequestBuilder put(String url) {
+        return new RequestBuilder("PUT", url);
+    }
+
+    public static RequestBuilder delete(String url) {
+        return new RequestBuilder("DELETE", url);
+    }
+
     private static ContentType guessContentType(File file) {
         String type = URLConnection.guessContentTypeFromName(file.getName());
         if (type == null) {
@@ -64,7 +74,7 @@ public final class HttpClientUtils {
             this.url = url;
         }
 
-        // ---- body setter (仅 POST) ----
+        // ---- body setter (仅 POST / PUT) ----
 
         public RequestBuilder json(String json) {
             return setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
@@ -103,11 +113,18 @@ public final class HttpClientUtils {
         }
 
         private RequestBuilder setEntity(HttpEntity entity) {
-            if (!"POST".equals(method)) {
-                throw new IllegalStateException("GET request does not support a request body");
+            if (!supportsBody()) {
+                throw new IllegalStateException(method + " request does not support a request body");
             }
             this.entity = entity;
             return this;
+        }
+
+        /**
+         * POST / PUT 允许携带请求体; GET / DELETE 拒绝。
+         */
+        private boolean supportsBody() {
+            return "POST".equals(method) || "PUT".equals(method);
         }
 
         public RequestBuilder config(RequestOptions config) {
@@ -141,14 +158,17 @@ public final class HttpClientUtils {
         }
 
         private HttpUriRequestBase buildRequest() {
-            if ("GET".equals(method)) {
-                return new HttpGet(url);
-            }
-            HttpPost post = new HttpPost(url);
+            HttpUriRequestBase request = switch (method) {
+                case "GET" -> new HttpGet(url);
+                case "POST" -> new HttpPost(url);
+                case "PUT" -> new HttpPut(url);
+                case "DELETE" -> new HttpDelete(url);
+                default -> throw new IllegalStateException("Unsupported HTTP method: " + method);
+            };
             if (entity != null) {
-                post.setEntity(entity);
+                request.setEntity(entity);
             }
-            return post;
+            return request;
         }
 
         private RequestOptions effectiveConfig() {

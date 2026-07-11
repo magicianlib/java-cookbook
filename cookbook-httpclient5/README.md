@@ -31,6 +31,19 @@ HttpClientUtils.post(url).file(new File("a.txt")).asString();
 HttpClientUtils.post(url).body(bytes, ContentType.APPLICATION_OCTET_STREAM).asString();
 ```
 
+### PUT
+
+```java
+HttpClientUtils.put(url).json(json).asString();
+HttpClientUtils.put(url).body(bytes, ContentType.APPLICATION_OCTET_STREAM).asString();
+```
+
+### DELETE
+
+```java
+HttpClientUtils.delete(url).asString();
+```
+
 ### 下载
 
 ```java
