@@ -553,6 +553,46 @@ class HttpClientUtilsTest {
         assertEquals("PUT:" + json, captured.get());
     }
 
+    @Test
+    void testPutBytes() {
+        byte[] content = "binary-data".getBytes(StandardCharsets.UTF_8);
+        StringEntityResponse result = HttpClientUtils.put(baseUrl + "/put-echo").body(content, ContentType.APPLICATION_OCTET_STREAM).asString();
+        assertEquals("PUT:binary-data", result.getEntity());
+    }
+
+    @Test
+    void testPutForm() {
+        List<BasicNameValuePair> params = new ArrayList<>();
+        params.add(new BasicNameValuePair("username", "admin"));
+        params.add(new BasicNameValuePair("password", "123456"));
+        StringEntityResponse result = HttpClientUtils.put(baseUrl + "/put-echo").form(params).asString();
+        String entity = result.getEntity();
+        assertTrue(entity.startsWith("PUT:"));
+        assertTrue(entity.contains("username=admin"));
+        assertTrue(entity.contains("password=123456"));
+    }
+
+    @Test
+    void testPutMultipart() {
+        MultipartEntityBuilder builder =
+                MultipartEntityBuilder.create()
+                        .addTextBody("field1", "value1", ContentType.TEXT_PLAIN)
+                        .addTextBody("field2", "value2", ContentType.TEXT_PLAIN);
+        StringEntityResponse result = HttpClientUtils.put(baseUrl + "/put-echo").multipart(builder).asString();
+        String entity = result.getEntity();
+        assertTrue(entity.startsWith("PUT:"));
+        assertTrue(entity.contains("value1"));
+        assertTrue(entity.contains("value2"));
+    }
+
+    @Test
+    void testPutFile() throws IOException {
+        Path tempFile = Files.createTempFile(tempDir, "put-upload", ".txt");
+        Files.writeString(tempFile, "file-content-here");
+        StringEntityResponse result = HttpClientUtils.put(baseUrl + "/put-echo").file(tempFile.toFile()).asString();
+        assertEquals("PUT:file-content-here", result.getEntity());
+    }
+
     // ========== DELETE ==========
 
     @Test
@@ -612,6 +652,11 @@ class HttpClientUtilsTest {
     @Test
     void testPutServerError() {
         assertThrows(HttpException.class, () -> HttpClientUtils.put(baseUrl + "/error").json("{}").asString());
+    }
+
+    @Test
+    void testDeleteServerError() {
+        assertThrows(HttpException.class, () -> HttpClientUtils.delete(baseUrl + "/error").asString());
     }
 
     @Test
