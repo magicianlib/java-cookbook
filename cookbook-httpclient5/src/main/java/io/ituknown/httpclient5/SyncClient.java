@@ -63,27 +63,27 @@ class SyncClient {
             .setConnectionManager(CONN_MANAGER)
             .build();
 
-    static <T> T execute(HttpRequestConfig config, HttpUriRequestBase requestBase, HttpClientResponseHandler<T> responseHandler) {
+    static <T> T execute(RequestOptions config, HttpUriRequestBase httpBase, HttpClientResponseHandler<T> responseHandler) {
         URI url = null;
 
         try {
-            url = requestBase.getUri();
+            url = httpBase.getUri();
 
             RequestConfig.Builder builder = RequestConfig.custom();
 
             // 代理
-            if (config.getProxy() != null && !config.getProxy().isBlank()) {
-                builder.setProxy(HttpHost.create(config.getProxy()));
+            if (config.getProxy() != null) {
+                builder.setProxy(config.getProxy());
             }
 
             // 重定向
-            builder.setRedirectsEnabled(config.isRedirects());
+            builder.setRedirectsEnabled(config.isFollowRedirects());
             // 获取连接超时时间
             builder.setConnectionRequestTimeout(config.getConnectionRequestTimeout(), TimeUnit.MILLISECONDS);
             // 服务器响应超时时间
             builder.setResponseTimeout(config.getResponseTimeout(), TimeUnit.MILLISECONDS);
 
-            requestBase.setConfig(builder.build());
+            httpBase.setConfig(builder.build());
 
             // 认证凭证
             HttpClientContext context = HttpClientContext.create();
@@ -93,33 +93,36 @@ class SyncClient {
 
             // 请求头
             for (Map.Entry<String, String> entry : config.getHeaders().entrySet()) {
-                requestBase.setHeader(entry.getKey(), entry.getValue());
+                httpBase.setHeader(entry.getKey(), entry.getValue());
             }
 
             if (LOGGER.isInfoEnabled()) {
                 StringJoiner headerJoiner = new StringJoiner(", ");
-                for (Header header : requestBase.getHeaders()) {
+                for (Header header : httpBase.getHeaders()) {
                     headerJoiner.add(header.getName() + ": " + header.getValue());
                 }
 
-                String payload = resolvePayloadForLog(requestBase.getEntity());
+                String payload = resolvePayloadForLog(httpBase.getEntity());
 
-                String proxy = config.getProxy();
+                HttpHost proxy = config.getProxy();
+                String proxyLabel;
                 if (proxy == null) {
-                    proxy = "NONE";
+                    proxyLabel = "NONE";
+                } else {
+                    proxyLabel = proxy.toString();
                 }
 
                 LOGGER.info("HTTP Request: [{} {}] | Payload: {} | Timeout: {}ms | Proxy: {} | Headers: [{}]",
-                        requestBase.getMethod(),
+                        httpBase.getMethod(),
                         url,
                         payload,
                         config.getResponseTimeout(),
-                        proxy,
+                        proxyLabel,
                         headerJoiner
                 );
             }
 
-            return INSTANCE.execute(requestBase, context, responseHandler);
+            return INSTANCE.execute(httpBase, context, responseHandler);
         } catch (Exception e) {
             String failedUrl;
             if (url != null) {
@@ -129,7 +132,7 @@ class SyncClient {
             }
 
             LOGGER.error("HTTP Execution Error [{} {}]: {}",
-                    requestBase.getMethod(),
+                    httpBase.getMethod(),
                     failedUrl,
                     e.getMessage(),
                     e);

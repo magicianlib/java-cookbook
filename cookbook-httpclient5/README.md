@@ -41,10 +41,10 @@ HttpClientUtils.get(url).downloadToRemoteName(Path.of("/tmp"));
 ### 带 config
 
 ```java
-HttpRequestConfig config = new HttpRequestConfig();
-config.setProxy("127.0.0.1:8080");
-config.addHeader("Authorization", "Bearer xxx");
-HttpClientUtils.get(url).config(config).asString();
+RequestOptions options = new RequestOptions();
+options.setProxy("http://127.0.0.1:8080");
+options.addHeader("Authorization", "Bearer xxx");
+HttpClientUtils.get(url).config(options).asString();
 ```
 
 ## 参考

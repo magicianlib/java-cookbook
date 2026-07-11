@@ -56,7 +56,7 @@ public final class HttpClientUtils {
         private final String method;
         private final String url;
         private HttpEntity entity;
-        private HttpRequestConfig config;
+        private RequestOptions config;
         private final Map<String, String> headers = new LinkedHashMap<>();
 
         RequestBuilder(String method, String url) {
@@ -110,7 +110,7 @@ public final class HttpClientUtils {
             return this;
         }
 
-        public RequestBuilder config(HttpRequestConfig config) {
+        public RequestBuilder config(RequestOptions config) {
             this.config = config;
             return this;
         }
@@ -151,14 +151,14 @@ public final class HttpClientUtils {
             return post;
         }
 
-        private HttpRequestConfig effectiveConfig() {
-            HttpRequestConfig base;
+        private RequestOptions effectiveConfig() {
+            RequestOptions base;
             if (config != null) {
                 base = config;
             } else {
-                base = HttpRequestConfig.DEFAULT;
+                base = RequestOptions.DEFAULT;
             }
-            HttpRequestConfig effective = base.copy();
+            RequestOptions effective = base.copy();
             headers.forEach(effective::addHeader);
             return effective;
         }

@@ -165,7 +165,7 @@ class HttpClientUtilsTest {
 
     @Test
     void testGetWithCustomHeaders() {
-        HttpRequestConfig config = new HttpRequestConfig();
+        RequestOptions config = new RequestOptions();
         config.addHeader("X-Request-Id", "12345");
 
         StringEntityResponse result = HttpClientUtils.get(baseUrl + "/get-custom-headers").config(config).asString();
@@ -198,7 +198,7 @@ class HttpClientUtilsTest {
 
     @Test
     void testGetStreamWithConfig() {
-        HttpRequestConfig config = new HttpRequestConfig();
+        RequestOptions config = new RequestOptions();
         AtomicReference<String> captured = new AtomicReference<>();
 
         Headers headers = HttpClientUtils.get(baseUrl + "/stream").config(config).stream(in -> {
@@ -226,7 +226,7 @@ class HttpClientUtilsTest {
 
     @Test
     void testDownloadWithConfig() throws IOException {
-        HttpRequestConfig config = new HttpRequestConfig();
+        RequestOptions config = new RequestOptions();
         Path targetFile = tempDir.resolve("downloaded-config.txt");
         FileEntityResponse result = HttpClientUtils.get(baseUrl + "/download").config(config).downloadTo(targetFile.toString());
         assertTrue(result.getFileSize() > 0);
@@ -253,7 +253,7 @@ class HttpClientUtilsTest {
 
     @Test
     void testDownloadUseRemoteNameWithConfig() throws IOException {
-        HttpRequestConfig config = new HttpRequestConfig();
+        RequestOptions config = new RequestOptions();
         FileEntityResponse result = HttpClientUtils.get(baseUrl + "/download").config(config).downloadToRemoteName(tempDir);
         assertTrue(result.getFileSize() > 0);
         assertEquals("test-download.txt", result.getFilePath().getFileName().toString());
@@ -284,7 +284,7 @@ class HttpClientUtilsTest {
     @Test
     void testPostJsonStringWithConfig() {
         String json = "{\"name\":\"test\"}";
-        HttpRequestConfig config = new HttpRequestConfig();
+        RequestOptions config = new RequestOptions();
         StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-echo").json(json).config(config).asString();
         assertEquals("echo:" + json, result.getEntity());
     }
@@ -299,7 +299,7 @@ class HttpClientUtilsTest {
     @Test
     void testPostJsonBytesWithConfig() {
         byte[] json = "{\"key\":\"value\"}".getBytes(StandardCharsets.UTF_8);
-        HttpRequestConfig config = new HttpRequestConfig();
+        RequestOptions config = new RequestOptions();
         StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-echo").json(json).config(config).asString();
         assertEquals("echo:" + new String(json, StandardCharsets.UTF_8), result.getEntity());
     }
@@ -342,7 +342,7 @@ class HttpClientUtilsTest {
 
     @Test
     void testPostStringWithConfig() {
-        HttpRequestConfig config = new HttpRequestConfig();
+        RequestOptions config = new RequestOptions();
         StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-echo").body("data", ContentType.TEXT_PLAIN).config(config).asString();
         assertEquals("echo:data", result.getEntity());
     }
@@ -357,7 +357,7 @@ class HttpClientUtilsTest {
     @Test
     void testPostBytesWithConfig() {
         byte[] content = "binary-data".getBytes(StandardCharsets.UTF_8);
-        HttpRequestConfig config = new HttpRequestConfig();
+        RequestOptions config = new RequestOptions();
         StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-echo").body(content, ContentType.APPLICATION_OCTET_STREAM).config(config).asString();
         assertEquals("echo:binary-data", result.getEntity());
     }
@@ -407,7 +407,7 @@ class HttpClientUtilsTest {
     void testPostFormWithConfig() {
         List<BasicNameValuePair> params = new ArrayList<>();
         params.add(new BasicNameValuePair("key", "value"));
-        HttpRequestConfig config = new HttpRequestConfig();
+        RequestOptions config = new RequestOptions();
         StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-form").form(params).config(config).asString();
         assertTrue(result.getEntity().contains("key=value"));
     }
@@ -446,7 +446,7 @@ class HttpClientUtilsTest {
         MultipartEntityBuilder builder =
                 MultipartEntityBuilder.create()
                         .addTextBody("name", "test", ContentType.TEXT_PLAIN);
-        HttpRequestConfig config = new HttpRequestConfig();
+        RequestOptions config = new RequestOptions();
         StringEntityResponse result = HttpClientUtils.post(baseUrl + "/post-multipart").multipart(builder).config(config).asString();
         assertTrue(result.getEntity().contains("multipart/form-data"));
     }
@@ -530,8 +530,8 @@ class HttpClientUtilsTest {
 
     @Test
     void testRedirectNotTreatedAsError() {
-        HttpRequestConfig config = new HttpRequestConfig();
-        config.setRedirects(false);
+        RequestOptions config = new RequestOptions();
+        config.setFollowRedirects(false);
         // 302 在 >= 400 阈值下不再当错误抛出
         StringEntityResponse result = HttpClientUtils.get(baseUrl + "/redirect-302").config(config).asString();
         assertNotNull(result);
