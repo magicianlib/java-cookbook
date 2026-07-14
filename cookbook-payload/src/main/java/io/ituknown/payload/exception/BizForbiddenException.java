@@ -3,12 +3,19 @@ package io.ituknown.payload.exception;
 import io.ituknown.payload.ResultCodes;
 
 /**
- * 授权异常，表示权限不足或访问被拒绝。
+ * 无权限（已认证但权限不足）。
+ * <p>用于已登录用户访问超出其角色 / 权限范围的资源的场景。
+ *
+ * @see ResultCodes#FORBIDDEN
  */
 public class BizForbiddenException extends BizException {
 
     @java.io.Serial
     private static final long serialVersionUID = 1L;
+
+    public BizForbiddenException() {
+        this(ResultCodes.FORBIDDEN.message());
+    }
 
     public BizForbiddenException(String msg) {
         super(ResultCodes.FORBIDDEN, msg, (Throwable) null);

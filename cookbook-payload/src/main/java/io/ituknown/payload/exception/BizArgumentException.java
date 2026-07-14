@@ -3,7 +3,10 @@ package io.ituknown.payload.exception;
 import io.ituknown.payload.ResultCodes;
 
 /**
- * 参数异常，表示请求参数不合法。
+ * 参数错误 / 请求不合法。
+ * <p>用于请求参数缺失、格式错误、值越界、类型不匹配等入参校验失败的场景。
+ *
+ * @see ResultCodes#BAD_REQUEST
  */
 public class BizArgumentException extends BizException {
 
