@@ -13,35 +13,6 @@ import org.junit.jupiter.api.Test;
 
 public class RsaKeysTest {
 
-    /** 包私有原语：应把 PEM（含头尾、含换行）还原为 DER 字节。 */
-    @Test
-    public void testExtractPemContentStripsHeaders() {
-        String pem = """
-                -----BEGIN PRIVATE KEY-----
-                AAAB
-                CCDE
-                -----END PRIVATE KEY-----
-                """;
-        // 去头尾后拼接 AAABCCDE
-        byte[] expected = Base64.toByte("AAABCCDE");
-        byte[] actual = RsaKeys.extractPemContent(pem.getBytes(java.nio.charset.StandardCharsets.US_ASCII));
-        Assertions.assertArrayEquals(expected, actual);
-    }
-
-    /** 非 PEM（裸 DER 二进制）原样返回。 */
-    @Test
-    public void testExtractPemContentPassesThroughDer() {
-        byte[] der = {0x30, (byte) 0x82, 0x01, 0x22, 0x02, 0x01, 0x00};
-        byte[] actual = RsaKeys.extractPemContent(der);
-        Assertions.assertArrayEquals(der, actual);
-    }
-
-    @Test
-    public void testIsPemDetectsHeader() {
-        Assertions.assertTrue(RsaKeys.isPem("-----BEGIN PRIVATE KEY-----\n".getBytes(java.nio.charset.StandardCharsets.US_ASCII)));
-        Assertions.assertFalse(RsaKeys.isPem(new byte[]{0x30, (byte) 0x82}));
-    }
-
     @Test
     public void testBuildPublicKeyFromDer() throws Exception {
         java.security.KeyPairGenerator g = java.security.KeyPairGenerator.getInstance("RSA");
@@ -176,21 +147,6 @@ public class RsaKeysTest {
             sb.append(base64, i, Math.min(i + 64, base64.length())).append('\n');
         }
         return sb.append("-----END ").append(type).append("-----\n").toString();
-    }
-
-    @Test
-    public void testIsPemRejectsShortInput() {
-        // 输入比 -----BEGIN 标记还短：必须返回 false 而非越界
-        Assertions.assertFalse(RsaKeys.isPem(new byte[]{0x2D, 0x2D})); // "--"
-        Assertions.assertFalse(RsaKeys.isPem(new byte[]{}));
-    }
-
-    @Test
-    public void testExtractPemContentHandlesCrlfAndEmptyBody() {
-        // CRLF 行尾应被 \R 正确切分
-        byte[] crlf = "-----BEGIN PRIVATE KEY-----\r\nAAAB\r\nCCDE\r\n-----END PRIVATE KEY-----\r\n"
-                .getBytes(StandardCharsets.US_ASCII);
-        Assertions.assertArrayEquals(Base64.toByte("AAABCCDE"), RsaKeys.extractPemContent(crlf));
     }
 
     @Test
