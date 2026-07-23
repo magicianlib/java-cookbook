@@ -49,6 +49,62 @@ class MdcUtilsTest {
         assertNull(MDC.get(MdcUtils.TRACE_ID));
     }
 
+    // ===== withTraceScope =====
+
+    @Test
+    void withTraceScope_generatesTraceIdInsideScope() {
+        String[] captured = new String[1];
+        MdcUtils.withTraceScope(() -> captured[0] = MDC.get(MdcUtils.TRACE_ID));
+        assertNotNull(captured[0]);
+        assertEquals(32, captured[0].length());
+    }
+
+    @Test
+    void withTraceScope_usesGivenTraceIdInsideScope() {
+        MdcUtils.withTraceScope("scope123", () ->
+                assertEquals("scope123", MDC.get(MdcUtils.TRACE_ID)));
+    }
+
+    @Test
+    void withTraceScope_appendsWhenOuterTraceExists() {
+        MdcUtils.withTrace("outer");
+        MdcUtils.withTraceScope("inner", () ->
+                assertEquals("outer|inner", MDC.get(MdcUtils.TRACE_ID)));
+    }
+
+    @Test
+    void withTraceScope_restoresPreviousAfterScope() {
+        MdcUtils.withTrace("outer");
+        MdcUtils.withTraceScope("inner", () -> {
+        });
+        assertEquals("outer", MDC.get(MdcUtils.TRACE_ID));
+    }
+
+    @Test
+    void withTraceScope_clearsTraceWhenNoneExistedBefore() {
+        MdcUtils.withTraceScope("inner", () -> {
+        });
+        assertNull(MDC.get(MdcUtils.TRACE_ID));
+    }
+
+    @Test
+    void withTraceScope_emptyTraceId_skipsSetButStillRestores() {
+        MdcUtils.withTrace("outer");
+        MdcUtils.withTraceScope("", () -> {
+        });
+        assertEquals("outer", MDC.get(MdcUtils.TRACE_ID));
+    }
+
+    @Test
+    void withTraceScope_restoresEvenWhenRunnableThrows() {
+        MdcUtils.withTrace("outer");
+        assertThrows(RuntimeException.class, () ->
+                MdcUtils.withTraceScope("inner", () -> {
+                    throw new RuntimeException("boom");
+                }));
+        assertEquals("outer", MDC.get(MdcUtils.TRACE_ID));
+    }
+
     // ===== getMdc / setMdc =====
 
     @Test

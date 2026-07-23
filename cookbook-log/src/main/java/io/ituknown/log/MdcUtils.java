@@ -67,6 +67,39 @@ public final class MdcUtils {
         }
     }
 
+    /**
+     * 在新的链路作用域中执行操作，自动生成随机 traceId。
+     * <p>
+     * 操作结束后恢复进入作用域前的链路标识，不影响外层链路。
+     *
+     * @param runnable 要执行的操作
+     */
+    public static void withTraceScope(Runnable runnable) {
+        withTraceScope(UUID.randomUUID().toString().replace("-", ""), runnable);
+    }
+
+    /**
+     * 在新的链路作用域中执行操作。
+     * <p>
+     * 若当前已有链路标识，则拼接形成嵌套链路；操作结束后恢复进入作用域前的状态。
+     *
+     * @param traceId  链路追踪 ID，为空则不设置并记录警告日志
+     * @param runnable 要执行的操作
+     */
+    public static void withTraceScope(String traceId, Runnable runnable) {
+        String mdc = getMdc();
+        try {
+            withTrace(traceId);
+            runnable.run();
+        } finally {
+            if (mdc == null) {
+                MDC.remove(TRACE_ID);
+            } else {
+                MDC.put(TRACE_ID, mdc);
+            }
+        }
+    }
+
     public static String getTrace() {
         String mdc = getMdc();
         if (StringUtils.isBlank(mdc)) {
