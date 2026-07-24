@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -161,6 +162,36 @@ class JacksonUtilsTest {
     }
 
     @Test
+    void toObj_fromReader_byClass() throws IOException {
+        String json = "{\"name\":\"test\",\"age\":20,\"amount\":\"1.00\"}";
+        try (StringReader reader = new StringReader(json)) {
+            Sample result = JacksonUtils.toObj(reader, Sample.class);
+            assertEquals("test", result.getName());
+            assertEquals(20, result.getAge());
+        }
+    }
+
+    @Test
+    void toObj_fromInputStream_byTypeReference() throws IOException {
+        byte[] data = "[1,2,3]".getBytes();
+        try (ByteArrayInputStream is = new ByteArrayInputStream(data)) {
+            List<Integer> result = JacksonUtils.toObj(is, new TypeReference<List<Integer>>() {});
+            assertEquals(3, result.size());
+            assertEquals(2, result.get(1));
+        }
+    }
+
+    @Test
+    void toObj_fromReader_byParametrized() throws IOException {
+        String json = "[{\"name\":\"test\",\"age\":20,\"amount\":\"1.00\"}]";
+        try (StringReader reader = new StringReader(json)) {
+            List<Sample> result = JacksonUtils.toObj(reader, List.class, Sample.class);
+            assertEquals(1, result.size());
+            assertEquals("test", result.get(0).getName());
+        }
+    }
+
+    @Test
     void toObj_fromString_byType() {
         String json = "10";
         Integer result = JacksonUtils.toObj(json, Integer.class);
@@ -214,6 +245,16 @@ class JacksonUtilsTest {
         assertEquals("a", result.get(0));
     }
 
+    @Test
+    void toCollection_fromInputStream() throws IOException {
+        byte[] data = "[1,2,3]".getBytes();
+        try (ByteArrayInputStream is = new ByteArrayInputStream(data)) {
+            List<Integer> result = JacksonUtils.toCollection(is, ArrayList.class, Integer.class);
+            assertEquals(3, result.size());
+            assertEquals(3, result.get(2));
+        }
+    }
+
     // ========== Map ==========
 
     @Test
@@ -231,6 +272,16 @@ class JacksonUtilsTest {
         assertEquals(2, result.get("b"));
     }
 
+    @Test
+    void toMap_fromReader() throws IOException {
+        String json = "{\"a\":1,\"b\":2}";
+        try (StringReader reader = new StringReader(json)) {
+            HashMap<String, Integer> result = JacksonUtils.toMap(reader, String.class, Integer.class);
+            assertEquals(1, result.get("a"));
+            assertEquals(2, result.get("b"));
+        }
+    }
+
     // ========== CollectionMap ==========
 
     @Test
@@ -241,6 +292,16 @@ class JacksonUtilsTest {
         assertEquals(1, result.get(0).get("a"));
     }
 
+    @Test
+    void toCollectionMap_fromInputStream() throws IOException {
+        byte[] data = "[{\"a\":1},{\"b\":2}]".getBytes();
+        try (ByteArrayInputStream is = new ByteArrayInputStream(data)) {
+            ArrayList<HashMap<String, Integer>> result = JacksonUtils.toCollectionMap(is, String.class, Integer.class);
+            assertEquals(2, result.size());
+            assertEquals(2, result.get(1).get("b"));
+        }
+    }
+
     // ========== Node operations ==========
 
     @Test
@@ -248,6 +309,15 @@ class JacksonUtilsTest {
         String json = "{\"key\":\"value\"}";
         ObjectNode node = JacksonUtils.toObjectNode(json);
         assertEquals("value", node.get("key").asText());
+    }
+
+    @Test
+    void toObjectNode_fromReader() throws IOException {
+        String json = "{\"key\":\"value\"}";
+        try (StringReader reader = new StringReader(json)) {
+            ObjectNode node = JacksonUtils.toObjectNode(reader);
+            assertEquals("value", node.get("key").asText());
+        }
     }
 
     @Test
