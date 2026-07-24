@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.MapType;
 import org.msgpack.jackson.dataformat.MessagePackFactory;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -21,13 +20,14 @@ import java.util.*;
 
 import static io.ituknown.jackson.JacksonConfig.applyCommonBuilderConfig;
 import static io.ituknown.jackson.JacksonConfig.configureObjectMapperForJsr310;
+import static io.ituknown.jackson.JacksonDeserializeSupport.deserialize;
 
 /**
  * Jackson MessagePack 序列化/反序列化工具类
  *
  * <p>基于 {@code jackson-dataformat-msgpack} 扩展，提供 MessagePack 二进制格式的序列化与反序列化能力。
- * 内部维护两套 {@link ObjectMapper} 实例（格式化 / 非格式化），通过 {@code format} 参数切换。
- * 所有反序列化方法均支持 {@code byte[]} 和 Base64 字符串两种输入形式。</p>
+ * 内部维护两套 {@link ObjectMapper} 实例（格式化 / 非格式化），通过 {@code format} 参数切换；
+ * {@code format} 仅影响序列化输出，反序列化过程不涉及格式化。</p>
  *
  * <p><b>序列化输出：</b></p>
  * <ul>
@@ -181,21 +181,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <T> T toObj(byte[] rawBytes, Class<T> clazz) {
-        return toObj(rawBytes, clazz, false);
-    }
-
-    /**
-     * 将 MessagePack 二进制数据反序列化为指定类型的对象
-     *
-     * @param rawBytes MessagePack 二进制数据
-     * @param clazz    目标类型
-     * @param format   是否使用格式化 ObjectMapper
-     * @param <T>      目标类型泛型
-     * @return 反序列化后的对象
-     * @throws DeserializationException 反序列化失败时抛出
-     */
-    public static <T> T toObj(byte[] rawBytes, Class<T> clazz, boolean format) {
-        return toObj(rawBytes, clazz, getObjectMapper(format));
+        return toObj(rawBytes, clazz, getObjectMapper());
     }
 
     /**
@@ -209,11 +195,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <T> T toObj(byte[] rawBytes, Class<T> clazz, final ObjectMapper objectMapper) {
-        try {
-            return objectMapper.readValue(rawBytes, clazz);
-        } catch (IOException e) {
-            throw new DeserializationException(clazz, e);
-        }
+        return deserialize(clazz, () -> objectMapper.readValue(rawBytes, clazz));
     }
 
     // ====================== 反序列化 (Class) - base64 ======================
@@ -228,21 +210,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <T> T toObj(String base64, Class<T> clazz) {
-        return toObj(base64, clazz, false);
-    }
-
-    /**
-     * 将 Base64 编码字符串反序列化为指定类型的对象
-     *
-     * @param base64 Base64 编码字符串
-     * @param clazz  目标类型
-     * @param format 是否使用格式化 ObjectMapper
-     * @param <T>    目标类型泛型
-     * @return 反序列化后的对象
-     * @throws DeserializationException 反序列化失败时抛出
-     */
-    public static <T> T toObj(String base64, Class<T> clazz, boolean format) {
-        return toObj(base64, clazz, getObjectMapper(format));
+        return toObj(base64, clazz, getObjectMapper());
     }
 
     /**
@@ -271,21 +239,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <T> T toObj(byte[] rawBytes, Type type) {
-        return toObj(rawBytes, type, false);
-    }
-
-    /**
-     * 将 MessagePack 二进制数据反序列化为指定类型的对象
-     *
-     * @param rawBytes MessagePack 二进制数据
-     * @param type     目标类型
-     * @param format   是否使用格式化 ObjectMapper
-     * @param <T>      目标类型泛型
-     * @return 反序列化后的对象
-     * @throws DeserializationException 反序列化失败时抛出
-     */
-    public static <T> T toObj(byte[] rawBytes, Type type, boolean format) {
-        return toObj(rawBytes, type, getObjectMapper(format));
+        return toObj(rawBytes, type, getObjectMapper());
     }
 
     /**
@@ -299,11 +253,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <T> T toObj(byte[] rawBytes, Type type, final ObjectMapper objectMapper) {
-        try {
-            return objectMapper.readValue(rawBytes, objectMapper.constructType(type));
-        } catch (IOException e) {
-            throw new DeserializationException(type, e);
-        }
+        return deserialize(type, () -> objectMapper.readValue(rawBytes, objectMapper.constructType(type)));
     }
 
     // ====================== 反序列化 (Type) - base64 ======================
@@ -318,21 +268,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <T> T toObj(String base64, Type type) {
-        return toObj(base64, type, false);
-    }
-
-    /**
-     * 将 Base64 编码字符串反序列化为指定类型的对象
-     *
-     * @param base64 Base64 编码字符串
-     * @param type   目标类型
-     * @param format 是否使用格式化 ObjectMapper
-     * @param <T>    目标类型泛型
-     * @return 反序列化后的对象
-     * @throws DeserializationException 反序列化失败时抛出
-     */
-    public static <T> T toObj(String base64, Type type, boolean format) {
-        return toObj(base64, type, getObjectMapper(format));
+        return toObj(base64, type, getObjectMapper());
     }
 
     /**
@@ -361,21 +297,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <T> T toObj(InputStream inputStream, Class<T> clazz) {
-        return toObj(inputStream, clazz, false);
-    }
-
-    /**
-     * 从输入流读取 MessagePack 数据并反序列化为指定类型的对象
-     *
-     * @param inputStream 输入流
-     * @param clazz       目标类型
-     * @param format      是否使用格式化 ObjectMapper
-     * @param <T>         目标类型泛型
-     * @return 反序列化后的对象
-     * @throws DeserializationException 反序列化失败时抛出
-     */
-    public static <T> T toObj(InputStream inputStream, Class<T> clazz, boolean format) {
-        return toObj(inputStream, clazz, getObjectMapper(format));
+        return toObj(inputStream, clazz, getObjectMapper());
     }
 
     /**
@@ -389,11 +311,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <T> T toObj(InputStream inputStream, Class<T> clazz, final ObjectMapper objectMapper) {
-        try {
-            return objectMapper.readValue(inputStream, clazz);
-        } catch (IOException e) {
-            throw new DeserializationException(clazz, e);
-        }
+        return deserialize(clazz, () -> objectMapper.readValue(inputStream, clazz));
     }
 
     // ====================== 反序列化 (TypeReference) - byte[] ======================
@@ -408,21 +326,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <T> T toObj(byte[] rawBytes, TypeReference<T> typeReference) {
-        return toObj(rawBytes, typeReference, false);
-    }
-
-    /**
-     * 将 MessagePack 二进制数据反序列化为指定泛型类型的对象
-     *
-     * @param rawBytes      MessagePack 二进制数据
-     * @param typeReference 目标泛型类型引用
-     * @param format        是否使用格式化 ObjectMapper
-     * @param <T>           目标类型泛型
-     * @return 反序列化后的对象
-     * @throws DeserializationException 反序列化失败时抛出
-     */
-    public static <T> T toObj(byte[] rawBytes, TypeReference<T> typeReference, boolean format) {
-        return toObj(rawBytes, typeReference, getObjectMapper(format));
+        return toObj(rawBytes, typeReference, getObjectMapper());
     }
 
     /**
@@ -436,11 +340,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <T> T toObj(byte[] rawBytes, TypeReference<T> typeReference, final ObjectMapper objectMapper) {
-        try {
-            return objectMapper.readValue(rawBytes, typeReference);
-        } catch (IOException e) {
-            throw new DeserializationException(typeReference.getType(), e);
-        }
+        return deserialize(typeReference.getType(), () -> objectMapper.readValue(rawBytes, typeReference));
     }
 
     // ====================== 反序列化 (TypeReference) - base64 ======================
@@ -455,21 +355,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <T> T toObj(String base64, TypeReference<T> typeReference) {
-        return toObj(base64, typeReference, false);
-    }
-
-    /**
-     * 将 Base64 编码字符串反序列化为指定泛型类型的对象
-     *
-     * @param base64        Base64 编码字符串
-     * @param typeReference 目标泛型类型引用
-     * @param format        是否使用格式化 ObjectMapper
-     * @param <T>           目标类型泛型
-     * @return 反序列化后的对象
-     * @throws DeserializationException 反序列化失败时抛出
-     */
-    public static <T> T toObj(String base64, TypeReference<T> typeReference, boolean format) {
-        return toObj(base64, typeReference, getObjectMapper(format));
+        return toObj(base64, typeReference, getObjectMapper());
     }
 
     /**
@@ -498,21 +384,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <T> T toObj(InputStream inputStream, Type type) {
-        return toObj(inputStream, type, false);
-    }
-
-    /**
-     * 从输入流读取 MessagePack 数据并反序列化为指定类型的对象
-     *
-     * @param inputStream 输入流
-     * @param type        目标类型
-     * @param format      是否使用格式化 ObjectMapper
-     * @param <T>         目标类型泛型
-     * @return 反序列化后的对象
-     * @throws DeserializationException 反序列化失败时抛出
-     */
-    public static <T> T toObj(InputStream inputStream, Type type, boolean format) {
-        return toObj(inputStream, type, getObjectMapper(format));
+        return toObj(inputStream, type, getObjectMapper());
     }
 
     /**
@@ -526,11 +398,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <T> T toObj(InputStream inputStream, Type type, final ObjectMapper objectMapper) {
-        try {
-            return objectMapper.readValue(inputStream, objectMapper.constructType(type));
-        } catch (IOException e) {
-            throw new DeserializationException(type, e);
-        }
+        return deserialize(type, () -> objectMapper.readValue(inputStream, objectMapper.constructType(type)));
     }
 
     // ====================== toObjectNode - byte[] ======================
@@ -543,19 +411,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static ObjectNode toObjectNode(byte[] rawBytes) {
-        return toObjectNode(rawBytes, false);
-    }
-
-    /**
-     * 将 MessagePack 二进制数据反序列化为 {@link ObjectNode}
-     *
-     * @param rawBytes MessagePack 二进制数据
-     * @param format   是否使用格式化 ObjectMapper
-     * @return ObjectNode 实例
-     * @throws DeserializationException 反序列化失败时抛出
-     */
-    public static ObjectNode toObjectNode(byte[] rawBytes, boolean format) {
-        return toObjectNode(rawBytes, getObjectMapper(format));
+        return toObjectNode(rawBytes, getObjectMapper());
     }
 
     /**
@@ -580,19 +436,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static ObjectNode toObjectNode(String base64) {
-        return toObjectNode(base64, false);
-    }
-
-    /**
-     * 将 Base64 编码字符串反序列化为 {@link ObjectNode}
-     *
-     * @param base64 Base64 编码字符串
-     * @param format 是否使用格式化 ObjectMapper
-     * @return ObjectNode 实例
-     * @throws DeserializationException 反序列化失败时抛出
-     */
-    public static ObjectNode toObjectNode(String base64, boolean format) {
-        return toObjectNode(base64, getObjectMapper(format));
+        return toObjectNode(base64, getObjectMapper());
     }
 
     /**
@@ -620,22 +464,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <T> T toObj(byte[] rawBytes, Class<T> parametrized, Class<?>... parameterClasses) {
-        return toObj(rawBytes, false, parametrized, parameterClasses);
-    }
-
-    /**
-     * 将 MessagePack 二进制数据反序列化为参数化类型的对象
-     *
-     * @param rawBytes         MessagePack 二进制数据
-     * @param format           是否使用格式化 ObjectMapper
-     * @param parametrized     容器原始类型，如 {@code List.class}
-     * @param parameterClasses 容器的泛型参数类型
-     * @param <T>              目标类型泛型
-     * @return 反序列化后的对象
-     * @throws DeserializationException 反序列化失败时抛出
-     */
-    public static <T> T toObj(byte[] rawBytes, boolean format, Class<T> parametrized, Class<?>... parameterClasses) {
-        return toObj(rawBytes, getObjectMapper(format), parametrized, parameterClasses);
+        return toObj(rawBytes, getObjectMapper(), parametrized, parameterClasses);
     }
 
     /**
@@ -651,11 +480,7 @@ public enum MessagePackUtils {
      */
     public static <T> T toObj(byte[] rawBytes, final ObjectMapper objectMapper, Class<T> parametrized, Class<?>... parameterClasses) {
         JavaType javaType = objectMapper.getTypeFactory().constructParametricType(parametrized, parameterClasses);
-        try {
-            return objectMapper.readValue(rawBytes, javaType);
-        } catch (IOException e) {
-            throw new DeserializationException(javaType, e);
-        }
+        return deserialize(javaType, () -> objectMapper.readValue(rawBytes, javaType));
     }
 
     // ====================== 反序列化 (参数化类型) - base64 ======================
@@ -671,22 +496,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <T> T toObj(String base64, Class<T> parametrized, Class<?>... parameterClasses) {
-        return toObj(base64, false, parametrized, parameterClasses);
-    }
-
-    /**
-     * 将 Base64 编码字符串反序列化为参数化类型的对象
-     *
-     * @param base64           Base64 编码字符串
-     * @param format           是否使用格式化 ObjectMapper
-     * @param parametrized     容器原始类型，如 {@code List.class}
-     * @param parameterClasses 容器的泛型参数类型
-     * @param <T>              目标类型泛型
-     * @return 反序列化后的对象
-     * @throws DeserializationException 反序列化失败时抛出
-     */
-    public static <T> T toObj(String base64, boolean format, Class<T> parametrized, Class<?>... parameterClasses) {
-        return toObj(base64, getObjectMapper(format), parametrized, parameterClasses);
+        return toObj(base64, getObjectMapper(), parametrized, parameterClasses);
     }
 
     /**
@@ -718,23 +528,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <C extends Collection<E>, E> C toCollection(byte[] rawBytes, Class<C> collection, Class<E> element) {
-        return toCollection(rawBytes, collection, element, false);
-    }
-
-    /**
-     * 将 MessagePack 二进制数据反序列化为指定集合类型
-     *
-     * @param rawBytes   MessagePack 二进制数据
-     * @param collection 集合类型
-     * @param element    集合元素类型
-     * @param format     是否使用格式化 ObjectMapper
-     * @param <C>        集合类型泛型
-     * @param <E>        元素类型泛型
-     * @return 反序列化后的集合
-     * @throws DeserializationException 反序列化失败时抛出
-     */
-    public static <C extends Collection<E>, E> C toCollection(byte[] rawBytes, Class<C> collection, Class<E> element, boolean format) {
-        return toCollection(rawBytes, collection, element, getObjectMapper(format));
+        return toCollection(rawBytes, collection, element, getObjectMapper());
     }
 
     /**
@@ -751,11 +545,7 @@ public enum MessagePackUtils {
      */
     public static <C extends Collection<E>, E> C toCollection(byte[] rawBytes, Class<C> collection, Class<E> element, final ObjectMapper objectMapper) {
         CollectionType type = objectMapper.getTypeFactory().constructCollectionType(collection, element);
-        try {
-            return objectMapper.readValue(rawBytes, type);
-        } catch (Exception e) {
-            throw new DeserializationException(type, e);
-        }
+        return deserialize(type, () -> objectMapper.readValue(rawBytes, type));
     }
 
     /**
@@ -769,15 +559,7 @@ public enum MessagePackUtils {
      */
     @SuppressWarnings("unchecked")
     public static <E> ArrayList<E> toCollection(byte[] rawBytes, Class<E> element) {
-        return toCollection(rawBytes, ArrayList.class, element, false);
-    }
-
-    /**
-     * 将 MessagePack 二进制数据反序列化为 {@link ArrayList}
-     */
-    @SuppressWarnings("unchecked")
-    public static <E> ArrayList<E> toCollection(byte[] rawBytes, Class<E> element, boolean format) {
-        return toCollection(rawBytes, ArrayList.class, element, getObjectMapper(format));
+        return toCollection(rawBytes, ArrayList.class, element, getObjectMapper());
     }
 
     /**
@@ -802,14 +584,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <C extends Collection<E>, E> C toCollection(String base64, Class<C> collection, Class<E> element) {
-        return toCollection(base64, collection, element, false);
-    }
-
-    /**
-     * 将 Base64 编码字符串反序列化为指定集合类型
-     */
-    public static <C extends Collection<E>, E> C toCollection(String base64, Class<C> collection, Class<E> element, boolean format) {
-        return toCollection(base64, collection, element, getObjectMapper(format));
+        return toCollection(base64, collection, element, getObjectMapper());
     }
 
     /**
@@ -824,15 +599,7 @@ public enum MessagePackUtils {
      */
     @SuppressWarnings("unchecked")
     public static <E> ArrayList<E> toCollection(String base64, Class<E> element) {
-        return toCollection(base64, ArrayList.class, element, false);
-    }
-
-    /**
-     * 将 Base64 编码字符串反序列化为 {@link ArrayList}
-     */
-    @SuppressWarnings("unchecked")
-    public static <E> ArrayList<E> toCollection(String base64, Class<E> element, boolean format) {
-        return toCollection(base64, ArrayList.class, element, getObjectMapper(format));
+        return toCollection(base64, ArrayList.class, element, getObjectMapper());
     }
 
     /**
@@ -863,14 +630,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <K, V, H extends Map<K, V>> H toMap(byte[] rawBytes, Class<H> map, Class<K> key, Class<V> value) {
-        return toMap(rawBytes, map, key, value, false);
-    }
-
-    /**
-     * 将 MessagePack 二进制数据反序列化为指定 Map 类型
-     */
-    public static <K, V, H extends Map<K, V>> H toMap(byte[] rawBytes, Class<H> map, Class<K> key, Class<V> value, boolean format) {
-        return toMap(rawBytes, map, key, value, getObjectMapper(format));
+        return toMap(rawBytes, map, key, value, getObjectMapper());
     }
 
     /**
@@ -878,11 +638,7 @@ public enum MessagePackUtils {
      */
     public static <K, V, H extends Map<K, V>> H toMap(byte[] rawBytes, Class<H> map, Class<K> key, Class<V> value, final ObjectMapper objectMapper) {
         MapType type = objectMapper.getTypeFactory().constructMapType(map, key, value);
-        try {
-            return objectMapper.readValue(rawBytes, type);
-        } catch (Exception e) {
-            throw new DeserializationException(type, e);
-        }
+        return deserialize(type, () -> objectMapper.readValue(rawBytes, type));
     }
 
     /**
@@ -898,15 +654,7 @@ public enum MessagePackUtils {
      */
     @SuppressWarnings("unchecked")
     public static <K, V> HashMap<K, V> toMap(byte[] rawBytes, Class<K> key, Class<V> value) {
-        return toMap(rawBytes, HashMap.class, key, value, false);
-    }
-
-    /**
-     * 将 MessagePack 二进制数据反序列化为 {@link HashMap}
-     */
-    @SuppressWarnings("unchecked")
-    public static <K, V> HashMap<K, V> toMap(byte[] rawBytes, Class<K> key, Class<V> value, boolean format) {
-        return toMap(rawBytes, HashMap.class, key, value, getObjectMapper(format));
+        return toMap(rawBytes, HashMap.class, key, value, getObjectMapper());
     }
 
     /**
@@ -933,14 +681,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <K, V, H extends Map<K, V>> H toMap(String base64, Class<H> map, Class<K> key, Class<V> value) {
-        return toMap(base64, map, key, value, false);
-    }
-
-    /**
-     * 将 Base64 编码字符串反序列化为指定 Map 类型
-     */
-    public static <K, V, H extends Map<K, V>> H toMap(String base64, Class<H> map, Class<K> key, Class<V> value, boolean format) {
-        return toMap(base64, map, key, value, getObjectMapper(format));
+        return toMap(base64, map, key, value, getObjectMapper());
     }
 
     /**
@@ -955,15 +696,7 @@ public enum MessagePackUtils {
      */
     @SuppressWarnings("unchecked")
     public static <K, V> HashMap<K, V> toMap(String base64, Class<K> key, Class<V> value) {
-        return toMap(base64, HashMap.class, key, value, false);
-    }
-
-    /**
-     * 将 Base64 编码字符串反序列化为 {@link HashMap}
-     */
-    @SuppressWarnings("unchecked")
-    public static <K, V> HashMap<K, V> toMap(String base64, Class<K> key, Class<V> value, boolean format) {
-        return toMap(base64, HashMap.class, key, value, getObjectMapper(format));
+        return toMap(base64, HashMap.class, key, value, getObjectMapper());
     }
 
     /**
@@ -992,14 +725,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <K, V, H extends Map<K, V>, C extends Collection<H>> C toCollectionMap(byte[] rawBytes, Class<C> collection, Class<H> map, Class<K> key, Class<V> value) {
-        return toCollectionMap(rawBytes, collection, map, key, value, false);
-    }
-
-    /**
-     * 将 MessagePack 二进制数据反序列化为 {@code Collection<Map>} 嵌套类型
-     */
-    public static <K, V, H extends Map<K, V>, C extends Collection<H>> C toCollectionMap(byte[] rawBytes, Class<C> collection, Class<H> map, Class<K> key, Class<V> value, boolean format) {
-        return toCollectionMap(rawBytes, collection, map, key, value, getObjectMapper(format));
+        return toCollectionMap(rawBytes, collection, map, key, value, getObjectMapper());
     }
 
     /**
@@ -1008,11 +734,7 @@ public enum MessagePackUtils {
     public static <K, V, H extends Map<K, V>, C extends Collection<H>> C toCollectionMap(byte[] rawBytes, Class<C> collection, Class<H> map, Class<K> key, Class<V> value, final ObjectMapper objectMapper) {
         MapType mapType = objectMapper.getTypeFactory().constructMapType(map, key, value);
         CollectionType collectionType = objectMapper.getTypeFactory().constructCollectionType(collection, mapType);
-        try {
-            return objectMapper.readValue(rawBytes, collectionType);
-        } catch (Exception e) {
-            throw new DeserializationException(collectionType, e);
-        }
+        return deserialize(collectionType, () -> objectMapper.readValue(rawBytes, collectionType));
     }
 
     /**
@@ -1028,15 +750,7 @@ public enum MessagePackUtils {
      */
     @SuppressWarnings("unchecked")
     public static <K, V> ArrayList<HashMap<K, V>> toCollectionMap(byte[] rawBytes, Class<K> key, Class<V> value) {
-        return toCollectionMap(rawBytes, ArrayList.class, HashMap.class, key, value, false);
-    }
-
-    /**
-     * 将 MessagePack 二进制数据反序列化为 {@code ArrayList<HashMap>}
-     */
-    @SuppressWarnings("unchecked")
-    public static <K, V> ArrayList<HashMap<K, V>> toCollectionMap(byte[] rawBytes, Class<K> key, Class<V> value, boolean format) {
-        return toCollectionMap(rawBytes, ArrayList.class, HashMap.class, key, value, getObjectMapper(format));
+        return toCollectionMap(rawBytes, ArrayList.class, HashMap.class, key, value, getObjectMapper());
     }
 
     /**
@@ -1065,14 +779,7 @@ public enum MessagePackUtils {
      * @throws DeserializationException 反序列化失败时抛出
      */
     public static <K, V, H extends Map<K, V>, C extends Collection<H>> C toCollectionMap(String base64, Class<C> collection, Class<H> map, Class<K> key, Class<V> value) {
-        return toCollectionMap(base64, collection, map, key, value, false);
-    }
-
-    /**
-     * 将 Base64 编码字符串反序列化为 {@code Collection<Map>} 嵌套类型
-     */
-    public static <K, V, H extends Map<K, V>, C extends Collection<H>> C toCollectionMap(String base64, Class<C> collection, Class<H> map, Class<K> key, Class<V> value, boolean format) {
-        return toCollectionMap(base64, collection, map, key, value, getObjectMapper(format));
+        return toCollectionMap(base64, collection, map, key, value, getObjectMapper());
     }
 
     /**
@@ -1087,15 +794,7 @@ public enum MessagePackUtils {
      */
     @SuppressWarnings("unchecked")
     public static <K, V> ArrayList<HashMap<K, V>> toCollectionMap(String base64, Class<K> key, Class<V> value) {
-        return toCollectionMap(base64, ArrayList.class, HashMap.class, key, value, false);
-    }
-
-    /**
-     * 将 Base64 编码字符串反序列化为 {@code ArrayList<HashMap>}
-     */
-    @SuppressWarnings("unchecked")
-    public static <K, V> ArrayList<HashMap<K, V>> toCollectionMap(String base64, Class<K> key, Class<V> value, boolean format) {
-        return toCollectionMap(base64, ArrayList.class, HashMap.class, key, value, getObjectMapper(format));
+        return toCollectionMap(base64, ArrayList.class, HashMap.class, key, value, getObjectMapper());
     }
 
     /**
@@ -1151,17 +850,7 @@ public enum MessagePackUtils {
      * @return 空的 ObjectNode 实例
      */
     public static ObjectNode createEmptyJsonNode() {
-        return createEmptyJsonNode(false);
-    }
-
-    /**
-     * 创建空的 {@link ObjectNode}
-     *
-     * @param format 是否使用格式化 ObjectMapper
-     * @return 空的 ObjectNode 实例
-     */
-    public static ObjectNode createEmptyJsonNode(boolean format) {
-        return createEmptyJsonNode(getObjectMapper(format));
+        return createEmptyJsonNode(getObjectMapper());
     }
 
     /**
@@ -1180,17 +869,7 @@ public enum MessagePackUtils {
      * @return 空的 ArrayNode 实例
      */
     public static ArrayNode createEmptyArrayNode() {
-        return createEmptyArrayNode(false);
-    }
-
-    /**
-     * 创建空的 {@link ArrayNode}
-     *
-     * @param format 是否使用格式化 ObjectMapper
-     * @return 空的 ArrayNode 实例
-     */
-    public static ArrayNode createEmptyArrayNode(boolean format) {
-        return createEmptyArrayNode(getObjectMapper(format));
+        return createEmptyArrayNode(getObjectMapper());
     }
 
     /**
@@ -1210,18 +889,7 @@ public enum MessagePackUtils {
      * @return JsonNode 树结构
      */
     public static JsonNode toJsonNode(Object obj) {
-        return toJsonNode(obj, false);
-    }
-
-    /**
-     * 将对象转换为 {@link JsonNode} 树结构
-     *
-     * @param obj    待转换对象
-     * @param format 是否使用格式化 ObjectMapper
-     * @return JsonNode 树结构
-     */
-    public static JsonNode toJsonNode(Object obj, boolean format) {
-        return toJsonNode(obj, getObjectMapper(format));
+        return toJsonNode(obj, getObjectMapper());
     }
 
     /**
@@ -1244,18 +912,7 @@ public enum MessagePackUtils {
      * @return 对应的 JavaType 实例
      */
     public static JavaType constructJavaType(Type type) {
-        return constructJavaType(type, false);
-    }
-
-    /**
-     * 根据 {@link Type} 构造 {@link JavaType}
-     *
-     * @param type   Java 类型
-     * @param format 是否使用格式化 ObjectMapper
-     * @return 对应的 JavaType 实例
-     */
-    public static JavaType constructJavaType(Type type, boolean format) {
-        return constructJavaType(type, getObjectMapper(format));
+        return constructJavaType(type, getObjectMapper());
     }
 
     /**

@@ -10,11 +10,13 @@ import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.Type;
 
 import static io.ituknown.jackson.JacksonConfig.applyCommonBuilderConfig;
 import static io.ituknown.jackson.JacksonConfig.configureObjectMapperForJsr310;
+import static io.ituknown.jackson.JacksonDeserializeSupport.deserialize;
 
 /**
  * Jackson XML 序列化/反序列化工具类
@@ -178,163 +180,126 @@ public enum JacksonXmlUtils {
     // region toObj
 
     public static <T> T toObj(byte[] xml, Class<T> clazz) {
-        return toObj(xml, clazz, false);
-    }
-
-    public static <T> T toObj(byte[] xml, Class<T> clazz, boolean includeDeclaration) {
-        return toObj(xml, clazz, getXmlMapper(includeDeclaration));
+        return toObj(xml, clazz, getXmlMapper());
     }
 
     public static <T> T toObj(byte[] xml, Class<T> clazz, final XmlMapper xmlMapper) {
-        try {
-            return xmlMapper.readValue(xml, clazz);
-        } catch (IOException e) {
-            throw new DeserializationException(clazz, e);
-        }
+        return deserialize(clazz, () -> xmlMapper.readValue(xml, clazz));
     }
 
     public static <T> T toObj(byte[] xml, Type type) {
-        return toObj(xml, type, false);
-    }
-
-    public static <T> T toObj(byte[] xml, Type type, boolean includeDeclaration) {
-        return toObj(xml, type, getXmlMapper(includeDeclaration));
+        return toObj(xml, type, getXmlMapper());
     }
 
     public static <T> T toObj(byte[] xml, Type type, final XmlMapper xmlMapper) {
-        try {
-            return xmlMapper.readValue(xml, xmlMapper.constructType(type));
-        } catch (IOException e) {
-            throw new DeserializationException(type, e);
-        }
+        return deserialize(type, () -> xmlMapper.readValue(xml, xmlMapper.constructType(type)));
     }
 
     public static <T> T toObj(byte[] xml, TypeReference<T> typeReference) {
-        return toObj(xml, typeReference, false);
-    }
-
-    public static <T> T toObj(byte[] xml, TypeReference<T> typeReference, boolean includeDeclaration) {
-        return toObj(xml, typeReference, getXmlMapper(includeDeclaration));
+        return toObj(xml, typeReference, getXmlMapper());
     }
 
     public static <T> T toObj(byte[] xml, TypeReference<T> typeReference, final XmlMapper xmlMapper) {
-        try {
-            return xmlMapper.readValue(xml, typeReference);
-        } catch (IOException e) {
-            throw new DeserializationException(typeReference.getType(), e);
-        }
-    }
-
-    public static <T> T toObj(InputStream inputStream, Class<T> clazz) {
-        return toObj(inputStream, clazz, false);
-    }
-
-    public static <T> T toObj(InputStream inputStream, Class<T> clazz, boolean includeDeclaration) {
-        return toObj(inputStream, clazz, getXmlMapper(includeDeclaration));
-    }
-
-    public static <T> T toObj(InputStream inputStream, Class<T> clazz, final XmlMapper xmlMapper) {
-        try {
-            return xmlMapper.readValue(inputStream, clazz);
-        } catch (IOException e) {
-            throw new DeserializationException(clazz, e);
-        }
-    }
-
-    public static <T> T toObj(String xml, Type type) {
-        return toObj(xml, type, false);
-    }
-
-    public static <T> T toObj(String xml, Type type, boolean includeDeclaration) {
-        return toObj(xml, type, getXmlMapper(includeDeclaration));
-    }
-
-    public static <T> T toObj(String xml, Type type, final XmlMapper xmlMapper) {
-        try {
-            return xmlMapper.readValue(xml, xmlMapper.constructType(type));
-        } catch (IOException e) {
-            throw new DeserializationException(type, e);
-        }
+        return deserialize(typeReference.getType(), () -> xmlMapper.readValue(xml, typeReference));
     }
 
     public static <T> T toObj(String xml, Class<T> clazz) {
-        return toObj(xml, clazz, false);
-    }
-
-    public static <T> T toObj(String xml, Class<T> clazz, boolean includeDeclaration) {
-        return toObj(xml, clazz, getXmlMapper(includeDeclaration));
+        return toObj(xml, clazz, getXmlMapper());
     }
 
     public static <T> T toObj(String xml, Class<T> clazz, final XmlMapper xmlMapper) {
-        try {
-            return xmlMapper.readValue(xml, clazz);
-        } catch (IOException e) {
-            throw new DeserializationException(clazz, e);
-        }
+        return deserialize(clazz, () -> xmlMapper.readValue(xml, clazz));
+    }
+
+    public static <T> T toObj(String xml, Type type) {
+        return toObj(xml, type, getXmlMapper());
+    }
+
+    public static <T> T toObj(String xml, Type type, final XmlMapper xmlMapper) {
+        return deserialize(type, () -> xmlMapper.readValue(xml, xmlMapper.constructType(type)));
     }
 
     public static <T> T toObj(String xml, TypeReference<T> typeReference) {
-        return toObj(xml, typeReference, false);
-    }
-
-    public static <T> T toObj(String xml, TypeReference<T> typeReference, boolean includeDeclaration) {
-        return toObj(xml, typeReference, getXmlMapper(includeDeclaration));
+        return toObj(xml, typeReference, getXmlMapper());
     }
 
     public static <T> T toObj(String xml, TypeReference<T> typeReference, final XmlMapper xmlMapper) {
-        try {
-            return xmlMapper.readValue(xml, typeReference);
-        } catch (IOException e) {
-            throw new DeserializationException(typeReference.getType(), e);
-        }
-    }
-
-    public static <T> T toObj(InputStream inputStream, Type type) {
-        return toObj(inputStream, type, false);
-    }
-
-    public static <T> T toObj(InputStream inputStream, Type type, boolean includeDeclaration) {
-        return toObj(inputStream, type, getXmlMapper(includeDeclaration));
-    }
-
-    public static <T> T toObj(InputStream inputStream, Type type, final XmlMapper xmlMapper) {
-        try {
-            return xmlMapper.readValue(inputStream, xmlMapper.constructType(type));
-        } catch (IOException e) {
-            throw new DeserializationException(type, e);
-        }
+        return deserialize(typeReference.getType(), () -> xmlMapper.readValue(xml, typeReference));
     }
 
     public static <T> T toObj(String xml, Class<T> parametrized, Class<?>... parameterClasses) {
-        return toObj(xml, false, parametrized, parameterClasses);
-    }
-
-    /**
-     * XML 字符串反序列化为泛型类对象
-     * <p><pre>
-     *     String xml = "...";
-     *     List<User> userList = toObj(xml, false, List.class, User.class);
-     *     List<User<Role> userList = toObj(xml, false, List.class, User.class, Role.class);
-     * </pre></p>
-     *
-     * @param xml                XML字符串
-     * @param parametrized       泛型容器类型
-     * @param parameterClasses   泛型参数
-     * @param includeDeclaration 是否包含 xml 声明
-     * @return T
-     * @throws DeserializationException if deserialize failed
-     */
-    public static <T> T toObj(String xml, boolean includeDeclaration, Class<T> parametrized, Class<?>... parameterClasses) {
-        return toObj(xml, getXmlMapper(includeDeclaration), parametrized, parameterClasses);
+        return toObj(xml, getXmlMapper(), parametrized, parameterClasses);
     }
 
     public static <T> T toObj(String xml, final XmlMapper xmlMapper, Class<T> parametrized, Class<?>... parameterClasses) {
         JavaType javaType = xmlMapper.getTypeFactory().constructParametricType(parametrized, parameterClasses);
-        try {
-            return xmlMapper.readValue(xml, javaType);
-        } catch (IOException e) {
-            throw new DeserializationException(javaType, e);
-        }
+        return deserialize(javaType, () -> xmlMapper.readValue(xml, javaType));
+    }
+
+    public static <T> T toObj(InputStream inputStream, Class<T> clazz) {
+        return toObj(inputStream, clazz, getXmlMapper());
+    }
+
+    public static <T> T toObj(InputStream inputStream, Class<T> clazz, final XmlMapper xmlMapper) {
+        return deserialize(clazz, () -> xmlMapper.readValue(inputStream, clazz));
+    }
+
+    public static <T> T toObj(InputStream inputStream, Type type) {
+        return toObj(inputStream, type, getXmlMapper());
+    }
+
+    public static <T> T toObj(InputStream inputStream, Type type, final XmlMapper xmlMapper) {
+        return deserialize(type, () -> xmlMapper.readValue(inputStream, xmlMapper.constructType(type)));
+    }
+
+    public static <T> T toObj(InputStream inputStream, TypeReference<T> typeReference) {
+        return toObj(inputStream, typeReference, getXmlMapper());
+    }
+
+    public static <T> T toObj(InputStream inputStream, TypeReference<T> typeReference, final XmlMapper xmlMapper) {
+        return deserialize(typeReference.getType(), () -> xmlMapper.readValue(inputStream, typeReference));
+    }
+
+    public static <T> T toObj(InputStream inputStream, Class<T> parametrized, Class<?>... parameterClasses) {
+        return toObj(inputStream, getXmlMapper(), parametrized, parameterClasses);
+    }
+
+    public static <T> T toObj(InputStream inputStream, final XmlMapper xmlMapper, Class<T> parametrized, Class<?>... parameterClasses) {
+        JavaType javaType = xmlMapper.getTypeFactory().constructParametricType(parametrized, parameterClasses);
+        return deserialize(javaType, () -> xmlMapper.readValue(inputStream, javaType));
+    }
+
+    public static <T> T toObj(Reader reader, Class<T> clazz) {
+        return toObj(reader, clazz, getXmlMapper());
+    }
+
+    public static <T> T toObj(Reader reader, Class<T> clazz, final XmlMapper xmlMapper) {
+        return deserialize(clazz, () -> xmlMapper.readValue(reader, clazz));
+    }
+
+    public static <T> T toObj(Reader reader, Type type) {
+        return toObj(reader, type, getXmlMapper());
+    }
+
+    public static <T> T toObj(Reader reader, Type type, final XmlMapper xmlMapper) {
+        return deserialize(type, () -> xmlMapper.readValue(reader, xmlMapper.constructType(type)));
+    }
+
+    public static <T> T toObj(Reader reader, TypeReference<T> typeReference) {
+        return toObj(reader, typeReference, getXmlMapper());
+    }
+
+    public static <T> T toObj(Reader reader, TypeReference<T> typeReference, final XmlMapper xmlMapper) {
+        return deserialize(typeReference.getType(), () -> xmlMapper.readValue(reader, typeReference));
+    }
+
+    public static <T> T toObj(Reader reader, Class<T> parametrized, Class<?>... parameterClasses) {
+        return toObj(reader, getXmlMapper(), parametrized, parameterClasses);
+    }
+
+    public static <T> T toObj(Reader reader, final XmlMapper xmlMapper, Class<T> parametrized, Class<?>... parameterClasses) {
+        JavaType javaType = xmlMapper.getTypeFactory().constructParametricType(parametrized, parameterClasses);
+        return deserialize(javaType, () -> xmlMapper.readValue(reader, javaType));
     }
 
     // endregion toObj

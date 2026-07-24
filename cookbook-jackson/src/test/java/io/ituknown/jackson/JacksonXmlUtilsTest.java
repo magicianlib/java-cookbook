@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.StringReader;
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -117,5 +120,54 @@ class JacksonXmlUtilsTest {
         assertTrue(formattedXml.contains("\n"));
         assertTrue(formattedXml.startsWith("<?xml"));
         assertFalse(unformattedXml.contains("\n"));
+    }
+
+    // ========== toObj ==========
+
+    @Test
+    void toObj_fromString_byClass() {
+        User user = new User("test", 20, new BigDecimal("99.99"));
+        String xml = JacksonXmlUtils.toXml(user);
+        User result = JacksonXmlUtils.toObj(xml, User.class);
+        assertEquals("test", result.getName());
+        assertEquals(20, result.getAge());
+        assertEquals(new BigDecimal("99.99"), result.getAmount());
+    }
+
+    @Test
+    void toObj_fromBytes_byClass() {
+        User user = new User("test", 20, new BigDecimal("1.00"));
+        byte[] xml = JacksonXmlUtils.toXmlBytes(user);
+        User result = JacksonXmlUtils.toObj(xml, User.class);
+        assertEquals("test", result.getName());
+        assertEquals(20, result.getAge());
+    }
+
+    @Test
+    void toObj_fromInputStream_byClass() throws IOException {
+        User user = new User("test", 20, new BigDecimal("1.00"));
+        byte[] xml = JacksonXmlUtils.toXmlBytes(user);
+        try (ByteArrayInputStream is = new ByteArrayInputStream(xml)) {
+            User result = JacksonXmlUtils.toObj(is, User.class);
+            assertEquals("test", result.getName());
+            assertEquals(20, result.getAge());
+        }
+    }
+
+    @Test
+    void toObj_fromReader_byClass() throws IOException {
+        User user = new User("test", 20, new BigDecimal("1.00"));
+        String xml = JacksonXmlUtils.toXml(user);
+        try (StringReader reader = new StringReader(xml)) {
+            User result = JacksonXmlUtils.toObj(reader, User.class);
+            assertEquals("test", result.getName());
+            assertEquals(20, result.getAge());
+        }
+    }
+
+    @Test
+    void toObj_throwsDeserializationException_onInvalidXml() {
+        String invalidXml = "not xml";
+        assertThrows(DeserializationException.class, () -> JacksonXmlUtils.toObj(invalidXml, User.class));
     }
 }

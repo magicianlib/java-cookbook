@@ -144,14 +144,6 @@ class MessagePackUtilsTest {
     }
 
     @Test
-    void toObj_fromBytes_byClass_withFormat() {
-        Sample original = new Sample("test", 20, new BigDecimal("1.00"));
-        byte[] bytes = MessagePackUtils.toBytes(original, true);
-        Sample result = MessagePackUtils.toObj(bytes, Sample.class, true);
-        assertEquals("test", result.getName());
-    }
-
-    @Test
     void toObj_fromBytes_byClass_withCustomMapper() {
         ObjectMapper mapper = MessagePackUtils.createObjectMapper(false);
         Sample original = new Sample("test", 20, new BigDecimal("1.00"));
@@ -179,14 +171,6 @@ class MessagePackUtilsTest {
     }
 
     @Test
-    void toObj_fromBase64_byClass_withFormat() {
-        Sample original = new Sample("test", 20, new BigDecimal("1.00"));
-        String base64 = MessagePackUtils.toBase64(original, true);
-        Sample result = MessagePackUtils.toObj(base64, Sample.class, true);
-        assertEquals("test", result.getName());
-    }
-
-    @Test
     void toObj_fromBase64_byClass_withCustomMapper() {
         ObjectMapper mapper = MessagePackUtils.createObjectMapper(false);
         Sample original = new Sample("test", 20, new BigDecimal("1.00"));
@@ -211,16 +195,6 @@ class MessagePackUtilsTest {
             Sample result = MessagePackUtils.toObj(is, Sample.class);
             assertEquals("test", result.getName());
             assertEquals(20, result.getAge());
-        }
-    }
-
-    @Test
-    void toObj_fromInputStream_byClass_withFormat() throws IOException {
-        Sample original = new Sample("test", 20, new BigDecimal("1.00"));
-        byte[] bytes = MessagePackUtils.toBytes(original, true);
-        try (ByteArrayInputStream is = new ByteArrayInputStream(bytes)) {
-            Sample result = MessagePackUtils.toObj(is, Sample.class, true);
-            assertEquals("test", result.getName());
         }
     }
 
