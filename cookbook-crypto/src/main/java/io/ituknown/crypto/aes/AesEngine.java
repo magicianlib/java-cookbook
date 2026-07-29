@@ -12,6 +12,7 @@ import javax.crypto.spec.IvParameterSpec;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Arrays;
@@ -62,6 +63,15 @@ final class AesEngine {
     private static Cipher createCipher(AesMode mode, Padding padding)
             throws NoSuchAlgorithmException, NoSuchPaddingException {
         String transformation = "AES/" + mode.transformation + "/" + padding.transformation;
+        if (mode.requiresBc || padding.requiresBc) {
+            BouncyCastleSupport.ensureRegistered();
+            try {
+                return Cipher.getInstance(transformation, "BC");
+            } catch (NoSuchProviderException e) {
+                // BouncyCastle 为硬依赖，缺失属非法状态而非可恢复受检异常
+                throw new IllegalStateException("BouncyCastle provider unavailable", e);
+            }
+        }
         return Cipher.getInstance(transformation);
     }
 

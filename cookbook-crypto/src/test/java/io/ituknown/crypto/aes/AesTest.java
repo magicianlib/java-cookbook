@@ -7,6 +7,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.security.NoSuchAlgorithmException;
+import java.security.Security;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -42,9 +43,9 @@ public class AesTest {
         assertEquals("PKCS5Padding", Padding.PKCS5.transformation);
         assertFalse(Padding.PKCS5.requiresBc);
         assertTrue(Padding.PKCS7.requiresBc);
-        assertEquals("ISO7816d4Padding", Padding.ISO7816.transformation);
+        assertEquals("ISO7816-4Padding", Padding.ISO7816.transformation);
         assertEquals("X9.23Padding", Padding.ANSI_X9_23.transformation);
-        assertEquals("ISO10126d2Padding", Padding.ISO10126.transformation);
+        assertEquals("ISO10126-2Padding", Padding.ISO10126.transformation);
         assertEquals("ZeroBytePadding", Padding.ZERO.transformation);
     }
 
@@ -105,5 +106,45 @@ public class AesTest {
         byte[] iv = AesEngine.generateIv(AesMode.CBC);
         assertThrows(IllegalBlockSizeException.class,
                 () -> AesEngine.encrypt(AesMode.CBC, Padding.NONE, key, iv, 128, plain));
+    }
+
+    @Test
+    public void testBouncyCastleRegisteredAtMostOnce() {
+        BouncyCastleSupport.ensureRegistered();
+        assertNotNull(Security.getProvider("BC"));
+        int before = Security.getProviders().length;
+        BouncyCastleSupport.ensureRegistered();
+        BouncyCastleSupport.ensureRegistered();
+        assertEquals(before, Security.getProviders().length);
+    }
+
+    @Test
+    public void testEngineCcmRoundTrip() throws Exception {
+        SecretKey key = newKey(128);
+        byte[] plain = "ccm payload".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] iv = AesEngine.generateIv(AesMode.CCM);
+        byte[] combined = AesEngine.encrypt(AesMode.CCM, Padding.NONE, key, iv, 128, plain);
+        assertArrayEquals(plain, AesEngine.decrypt(AesMode.CCM, Padding.NONE, key, 128, combined));
+    }
+
+    @Test
+    public void testEngineOcbRoundTrip() throws Exception {
+        SecretKey key = newKey(128);
+        byte[] plain = "ocb payload".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] iv = AesEngine.generateIv(AesMode.OCB);
+        byte[] combined = AesEngine.encrypt(AesMode.OCB, Padding.NONE, key, iv, 128, plain);
+        assertArrayEquals(plain, AesEngine.decrypt(AesMode.OCB, Padding.NONE, key, 128, combined));
+    }
+
+    @Test
+    public void testEngineCbcBcPaddingsRoundTrip() throws Exception {
+        SecretKey key = newKey(128);
+        byte[] plain = "padding variants".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        for (Padding p : new Padding[]{Padding.ISO7816, Padding.ANSI_X9_23, Padding.ISO10126, Padding.ZERO, Padding.PKCS7}) {
+            byte[] iv = AesEngine.generateIv(AesMode.CBC);
+            byte[] combined = AesEngine.encrypt(AesMode.CBC, p, key, iv, 128, plain);
+            assertArrayEquals(plain, AesEngine.decrypt(AesMode.CBC, p, key, 128, combined),
+                    "round-trip failed for padding " + p);
+        }
     }
 }

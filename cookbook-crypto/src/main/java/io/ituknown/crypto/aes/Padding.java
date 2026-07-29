@@ -9,9 +9,9 @@ public enum Padding {
     NONE("NoPadding", false),
     PKCS5("PKCS5Padding", false),
     PKCS7("PKCS7Padding", true),
-    ISO7816("ISO7816d4Padding", true),
+    ISO7816("ISO7816-4Padding", true),
     ANSI_X9_23("X9.23Padding", true),
-    ISO10126("ISO10126d2Padding", true),
+    ISO10126("ISO10126-2Padding", true),
     ZERO("ZeroBytePadding", true);
 
     final String transformation;
