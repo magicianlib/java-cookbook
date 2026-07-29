@@ -2,6 +2,12 @@ package io.ituknown.crypto.aes;
 
 import org.junit.jupiter.api.Test;
 
+import javax.crypto.AEADBadTagException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import java.security.NoSuchAlgorithmException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AesTest {
@@ -40,5 +46,64 @@ public class AesTest {
         assertEquals("X9.23Padding", Padding.ANSI_X9_23.transformation);
         assertEquals("ISO10126d2Padding", Padding.ISO10126.transformation);
         assertEquals("ZeroBytePadding", Padding.ZERO.transformation);
+    }
+
+    private static SecretKey newKey(int bits) throws NoSuchAlgorithmException {
+        KeyGenerator kg = KeyGenerator.getInstance("AES");
+        kg.init(bits);
+        return kg.generateKey();
+    }
+
+    @Test
+    public void testEngineGcmRoundTrip() throws Exception {
+        SecretKey key = newKey(256);
+        byte[] plain = "hello, world".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] iv = AesEngine.generateIv(AesMode.GCM);
+        byte[] combined = AesEngine.encrypt(AesMode.GCM, Padding.NONE, key, iv, 128, plain);
+        // IV 前置：组合长度 = 12(IV) + 明文 + 16(标签)
+        assertEquals(12 + plain.length + 16, combined.length);
+        byte[] decrypted = AesEngine.decrypt(AesMode.GCM, Padding.NONE, key, 128, combined);
+        assertArrayEquals(plain, decrypted);
+    }
+
+    @Test
+    public void testEngineGcmTamperThrows() throws Exception {
+        SecretKey key = newKey(128);
+        byte[] plain = "secret".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] combined = AesEngine.encrypt(AesMode.GCM, Padding.NONE, key,
+                AesEngine.generateIv(AesMode.GCM), 128, plain);
+        combined[combined.length - 1] ^= 0x01; // 篡改认证标签
+        assertThrows(AEADBadTagException.class,
+                () -> AesEngine.decrypt(AesMode.GCM, Padding.NONE, key, 128, combined));
+    }
+
+    @Test
+    public void testEngineCbcPkcs5RoundTrip() throws Exception {
+        SecretKey key = newKey(128);
+        byte[] plain = "cbc payload".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] iv = AesEngine.generateIv(AesMode.CBC);
+        byte[] combined = AesEngine.encrypt(AesMode.CBC, Padding.PKCS5, key, iv, 128, plain);
+        assertArrayEquals(plain, AesEngine.decrypt(AesMode.CBC, Padding.PKCS5, key, 128, combined));
+    }
+
+    @Test
+    public void testEngineStreamModesRoundTrip() throws Exception {
+        SecretKey key = newKey(128);
+        byte[] plain = "stream payload".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        for (AesMode mode : new AesMode[]{AesMode.CTR, AesMode.CFB, AesMode.OFB}) {
+            byte[] iv = AesEngine.generateIv(mode);
+            byte[] combined = AesEngine.encrypt(mode, Padding.NONE, key, iv, 128, plain);
+            assertArrayEquals(plain, AesEngine.decrypt(mode, Padding.NONE, key, 128, combined),
+                    "round-trip failed for " + mode);
+        }
+    }
+
+    @Test
+    public void testEngineCbcNoPaddingNonAlignedThrows() throws Exception {
+        SecretKey key = newKey(128);
+        byte[] plain = "not-aligned".getBytes(java.nio.charset.StandardCharsets.UTF_8); // 11 字节
+        byte[] iv = AesEngine.generateIv(AesMode.CBC);
+        assertThrows(IllegalBlockSizeException.class,
+                () -> AesEngine.encrypt(AesMode.CBC, Padding.NONE, key, iv, 128, plain));
     }
 }
