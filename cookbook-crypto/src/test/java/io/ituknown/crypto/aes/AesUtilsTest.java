@@ -1,5 +1,7 @@
-package io.ituknown.crypto;
+package io.ituknown.crypto.aes;
 
+import io.ituknown.crypto.Base64;
+import io.ituknown.crypto.Hex;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.StringUtils;

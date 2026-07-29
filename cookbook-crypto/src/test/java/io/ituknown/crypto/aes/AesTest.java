@@ -201,4 +201,17 @@ public class AesTest {
         String b = Aes.cbc().padding(Padding.PKCS5).iv(iv).key(key).encryptToHex(plain);
         assertEquals(a, b);
     }
+
+    /** 门面与新引擎 API 双向互通：同一密钥下密文格式逐字节一致。 */
+    @Test
+    public void testFacadeInteropWithAesGcm() throws Exception {
+        SecretKey key = AesUtils.generateKey(256);
+        String plain = "interop check";
+        // 门面加密 -> 新 API 解密
+        byte[] facadeCt = AesUtils.encrypt(plain, key);
+        assertEquals(plain, Aes.gcm().tagBits(128).key(key).decryptToString(facadeCt));
+        // 新 API 加密 -> 门面解密
+        byte[] aesCt = Aes.gcm().tagBits(128).key(key).encrypt(plain);
+        assertEquals(plain, AesUtils.decrypt(aesCt, key));
+    }
 }
