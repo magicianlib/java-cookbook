@@ -79,4 +79,20 @@ public class AesUtilsTest {
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> AesUtils.generateKey(100));
     }
+
+    /** 静态工厂从两种编码还原的密钥应彼此等价。 */
+    @Test
+    public void testOfFactoriesProduceEqualKey() {
+        javax.crypto.SecretKey fromHex = AesUtils.Key.ofHex(KEY.hexString());
+        javax.crypto.SecretKey fromBase64 = AesUtils.Key.ofBase64(KEY.base64String());
+        Assertions.assertEquals(fromHex, fromBase64);
+    }
+
+    /** 仅持有单一编码时，可直接经静态工厂还原密钥并完成加解密往返。 */
+    @Test
+    public void testOfHexRoundTrip() throws Exception {
+        javax.crypto.SecretKey key = AesUtils.Key.ofHex(KEY.hexString());
+        byte[] combined = AesUtils.encrypt(plaintext, key);
+        Assertions.assertEquals(plaintext, AesUtils.decrypt(combined, key));
+    }
 }

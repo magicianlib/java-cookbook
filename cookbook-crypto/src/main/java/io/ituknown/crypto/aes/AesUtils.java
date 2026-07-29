@@ -118,14 +118,22 @@ public final class AesUtils {
      */
     public record Key(String hexString, String base64String) {
 
+        /** 由十六进制编码还原对称密钥。 */
+        public static SecretKey ofHex(String hexString) {
+            return new SecretKeySpec(Hex.toByteArray(hexString), "AES");
+        }
+
+        /** 由 Base64 编码还原对称密钥。 */
+        public static SecretKey ofBase64(String base64String) {
+            return new SecretKeySpec(Base64.toByte(base64String), "AES");
+        }
+
         public SecretKey fromHex() {
-            byte[] decodedKey = Hex.toByteArray(hexString);
-            return new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+            return ofHex(hexString);
         }
 
         public SecretKey fromBase64() {
-            byte[] decodedKey = Base64.toByte(base64String);
-            return new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+            return ofBase64(base64String);
         }
     }
 }
