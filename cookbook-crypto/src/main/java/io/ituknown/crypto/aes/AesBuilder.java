@@ -39,8 +39,18 @@ abstract class AesBuilder<B extends AesBuilder<B>> {
         return self();
     }
 
+    /**
+     * 显式指定初始化向量（构建器内部保留副本，调用方此后修改原数组不影响加密结果）。
+     * <p>
+     * <b>安全警告：</b>同一密钥下，每次加密都必须使用独一无二的初始化向量。
+     * 一旦显式设定初始化向量，本构建器不得用于重复加密多段明文——
+     * 否则在带认证加密或流式加密模式下会严重破坏机密性与完整性。
+     *
+     * @param iv 初始化向量
+     * @return 当前构建器，用于链式配置
+     */
     public B iv(byte[] iv) {
-        this.iv = Require.requireNonNull(iv, "iv");
+        this.iv = Require.requireNonNull(iv, "iv").clone();
         return self();
     }
 

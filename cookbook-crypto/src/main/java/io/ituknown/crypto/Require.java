@@ -9,7 +9,7 @@ public final class Require {
     }
 
     /**
-     * 校验 value 非 null，否则抛 {@link IllegalArgumentException}，并原样返回 value。
+     * 校验传入值非 null，否则抛 {@link IllegalArgumentException}，并原样返回该值。
      *
      * @param value 待校验值
      * @param name  参数名（写入异常消息，便于定位）

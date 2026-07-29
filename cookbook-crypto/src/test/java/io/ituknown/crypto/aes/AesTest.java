@@ -80,6 +80,28 @@ public class AesTest {
     }
 
     @Test
+    public void testEngineCcmTamperThrows() throws Exception {
+        SecretKey key = newKey(128);
+        byte[] plain = "secret".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] combined = AesEngine.encrypt(AesMode.CCM, Padding.NONE, key,
+                AesEngine.generateIv(AesMode.CCM), 128, plain);
+        combined[combined.length - 1] ^= 0x01; // 篡改认证标签
+        assertThrows(AEADBadTagException.class,
+                () -> AesEngine.decrypt(AesMode.CCM, Padding.NONE, key, 128, combined));
+    }
+
+    @Test
+    public void testEngineOcbTamperThrows() throws Exception {
+        SecretKey key = newKey(128);
+        byte[] plain = "secret".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] combined = AesEngine.encrypt(AesMode.OCB, Padding.NONE, key,
+                AesEngine.generateIv(AesMode.OCB), 128, plain);
+        combined[combined.length - 1] ^= 0x01; // 篡改认证标签
+        assertThrows(AEADBadTagException.class,
+                () -> AesEngine.decrypt(AesMode.OCB, Padding.NONE, key, 128, combined));
+    }
+
+    @Test
     public void testEngineCbcPkcs5RoundTrip() throws Exception {
         SecretKey key = newKey(128);
         byte[] plain = "cbc payload".getBytes(java.nio.charset.StandardCharsets.UTF_8);
