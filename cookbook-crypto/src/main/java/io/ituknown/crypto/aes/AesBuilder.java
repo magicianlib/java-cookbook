@@ -34,17 +34,18 @@ abstract class AesBuilder<B extends AesBuilder<B>> {
         return (B) this;
     }
 
+    /** 设置对称密钥。 */
     public B key(SecretKey key) {
         this.key = Require.requireNonNull(key, "key");
         return self();
     }
 
     /**
-     * 显式指定初始化向量（构建器内部保留副本，调用方此后修改原数组不影响加密结果）。
-     * <p>
-     * <b>安全警告：</b>同一密钥下，每次加密都必须使用独一无二的初始化向量。
-     * 一旦显式设定初始化向量，本构建器不得用于重复加密多段明文——
-     * 否则在带认证加密或流式加密模式下会严重破坏机密性与完整性。
+     * 显式指定初始化向量。
+     *
+     * <p>初始化向量是一段用于引入随机性的数据，保证同一密钥加密同一明文时产出不同密文；它无需保密，但同一密钥下每次加密都必须独一无二。构建器内部保留副本，调用方此后修改原数组不影响加密结果。
+     *
+     * <p><b>安全警告：</b>一旦显式设定初始化向量，本构建器不得用于重复加密多段明文——重复使用会在带认证加密或流式模式下严重破坏机密性与完整性。
      *
      * @param iv 初始化向量
      * @return 当前构建器，用于链式配置
@@ -54,6 +55,7 @@ abstract class AesBuilder<B extends AesBuilder<B>> {
         return self();
     }
 
+    /** 加密明文字节，返回由初始化向量与密文（带认证标签时附后）拼接而成的密文；未显式指定初始化向量时每次随机生成。 */
     public byte[] encrypt(byte[] plaintext)
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException,
                    InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
@@ -62,42 +64,49 @@ abstract class AesBuilder<B extends AesBuilder<B>> {
         return AesEngine.encrypt(mode, padding, key, iv, tagBits, plaintext);
     }
 
+    /** 按 UTF-8 将文本转为字节后加密，返回含初始化向量的密文。 */
     public byte[] encrypt(String plaintext)
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException,
                    InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         return encrypt(plaintext.getBytes(StandardCharsets.UTF_8));
     }
 
+    /** 加密文本明文，并将含初始化向量的密文以 Base64 编码返回。 */
     public String encryptToBase64(String plaintext)
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException,
                    InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         return Base64.toString(encrypt(plaintext));
     }
 
+    /** 加密文本明文，并将含初始化向量的密文以十六进制编码返回。 */
     public String encryptToHex(String plaintext)
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException,
                    InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         return Hex.toHexString(encrypt(plaintext));
     }
 
+    /** 解密由本族加密产出的密文（须含前置的初始化向量），返回明文字节；解密始终从密文首部读取初始化向量，显式指定的初始化向量仅作用于加密。 */
     public byte[] decrypt(byte[] combined)
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException,
                    InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         return AesEngine.decrypt(mode, padding, key, tagBits, combined);
     }
 
+    /** 解密密文并按 UTF-8 还原为文本。 */
     public String decryptToString(byte[] combined)
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException,
                    InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         return new String(decrypt(combined), StandardCharsets.UTF_8);
     }
 
+    /** 解码 Base64 密文后解密，按 UTF-8 还原为文本。 */
     public String decryptFromBase64(String combined)
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException,
                    InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         return decryptToString(Base64.toByte(combined));
     }
 
+    /** 解码十六进制密文后解密，按 UTF-8 还原为文本。 */
     public String decryptFromHex(String combined)
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException,
                    InvalidKeyException, IllegalBlockSizeException, BadPaddingException {

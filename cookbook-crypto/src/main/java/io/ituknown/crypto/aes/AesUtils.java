@@ -28,16 +28,19 @@ public final class AesUtils {
     }
 
     /**
-     * 生成指定长度的随机对称密钥。
+     * 生成指定长度的随机对称密钥。长度仅支持 128、192、256 位，其它取值将抛出参数非法异常。
      */
     public static SecretKey generateKey(int keySize) throws NoSuchAlgorithmException {
+        if (keySize != 128 && keySize != 192 && keySize != 256) {
+            throw new IllegalArgumentException("密钥长度仅支持 128、192、256 位");
+        }
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
         keyGenerator.init(keySize);
         return keyGenerator.generateKey();
     }
 
     /**
-     * 生成指定长度的随机对称密钥，同时给出其十六进制与 Base64 双编码形式。
+     * 生成指定长度的随机对称密钥，同时给出其十六进制与 Base64 双编码形式。长度仅支持 128、192、256 位，其它取值将抛出参数非法异常。
      */
     public static Key generateEncodedKey(int keySize) throws NoSuchAlgorithmException {
         SecretKey secretKey = generateKey(keySize);

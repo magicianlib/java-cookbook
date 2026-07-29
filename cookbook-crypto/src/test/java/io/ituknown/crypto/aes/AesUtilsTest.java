@@ -73,4 +73,10 @@ public class AesUtilsTest {
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> AesUtils.encrypt((byte[]) null, null));
     }
+
+    @Test
+    public void testGenerateKeyRejectsInvalidSize() {
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> AesUtils.generateKey(100));
+    }
 }
