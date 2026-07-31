@@ -76,7 +76,7 @@ class ResultUtilsTest {
     @Test
     void successCursor_hasMore() {
         List<String> list = List.of("a", "b");
-        Result<CursorPage<String, String>> result = ResultUtils.successCursor(list, "eyJpZCI6MTB9", true, 20);
+        Result<CursorPage<String, String>> result = ResultUtils.successCursor(list, "eyJpZCI6NX0=", "eyJpZCI6MTB9", true, true, 20);
 
         assertEquals("00000", result.getCode());
         assertEquals("success", result.getMsg());
@@ -85,33 +85,54 @@ class ResultUtilsTest {
         assertEquals(list, data.list());
 
         CursorPagination<String> pagination = data.pagination();
-        assertTrue(pagination.hasMore());
+        assertTrue(pagination.hasPrev());
+        assertTrue(pagination.hasNext());
         assertEquals("eyJpZCI6MTB9", pagination.nextCursor());
+        assertEquals("eyJpZCI6NX0=", pagination.prevCursor());
         assertEquals(20, pagination.pageSize());
     }
 
     @Test
     void successCursor_noMore() {
         List<String> list = List.of("last");
-        Result<CursorPage<String, String>> result = ResultUtils.successCursor(list, null, false, 10);
+        Result<CursorPage<String, String>> result = ResultUtils.successCursor(list, null, null, false, false, 10);
 
         CursorPagination<String> pagination = result.getData().pagination();
-        assertFalse(pagination.hasMore());
+        assertFalse(pagination.hasPrev());
+        assertFalse(pagination.hasNext());
         assertNull(pagination.nextCursor());
+        assertNull(pagination.prevCursor());
         assertEquals(10, pagination.pageSize());
     }
 
     @Test
     void successCursor_longCursor() {
-        Result<CursorPage<String, Long>> result = ResultUtils.successCursor(List.of("a"), 42L, true, 20);
+        Result<CursorPage<String, Long>> result = ResultUtils.successCursor(List.of("a"), 41L, 42L, true, true, 20);
 
         CursorPagination<Long> pagination = result.getData().pagination();
         assertEquals(42L, pagination.nextCursor());
+        assertEquals(41L, pagination.prevCursor());
+        assertTrue(pagination.hasPrev());
+        assertTrue(pagination.hasNext());
+    }
+
+    @Test
+    void successCursor_withPrevCursor() {
+        List<String> list = List.of("middle");
+        Result<CursorPage<String, String>> result = ResultUtils.successCursor(
+            list, "prev_cursor", "next_cursor", true, true, 10
+        );
+
+        CursorPagination<String> pagination = result.getData().pagination();
+        assertEquals("next_cursor", pagination.nextCursor());
+        assertEquals("prev_cursor", pagination.prevCursor());
+        assertTrue(pagination.hasPrev());
+        assertTrue(pagination.hasNext());
     }
 
     @Test
     void successCursor_nullList_defaultsToEmpty() {
-        Result<CursorPage<String, String>> result = ResultUtils.successCursor(null, null, false, 10);
+        Result<CursorPage<String, String>> result = ResultUtils.successCursor(null, null, null, false, false, 10);
         assertNotNull(result.getData().list());
         assertTrue(result.getData().list().isEmpty());
     }

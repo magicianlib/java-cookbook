@@ -58,13 +58,15 @@ public final class ResultUtils {
      * 构建成功结果（游标分页）
      *
      * @param list       当前页数据
-     * @param nextCursor 下一页游标，无更多数据时为 null
-     * @param hasMore    是否有更多数据
+     * @param prevCursor 上一页游标，无前一页时为 null
+     * @param nextCursor 下一页游标，无下一页时为 null
+     * @param hasPrev    是否有前一页
+     * @param hasNext    是否有下一页
      * @param pageSize   每页数量
      * @param <C>        游标类型
      */
-    public static <T, C> Result<CursorPage<T, C>> successCursor(List<T> list, C nextCursor, boolean hasMore, int pageSize) {
-        return build(ResultCodes.SUCCESS, null, new CursorPage<>(list, nextCursor, hasMore, pageSize));
+    public static <T, C> Result<CursorPage<T, C>> successCursor(List<T> list, C prevCursor, C nextCursor, boolean hasPrev, boolean hasNext, int pageSize) {
+        return build(ResultCodes.SUCCESS, null, new CursorPage<>(list, prevCursor, nextCursor, hasPrev, hasNext, pageSize));
     }
 
     // ========== Failure ==========
