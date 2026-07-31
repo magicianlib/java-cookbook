@@ -52,9 +52,8 @@ public final class ResultUtils {
      * @param total    总条数
      */
     public static <T> Result<Page<T>> successPage(List<T> list, int current, int pageSize, long total) {
-        return build(new Page<>(list, current, pageSize, total);
+        return successPage(new Page<>(list, current, pageSize, total));
     }
-
 
     public static <T> Result<Page<T>> successPage(Page<T> page) {
         return build(ResultCodes.SUCCESS, null, page);
@@ -72,11 +71,11 @@ public final class ResultUtils {
      * @param <C>        游标类型
      */
     public static <T, C> Result<CursorPage<T, C>> successCursor(List<T> list, C prevCursor, C nextCursor, boolean hasPrev, boolean hasNext, int pageSize) {
-        return build(new CursorPage<>(list, prevCursor, nextCursor, hasPrev, hasNext, pageSize));
+        return successCursor(new CursorPage<>(list, prevCursor, nextCursor, hasPrev, hasNext, pageSize));
     }
 
-    public static <T, C> Result<CursorPage<T, C>> successCursor(CursorPage<T> cursorPage) {
-        return build(ResultCodes.SUCCESS, null, cursorPage));
+    public static <T, C> Result<CursorPage<T, C>> successCursor(CursorPage<T, C> cursorPage) {
+        return build(ResultCodes.SUCCESS, null, cursorPage);
     }
 
     // ========== Failure ==========

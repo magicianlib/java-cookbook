@@ -17,13 +17,19 @@ public abstract class AbstractRequest extends PrintFriendliness {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    /** 客户端应用ID */
+    /**
+     * 客户端应用ID
+     */
     private String appId;
 
-    /** 链路ID */
+    /**
+     * 链路ID
+     */
     private String traceId;
 
-    /** 是否需要打印请求日志 */
+    /**
+     * 是否需要打印请求日志
+     */
     protected boolean needLog = true;
 
     public void validate() {

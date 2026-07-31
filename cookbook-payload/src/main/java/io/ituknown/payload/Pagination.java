@@ -12,13 +12,21 @@ import lombok.Getter;
 @Getter
 public class Pagination {
 
-    /** 总条数 */
+    /**
+     * 总条数
+     */
     private final long total;
-    /** 每页数量 */
+    /**
+     * 每页数量
+     */
     private final int pageSize;
-    /** 当前页码（从 1 开始） */
+    /**
+     * 当前页码（从 1 开始）
+     */
     private final int current;
-    /** 总页数（自动计算） */
+    /**
+     * 总页数（自动计算）
+     */
     private final int pages;
 
     /**

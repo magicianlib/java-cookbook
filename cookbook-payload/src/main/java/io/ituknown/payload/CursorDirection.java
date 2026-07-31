@@ -13,7 +13,6 @@ public enum CursorDirection {
      * 向后翻页（下一页）
      */
     FORWARD,
-
     /**
      * 向前翻页（上一页）
      */

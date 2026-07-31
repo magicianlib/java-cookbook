@@ -2,18 +2,10 @@ package io.ituknown.crypto.aes;
 
 import io.ituknown.crypto.Require;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
+import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SecureRandom;
+import java.security.*;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Arrays;
 
@@ -35,7 +27,7 @@ final class AesEngine {
 
     static byte[] encrypt(AesMode mode, Padding padding, SecretKey key, byte[] iv, int tagBits, byte[] plaintext)
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException,
-                   InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+            InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         Require.requireNonNull(key, "key");
         Require.requireNonNull(iv, "iv");
         Require.requireNonNull(plaintext, "plaintext");
@@ -47,7 +39,7 @@ final class AesEngine {
 
     static byte[] decrypt(AesMode mode, Padding padding, SecretKey key, int tagBits, byte[] combined)
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException,
-                   InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+            InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         Require.requireNonNull(key, "key");
         Require.requireNonNull(combined, "combined");
         if (combined.length < mode.ivLength) {

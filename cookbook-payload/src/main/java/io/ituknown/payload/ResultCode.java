@@ -51,12 +51,18 @@ package io.ituknown.payload;
  */
 public interface ResultCode {
 
-    /** 响应码 */
+    /**
+     * 响应码
+     */
     String code();
 
-    /** 响应信息 */
+    /**
+     * 响应信息
+     */
     String message();
 
-    /** 是否为成功状态码 */
+    /**
+     * 是否为成功状态码
+     */
     boolean success();
 }

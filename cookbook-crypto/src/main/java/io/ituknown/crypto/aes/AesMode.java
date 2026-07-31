@@ -13,7 +13,7 @@ enum AesMode {
     CFB("CFB", Family.STREAM, 16, false),
     OFB("OFB", Family.STREAM, 16, false);
 
-    enum Family { AEAD, BLOCK, STREAM }
+    enum Family {AEAD, BLOCK, STREAM}
 
     final String transformation;
     final Family family;

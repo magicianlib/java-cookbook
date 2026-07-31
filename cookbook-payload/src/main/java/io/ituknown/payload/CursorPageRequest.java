@@ -18,13 +18,19 @@ public class CursorPageRequest<C> extends AbstractRequest {
     @Serial
     private static final long serialVersionUID = 681913112366327366L;
 
-    /** 游标，首次请求传 null */
+    /**
+     * 游标，首次请求传 null
+     */
     private C cursor;
 
-    /** 翻页方向，默认为向后翻页 */
+    /**
+     * 翻页方向，默认为向后翻页
+     */
     private CursorDirection direction = CursorDirection.FORWARD;
 
-    /** 每页数量 */
+    /**
+     * 每页数量
+     */
     @Min(1)
     private int pageSize = 10;
 }

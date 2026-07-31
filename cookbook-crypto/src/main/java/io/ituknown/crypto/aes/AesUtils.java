@@ -3,11 +3,7 @@ package io.ituknown.crypto.aes;
 import io.ituknown.crypto.Base64;
 import io.ituknown.crypto.Hex;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
+import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
@@ -53,7 +49,7 @@ public final class AesUtils {
      */
     public static byte[] encrypt(byte[] plaintext, SecretKey key)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException,
-                   InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+            InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         return AesEngine.encrypt(AesMode.GCM, Padding.NONE, key,
                 AesEngine.generateIv(AesMode.GCM), TAG_BIT_LENGTH, plaintext);
     }
@@ -63,7 +59,7 @@ public final class AesUtils {
      */
     public static byte[] encrypt(String plaintext, SecretKey key)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException,
-                   InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+            InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         return encrypt(plaintext.getBytes(StandardCharsets.UTF_8), key);
     }
 
@@ -72,7 +68,7 @@ public final class AesUtils {
      */
     public static String encryptToBase64String(String plaintext, SecretKey key)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException,
-                   InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+            InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         return Base64.toString(encrypt(plaintext, key));
     }
 
@@ -81,7 +77,7 @@ public final class AesUtils {
      */
     public static String encryptToHexString(String plaintext, SecretKey key)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException,
-                   InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+            InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         return Hex.toHexString(encrypt(plaintext, key));
     }
 
@@ -90,7 +86,7 @@ public final class AesUtils {
      */
     public static String decrypt(byte[] combined, SecretKey key)
             throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException,
-                   InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+            InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         return new String(AesEngine.decrypt(AesMode.GCM, Padding.NONE, key, TAG_BIT_LENGTH, combined),
                 StandardCharsets.UTF_8);
     }
@@ -100,7 +96,7 @@ public final class AesUtils {
      */
     public static String decryptFromBase64String(String base64String, SecretKey key)
             throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException,
-                   NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+            NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
         return decrypt(Base64.toByte(base64String), key);
     }
 
@@ -109,7 +105,7 @@ public final class AesUtils {
      */
     public static String decryptFromHexString(String hexString, SecretKey key)
             throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException,
-                   NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
+            NoSuchAlgorithmException, BadPaddingException, InvalidKeyException {
         return decrypt(Hex.toByteArray(hexString), key);
     }
 
@@ -118,12 +114,16 @@ public final class AesUtils {
      */
     public record Key(String hexString, String base64String) {
 
-        /** 由十六进制编码还原对称密钥。 */
+        /**
+         * 由十六进制编码还原对称密钥。
+         */
         public static SecretKey ofHex(String hexString) {
             return new SecretKeySpec(Hex.toByteArray(hexString), "AES");
         }
 
-        /** 由 Base64 编码还原对称密钥。 */
+        /**
+         * 由 Base64 编码还原对称密钥。
+         */
         public static SecretKey ofBase64(String base64String) {
             return new SecretKeySpec(Base64.toByte(base64String), "AES");
         }

@@ -28,13 +28,21 @@ public class Result<T> implements Serializable {
     @Serial
     private static final long serialVersionUID = 6820965203253182123L;
 
-    /** 状态码 */
+    /**
+     * 状态码
+     */
     private String code;
-    /** 响应信息 */
+    /**
+     * 响应信息
+     */
     private String msg;
-    /** 链路ID */
+    /**
+     * 链路ID
+     */
     private String traceId;
-    /** 响应数据 */
+    /**
+     * 响应数据
+     */
     private T data;
 
     @Override
