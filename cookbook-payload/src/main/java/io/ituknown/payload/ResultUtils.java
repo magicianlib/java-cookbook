@@ -14,7 +14,8 @@ import java.util.List;
  */
 public final class ResultUtils {
 
-    private ResultUtils() {}
+    private ResultUtils() {
+    }
 
     private static <T> Result<T> build(ResultCode resultCode, String msg, T data) {
         Result<T> result = new Result<>();
@@ -51,7 +52,12 @@ public final class ResultUtils {
      * @param total    总条数
      */
     public static <T> Result<Page<T>> successPage(List<T> list, int current, int pageSize, long total) {
-        return build(ResultCodes.SUCCESS, null, new Page<>(list, current, pageSize, total));
+        return build(new Page<>(list, current, pageSize, total);
+    }
+
+
+    public static <T> Result<Page<T>> successPage(Page<T> page) {
+        return build(ResultCodes.SUCCESS, null, page);
     }
 
     /**
@@ -66,7 +72,11 @@ public final class ResultUtils {
      * @param <C>        游标类型
      */
     public static <T, C> Result<CursorPage<T, C>> successCursor(List<T> list, C prevCursor, C nextCursor, boolean hasPrev, boolean hasNext, int pageSize) {
-        return build(ResultCodes.SUCCESS, null, new CursorPage<>(list, prevCursor, nextCursor, hasPrev, hasNext, pageSize));
+        return build(new CursorPage<>(list, prevCursor, nextCursor, hasPrev, hasNext, pageSize));
+    }
+
+    public static <T, C> Result<CursorPage<T, C>> successCursor(CursorPage<T> cursorPage) {
+        return build(ResultCodes.SUCCESS, null, cursorPage));
     }
 
     // ========== Failure ==========

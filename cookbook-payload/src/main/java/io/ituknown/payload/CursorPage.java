@@ -1,6 +1,7 @@
 package io.ituknown.payload;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -115,8 +116,8 @@ public record CursorPage<T, C>(List<T> list, CursorPagination<C> pagination) {
             data = rawList.subList(fromIndex, rawList.size());
             // 反向数据需要反转，保证顺序正确
             List<T> reversedData = new ArrayList<>(data);
-            java.util.Collections.reverse(reversedData);
-            data = java.util.Collections.unmodifiableList(reversedData);
+            Collections.reverse(reversedData);
+            data = Collections.unmodifiableList(reversedData);
 
             // 游标语义：prevCursor 用于查询上一页，nextCursor 用于查询下一页
             nextCursor = cursor;  // 请求的游标，可用于查询下一页
