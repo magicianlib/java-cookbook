@@ -230,4 +230,78 @@ public class AesTest {
         byte[] aesCt = Aes.gcm().tagBits(128).key(key).encrypt(plain);
         assertEquals(plain, AesUtils.decrypt(aesCt, key));
     }
+
+    /** 按模式返回配好 padding 的新构建器（CBC 需 PKCS5，其余 NONE）。 */
+    private static AesBuilder<?> builderFor(AesMode mode) {
+        return switch (mode) {
+            case GCM -> Aes.gcm();
+            case CCM -> Aes.ccm();
+            case OCB -> Aes.ocb();
+            case CBC -> Aes.cbc().padding(Padding.PKCS5);
+            case CTR -> Aes.ctr();
+            case CFB -> Aes.cfb();
+            case OFB -> Aes.ofb();
+        };
+    }
+
+    /** 七个 fluent 入口（Aes.ccm/ocb/cfb/ofb 此前从未走 builder 链）均应完成加解密往返。 */
+    @Test
+    public void testFluentBuildersForAllModes() throws Exception {
+        SecretKey key = newKey(128);
+        String plain = "all modes round-trip";
+        for (AesMode mode : AesMode.values()) {
+            byte[] combined = builderFor(mode).key(key).encrypt(plain);
+            assertEquals(plain, builderFor(mode).key(key).decryptToString(combined),
+                    "round-trip failed for " + mode);
+        }
+    }
+
+    /** builder 必须拒绝 null 密钥。 */
+    @Test
+    public void testBuilderRejectsNullKey() {
+        assertThrows(IllegalArgumentException.class, () -> Aes.gcm().key(null));
+    }
+
+    /** builder 必须拒绝 null 初始化向量。 */
+    @Test
+    public void testBuilderRejectsNullIv() {
+        assertThrows(IllegalArgumentException.class, () -> Aes.gcm().iv(null));
+    }
+
+    /** builder 必须拒绝 null 明文。 */
+    @Test
+    public void testBuilderRejectsNullPlaintext() throws Exception {
+        SecretKey key = newKey(128);
+        assertThrows(IllegalArgumentException.class, () -> Aes.gcm().key(key).encrypt((byte[]) null));
+    }
+
+    /** 解密时密文短于 IV 长度应抛非法参数异常（覆盖引擎短密文分支）。 */
+    @Test
+    public void testDecryptRejectsShortCiphertext() throws Exception {
+        SecretKey key = newKey(128);
+        // 4 字节短于 GCM 的 12 字节 IV
+        assertThrows(IllegalArgumentException.class, () -> Aes.gcm().key(key).decrypt(new byte[4]));
+    }
+
+    /** GCM 96 位认证标签同样应完成往返（覆盖 tagBits 非默认值路径）。 */
+    @Test
+    public void testGcm96BitTagRoundTrip() throws Exception {
+        SecretKey key = newKey(128);
+        String plain = "ninety-six bit tag";
+        byte[] combined = Aes.gcm().tagBits(96).key(key).encrypt(plain);
+        assertEquals(plain, Aes.gcm().tagBits(96).key(key).decryptToString(combined));
+    }
+
+    /** iv(byte[]) 防御性 clone：设入后原地篡改原数组不应改变同一构建器的加密结果。 */
+    @Test
+    public void testExplicitIvDefensivelyCloned() throws Exception {
+        SecretKey key = newKey(128);
+        String plain = "defensive clone";
+        byte[] iv = Hex.toByteArray("00112233445566778899AABBCCDDEEFF");
+        BlockAesBuilder b = Aes.cbc().padding(Padding.PKCS5).key(key).iv(iv);
+        String first = b.encryptToHex(plain);
+        iv[0] ^= (byte) 0xFF; // 原地篡改原数组
+        String second = b.encryptToHex(plain);
+        assertEquals(first, second, "builder 应防御性 clone，外部篡改不应影响加密结果");
+    }
 }

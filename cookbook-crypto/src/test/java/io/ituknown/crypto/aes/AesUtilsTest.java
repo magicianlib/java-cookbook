@@ -95,4 +95,26 @@ public class AesUtilsTest {
         byte[] combined = AesUtils.encrypt(plaintext, key);
         Assertions.assertEquals(plaintext, AesUtils.decrypt(combined, key));
     }
+
+    /** generateEncodedKey 实际生成密钥并给出 hex/base64 双编码，两种编码还原后应彼此等价且可往返加解密。 */
+    @Test
+    public void testGenerateEncodedKeyRoundTrips() throws Exception {
+        AesUtils.Key key = AesUtils.generateEncodedKey(256);
+        Assertions.assertTrue(StringUtils.isNotBlank(key.hexString()));
+        Assertions.assertTrue(StringUtils.isNotBlank(key.base64String()));
+        // 256 位密钥：Hex 编码应为 64 字符（32 字节）
+        Assertions.assertEquals(32, Hex.toByteArray(key.hexString()).length);
+        // Hex 与 Base64 两种编码还原的密钥应等价
+        Assertions.assertEquals(AesUtils.Key.ofHex(key.hexString()), AesUtils.Key.ofBase64(key.base64String()));
+        // 用生成的密钥完成加解密往返
+        Assertions.assertEquals(plaintext, AesUtils.decrypt(AesUtils.encrypt(plaintext, key.fromBase64()), key.fromBase64()));
+    }
+
+    /** 合法密钥长度 128/192/256 位，对应编码字节数应为 16/24/32（覆盖 192 位分支）。 */
+    @Test
+    public void testGenerateKeyAllValidSizes() throws Exception {
+        Assertions.assertEquals(16, AesUtils.generateKey(128).getEncoded().length);
+        Assertions.assertEquals(24, AesUtils.generateKey(192).getEncoded().length);
+        Assertions.assertEquals(32, AesUtils.generateKey(256).getEncoded().length);
+    }
 }
