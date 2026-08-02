@@ -45,8 +45,10 @@ final class AesEngine {
         if (combined.length < mode.ivLength) {
             throw new IllegalArgumentException("Invalid ciphertext: shorter than IV length");
         }
+
         byte[] iv = Arrays.copyOfRange(combined, 0, mode.ivLength);
         byte[] ciphertext = Arrays.copyOfRange(combined, mode.ivLength, combined.length);
+
         Cipher cipher = createCipher(mode, padding);
         cipher.init(Cipher.DECRYPT_MODE, key, paramsOf(mode, iv, tagBits));
         return cipher.doFinal(ciphertext);

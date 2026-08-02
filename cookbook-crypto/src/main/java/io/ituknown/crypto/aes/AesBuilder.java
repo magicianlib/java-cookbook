@@ -45,9 +45,15 @@ abstract class AesBuilder<B extends AesBuilder<B>> {
     /**
      * 显式指定初始化向量。
      *
-     * <p>初始化向量是一段用于引入随机性的数据，保证同一密钥加密同一明文时产出不同密文；它无需保密，但同一密钥下每次加密都必须独一无二。构建器内部保留副本，调用方此后修改原数组不影响加密结果。
-     *
-     * <p><b>安全警告：</b>一旦显式设定初始化向量，本构建器不得用于重复加密多段明文——重复使用会在带认证加密或流式模式下严重破坏机密性与完整性。
+     * <p>
+     * 初始化向量 {@code iv} 是一段用于引入随机性的数据，保证同一密钥加密同一明文时产出不同密文。</p>
+     * <p>
+     * {@code iv} 无需保密，但同一密钥下每次加密都必须独一无二。构建器内部保留副本，调用方此后修改原数组不影响加密结果。</p>
+     * <p>
+     * 加密时默认会自动生成 {@code iv}，不过也可以使用该方法显示指定 {@code iv}。
+     * 除非有特殊要求，否则不推荐调用该方法显示指定 {@code iv}。</p>
+     * <p>
+     * <b>安全警告：</b>一旦显式设定初始化向量，本构建器不得用于重复加密多段明文——重复使用会在带认证加密或流式模式下严重破坏机密性与完整性。</p>
      *
      * @param iv 初始化向量
      * @return 当前构建器，用于链式配置
@@ -64,7 +70,7 @@ abstract class AesBuilder<B extends AesBuilder<B>> {
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException,
             InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         Require.requireNonNull(plaintext, "plaintext");
-        byte[] iv = (this.iv != null) ? this.iv : AesEngine.generateIv(mode);
+        byte[] iv = (this.iv != null) ? this.iv : AesEngine.generateIv(mode); // iv 缺省时默认自动生成
         return AesEngine.encrypt(mode, padding, key, iv, tagBits, plaintext);
     }
 
