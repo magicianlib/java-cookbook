@@ -1,6 +1,5 @@
 package io.ituknown.jackson.serializer;
 
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
 /**
@@ -28,6 +27,11 @@ public enum SensitiveType {
      * 身份证：保留前六位和后四位
      */
     ID_CARD(Pattern.compile("(\\d{6})\\d+(\\d{4})"), "$1****$2"),
+
+    /**
+     * 银行卡号：保留前六位和后四位
+     */
+    BANK_CARD_NO(Pattern.compile("(\\d{6})\\d+(\\d{4})"), "$1****$2"),
 
     /**
      * 地址：只保留省市区，隐藏后续详细地址
