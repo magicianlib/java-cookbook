@@ -1,14 +1,6 @@
 package io.ituknown.ban;
 
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.Handle;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.TypePath;
+import org.objectweb.asm.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -28,7 +20,9 @@ public class ClassFileScanner {
         return new ScanResult(collector.className, collector.sourceFile, collector.types);
     }
 
-    /** 收集访问过程中遇到的所有引用类型。 */
+    /**
+     * 收集访问过程中遇到的所有引用类型。
+     */
     private static final class Collector extends ClassVisitor {
 
         private static final Pattern SIGNATURE_CLASS = Pattern.compile("L([^;<>\\s]+)(?=[<;])");
