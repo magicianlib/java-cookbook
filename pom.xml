@@ -20,6 +20,7 @@
         <module>cookbook-validator</module>
         <module>cookbook-caffeine</module>
         <module>cookbook-log</module>
+        <module>ban-package-maven-plugin</module>
     </modules>
 
     <properties>
@@ -99,6 +100,11 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>cookbook-log</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>ban-package-maven-plugin</artifactId>
                 <version>${revision}</version>
             </dependency>
 
