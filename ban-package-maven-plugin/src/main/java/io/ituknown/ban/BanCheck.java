@@ -11,6 +11,10 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+/**
+ * 禁用检查引擎:由基线清单与范围叠加清单合成有效规则,再扫描已编译类,
+ * 找出其中引用到的被禁类型。
+ */
 public class BanCheck {
 
     private final List<String> baselinePackages;
@@ -26,6 +30,11 @@ public class BanCheck {
         this.globalBans = globalBans == null ? new BanSet() : globalBans;
     }
 
+    /**
+     * 合成当前范围下的有效禁用规则。
+     * <p>叠加方式为有意设计,并非笔误:项目级范围叠加全局补充清单,
+     * 全局级范围叠加项目级补充清单;基线清单在两种范围下始终生效。
+     */
     public BanRule effectiveRule(Scope scope) {
         List<String> packages = new ArrayList<>(baselinePackages);
         List<String> classes = new ArrayList<>(baselineClasses);
@@ -35,6 +44,9 @@ public class BanCheck {
         return new BanRule(packages, classes);
     }
 
+    /**
+     * 扫描给定根(目录或 jar)中的全部类,返回所有命中禁用规则的引用。
+     */
     public List<Violation> check(Scope scope, List<Path> roots) throws IOException {
         BanRule rule = effectiveRule(scope);
         List<Violation> violations = new ArrayList<>();
@@ -54,6 +66,9 @@ public class BanCheck {
         return violations;
     }
 
+    /**
+     * 收集一个根下的全部类字节码:目录按文件遍历,jar 按条目读取。
+     */
     private static List<byte[]> enumerateClasses(Path root) throws IOException {
         List<byte[]> classes = new ArrayList<>();
         if (Files.isDirectory(root)) {

@@ -15,6 +15,11 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * 字节码引用采集器:遍历单个已编译类,抽取出它引用到的全部类型
+ * (父类、接口、字段与方法签名、方法体指令、注解、方法引用、泛型签名等),
+ * 供禁用规则按字节码中的实际引用判定,而非依赖源码导入语句。
+ */
 public class ClassFileScanner {
 
     public ScanResult scan(byte[] bytes) {
@@ -23,6 +28,7 @@ public class ClassFileScanner {
         return new ScanResult(collector.className, collector.sourceFile, collector.types);
     }
 
+    /** 收集访问过程中遇到的所有引用类型。 */
     private static final class Collector extends ClassVisitor {
 
         private static final Pattern SIGNATURE_CLASS = Pattern.compile("L([^;<>\\s]+)(?=[<;])");
@@ -131,6 +137,7 @@ public class ClassFileScanner {
                 @Override
                 public void visitInvokeDynamicInsn(String name, String descriptor,
                                                    Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
+                    // 方法引用与 lambda 的目标类型藏在引导方法及其参数里,需一并采集,否则会漏检以方法引用形式触发的被禁类型。
                     addDescriptor(descriptor);
                     addHandle(bootstrapMethodHandle);
                     for (Object arg : bootstrapMethodArguments) {
@@ -144,6 +151,7 @@ public class ClassFileScanner {
 
                 @Override
                 public void visitLdcInsn(Object value) {
+                    // 加载类字面量时,其类型同样构成一次引用。
                     if (value instanceof Type t) {
                         addElementType(t);
                     }
@@ -171,6 +179,7 @@ public class ClassFileScanner {
         }
 
         private void addSignature(String signature) {
+            // 泛型签名携带擦除后丢失的类型参数,需从中解析出真实类型。
             if (signature == null || signature.isEmpty()) {
                 return;
             }
@@ -206,6 +215,7 @@ public class ClassFileScanner {
         }
 
         private AnnotationVisitor annotationVisitor(String descriptor) {
+            // 注解可嵌套、可带数组或枚举值,其中都可能隐藏类型引用,故递归下钻采集。
             addDescriptor(descriptor);
             return new AnnotationVisitor(Opcodes.ASM9) {
                 @Override

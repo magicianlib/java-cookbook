@@ -4,6 +4,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * 禁用匹配规则:对引用类型先按包前缀匹配,再按精确类匹配;命中后返回可读的命中说明。
+ */
 public final class BanRule {
 
     private final Set<String> packagePrefixes;
@@ -20,6 +23,9 @@ public final class BanRule {
         }
     }
 
+    /**
+     * 命中则返回可读说明(包前缀命中或精确类命中),未命中返回空。
+     */
     public String match(String internalName) {
         if (internalName == null) {
             return null;
