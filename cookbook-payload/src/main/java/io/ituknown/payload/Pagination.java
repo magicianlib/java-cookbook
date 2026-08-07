@@ -6,6 +6,11 @@ import lombok.Getter;
  * 偏移量分页元数据
  * <p>
  * {@code pages}（总页数）由 {@code total} 和 {@code pageSize} 自动计算得出，不需要调用方传入。
+ * <p>
+ * <b>跨进程序列化注意：</b>本类为不可变对象（仅全参构造、无无参构造、无 setter）。
+ * 通过 Dubbo 远程调用传输时，依赖序列化框架对"无无参构造类"的底层反射重建能力
+ * （Dubbo 默认的 Hessian2 可正常处理）；若改用其他序列化协议，需确认其对此类
+ * 不可变对象的支持。
  *
  * @author magicianlib@gmail.com
  */
