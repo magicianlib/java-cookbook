@@ -11,10 +11,10 @@ import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 限流规则解析器
+ * 限流键解析器。
  * <p>
- * 默认使用 类名#方法名 作为限流规则。如果指定了 Key 表达式且能正确解析 Key 值，将
- * 使用 类名#方法名#Value 作为限流规则。</p>
+ * 默认 key 是 类名#方法名，同一个方法的所有调用共用一个配额桶；
+ * 填了 key 表达式就再拼上 #表达式结果，按入参把不同调用分到各自的桶。</p>
  */
 public class SpelKeyResolver {
 
@@ -29,7 +29,7 @@ public class SpelKeyResolver {
             return prefix;
         }
 
-        // 根对象刻意留空：维度仅按入参引用求值，留空根对象可使漏写入参引用的表达式直接求值失败，避免误取调用目标对象的属性作为维度
+        // 根对象留空：表达式只能引用方法入参（#参数名），引用不到就直接报错，避免误读到目标对象的属性
         MethodBasedEvaluationContext context = new MethodBasedEvaluationContext(null, method, args, discoverer);
 
         Expression expression = cache.computeIfAbsent(keyExpression, parser::parseExpression);

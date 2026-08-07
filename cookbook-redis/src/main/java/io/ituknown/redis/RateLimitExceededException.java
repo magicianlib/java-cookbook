@@ -3,7 +3,8 @@ package io.ituknown.redis;
 import lombok.Getter;
 
 /**
- * 限流异常类
+ * 请求超过限流配额时抛出。携带限流上下文（配额上限、剩余、建议等待秒数），
+ * 方便上层转成 HTTP 429 状态码和 Retry-After。
  */
 @Getter
 public class RateLimitExceededException extends RuntimeException {

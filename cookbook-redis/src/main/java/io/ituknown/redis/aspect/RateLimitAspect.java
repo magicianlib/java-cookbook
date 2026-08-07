@@ -17,24 +17,20 @@ import java.lang.reflect.Method;
 /**
  * 方法限流切面
  * <p>
- * 该切面会拦截带 {@link RateLimit} 注解的方法，根据注解配置解析限流规则并向 {@link RateLimiter} 申请配额。</p>
+ * 拦截带 {@link RateLimit} 注解的方法：解析限流键、向 {@link RateLimiter} 申请配额，放行就执行原方法。</p>
  * <p>
- * 如果 {@link RateLimiter} 不可用，仅记录告警，避免因为限流组件故障原因阻断业务主流程。</p>
+ * 被限流时抛出 {@link RateLimitExceededException}，由调用方决定降级策略。</p>
  * <p>
- * 如果被限流将抛出 {@link RateLimitExceededException}，由调用方决定降级策略。</p>
+ * {@link RateLimiter} 自身报错（如 Redis 不可用）只记告警、照常放行，不让限流组件的故障拖垮主流程。</p>
  */
 @Aspect
 public class RateLimitAspect {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RateLimitAspect.class);
 
-    /**
-     * 限流组件
-     */
+    /** 限流执行器 */
     private final RateLimiter rateLimiter;
-    /**
-     * {@link RateLimit} 规则解析器
-     */
+    /** 限流键解析器 */
     private final SpelKeyResolver keyResolver;
 
     public RateLimitAspect(RateLimiter rateLimiter, SpelKeyResolver keyResolver) {
