@@ -6,10 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 方法级限流声明，是声明式限流的入口。被标记的方法在执行前先经切面判定配额，
- * 超限则抛出限流异常。
- *
- * <p>配额按周期计算，突发上限默认取配额数。
+ * 该注解用于配置方法级别请求频率限制
+ * <p>
+ * 使用该注解的前提是启用声明式限流功能{@link EnableRateLimit}
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
@@ -52,15 +51,23 @@ public @interface RateLimit {
      */
     String key() default "";
 
-    /** 允许的突发上限，留空（-1）时取配额数，桶总容量为本值加一 */
+    /**
+     * 允许的突发上限，留空（-1）时取配额数，桶总容量为本值加一
+     */
     int maxBurst() default -1;
 
-    /** 配额统计周期，单位秒 */
+    /**
+     * 配额统计周期，单位秒
+     */
     int period() default 1;
 
-    /** 单个周期内允许的请求配额数 */
+    /**
+     * 单个周期内允许的请求配额数
+     */
     int count();
 
-    /** 单次请求消耗的配额数 */
+    /**
+     * 单次请求消耗的配额数
+     */
     int quantity() default 1;
 }

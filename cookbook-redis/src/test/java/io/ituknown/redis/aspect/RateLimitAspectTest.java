@@ -2,7 +2,7 @@ package io.ituknown.redis.aspect;
 
 import io.ituknown.redis.RateLimitExceededException;
 import io.ituknown.redis.RateLimiter;
-import io.ituknown.redis.ThrottleResult;
+import io.ituknown.redis.ThrottleStatus;
 import io.ituknown.redis.annotation.RateLimit;
 import io.ituknown.redis.support.SpelKeyResolver;
 
@@ -70,14 +70,14 @@ class RateLimitAspectTest {
         RateLimiter rateLimiter() {
             return new RateLimiter(null) {
                 @Override
-                public ThrottleResult tryAcquire(String key, int maxBurst, int period, int count, int quantity) {
+                public ThrottleStatus tryAcquire(String key, int maxBurst, int period, int count, int quantity) {
                     if (key.endsWith("#broken")) {
                         throw new RuntimeException("redis down");
                     }
                     if (key.endsWith("#denied")) {
-                        return new ThrottleResult(false, 5, 0, 2, 8);
+                        return new ThrottleStatus(false, 5, 0, 2, 8);
                     }
-                    return new ThrottleResult(true, 5, 4, -1, 0);
+                    return new ThrottleStatus(true, 5, 4, -1, 0);
                 }
             };
         }

@@ -12,7 +12,7 @@ class RateLimitExceededExceptionTest {
 
     @Test
     void carries_result_fields_and_is_runtime() {
-        ThrottleResult result = ThrottleResult.from(List.of(1L, 4L, 0L, 2L, 8L));
+        ThrottleStatus result = ThrottleStatus.from(List.of(1L, 4L, 0L, 2L, 8L));
 
         RateLimitExceededException ex = new RateLimitExceededException("Foo#bar", result);
 

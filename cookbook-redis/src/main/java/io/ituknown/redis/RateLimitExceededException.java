@@ -1,8 +1,11 @@
 package io.ituknown.redis;
 
+import lombok.Getter;
+
 /**
- * 请求超出限流配额时抛出，携带限流上下文，便于上层映射为 429 与重试等待秒数。
+ * 限流异常类
  */
+@Getter
 public class RateLimitExceededException extends RuntimeException {
 
     private final String key;
@@ -11,32 +14,12 @@ public class RateLimitExceededException extends RuntimeException {
     private final long retryAfter;
     private final long resetAfter;
 
-    public RateLimitExceededException(String key, ThrottleResult result) {
+    public RateLimitExceededException(String key, ThrottleStatus result) {
         super("请求被限流; key=" + key + ", retryAfter=" + result.retryAfter() + "s");
         this.key = key;
         this.limit = result.limit();
         this.remaining = result.remaining();
         this.retryAfter = result.retryAfter();
         this.resetAfter = result.resetAfter();
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public long getLimit() {
-        return limit;
-    }
-
-    public long getRemaining() {
-        return remaining;
-    }
-
-    public long getRetryAfter() {
-        return retryAfter;
-    }
-
-    public long getResetAfter() {
-        return resetAfter;
     }
 }

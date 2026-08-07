@@ -1,10 +1,10 @@
 package io.ituknown.redis;
 
-import java.util.List;
-
 import org.redisson.api.RScript;
 import org.redisson.api.RedissonClient;
 import org.redisson.client.codec.StringCodec;
+
+import java.util.List;
 
 /**
  * 限流执行器：把判定参数透传给 Redis 限流命令，返回结构化结果。
@@ -38,6 +38,10 @@ public class RateLimiter {
         this.client = client;
     }
 
+    public ThrottleStatus tryAcquire(String key, int period, int count) {
+        return tryAcquire(key, count, period, count, 1);
+    }
+
     /**
      * 申请一次配额并返回判定结果。
      *
@@ -48,10 +52,10 @@ public class RateLimiter {
      * @param quantity 本次申请配额数
      * @return 限流判定结果，含是否放行及桶容量、剩余配额、等待秒数等信息
      */
-    public ThrottleResult tryAcquire(String key, int maxBurst, int period, int count, int quantity) {
+    public ThrottleStatus tryAcquire(String key, int maxBurst, int period, int count, int quantity) {
         // 限流命令的入参与键须以纯文本下发，使用文本编解码避免默认编码产生非文本字节
         RScript script = client.getScript(new StringCodec());
-        List<Object> keys = List.<Object>of(key);
+        List<Object> keys = List.of(key);
         Object[] args = {
                 String.valueOf(maxBurst),
                 String.valueOf(count),
@@ -62,18 +66,16 @@ public class RateLimiter {
         String sha = scriptSha;
         if (sha != null) {
             try {
-                List<?> result = script.evalSha(
-                        RScript.Mode.READ_WRITE, sha, RScript.ReturnType.LIST, keys, args);
-                return ThrottleResult.from(result);
+                List<?> result = script.evalSha(RScript.Mode.READ_WRITE, sha, RScript.ReturnType.LIST, keys, args);
+                return ThrottleStatus.from(result);
             } catch (Exception ignored) {
                 // 脚本指纹失效（如服务端重启清空），回退全量下发并在下方重载指纹
                 scriptSha = null;
             }
         }
 
-        List<?> result = script.eval(
-                RScript.Mode.READ_WRITE, LUA_THROTTLE, RScript.ReturnType.LIST, keys, args);
+        List<?> result = script.eval(RScript.Mode.READ_WRITE, LUA_THROTTLE, RScript.ReturnType.LIST, keys, args);
         scriptSha = script.scriptLoad(LUA_THROTTLE);
-        return ThrottleResult.from(result);
+        return ThrottleStatus.from(result);
     }
 }

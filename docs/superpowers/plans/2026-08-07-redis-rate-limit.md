@@ -610,7 +610,7 @@ package io.ituknown.redis.aspect;
 
 import io.ituknown.redis.RateLimitExceededException;
 import io.ituknown.redis.RateLimiter;
-import io.ituknown.redis.ThrottleResult;
+import io.ituknown.redis.ThrottleStatus;
 import io.ituknown.redis.annotation.RateLimit;
 import io.ituknown.redis.support.SpelKeyResolver;
 
@@ -717,7 +717,7 @@ import java.lang.reflect.Method;
 
 import io.ituknown.redis.RateLimitExceededException;
 import io.ituknown.redis.RateLimiter;
-import io.ituknown.redis.ThrottleResult;
+import io.ituknown.redis.ThrottleStatus;
 import io.ituknown.redis.annotation.RateLimit;
 import io.ituknown.redis.support.SpelKeyResolver;
 

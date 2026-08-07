@@ -39,12 +39,12 @@ class RateLimiterLiveTest {
 
         // maxBurst=3 对应 limit=4，前 4 次放行
         for (int i = 0; i < 4; i++) {
-            ThrottleResult allowed = rateLimiter.tryAcquire(key, 3, 10, 5, 1);
+            ThrottleStatus allowed = rateLimiter.tryAcquire(key, 3, 10, 5, 1);
             assertTrue(allowed.allowed(), "第 " + (i + 1) + " 次应放行");
         }
 
         // 第 5 次被限流
-        ThrottleResult denied = rateLimiter.tryAcquire(key, 3, 10, 5, 1);
+        ThrottleStatus denied = rateLimiter.tryAcquire(key, 3, 10, 5, 1);
         assertFalse(denied.allowed());
         assertTrue(denied.retryAfter() >= 0, "被限流时重试等待秒数应非负");
     }
