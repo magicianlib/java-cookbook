@@ -1,7 +1,6 @@
 # cookbook-redis
 
-基于 Redis `CL.THROTTLE` 命令的声明式限流模块，提供 Spring 方法级注解 `@RateLimit`，可按方法入参维度做精细化配额控制。底层采用
-GCRA（通用信元速率算法），兼容两种后端：
+基于 Redis `CL.THROTTLE` 命令的声明式限流模块，提供 Spring 方法级注解 `@RateLimit`，可按方法入参维度做精细化配额控制。底层采用 GCRA（通用信元速率算法），兼容两种后端：
 
 - Dragonfly：原生内置 `CL.THROTTLE`，开箱即用；
 - Redis：需加载 redis-cell 模块。
@@ -38,7 +37,7 @@ CL.THROTTLE key max_burst count period [quantity]
 
 ### 返回五元组
 
-命令返回五个整数，本模块封装为 `ThrottleResult`：
+命令返回五个整数，本模块封装为 `ThrottleStatus`：
 
 | 序号 | 原始含义                  | 对应字段              |
 |----|-----------------------|-------------------|
@@ -60,7 +59,6 @@ CL.THROTTLE key max_burst count period [quantity]
 模块本身不创建连接，需要应用提供一个 `RedissonClient` Bean，再用 `@EnableRateLimit` 开启：
 
 ```java
-
 @Configuration
 @EnableRateLimit
 public class RedisConfig {
@@ -77,7 +75,6 @@ public class RedisConfig {
 ### 2. 在方法上声明限流
 
 ```java
-
 @RateLimit(count = 5, period = 1)
 public void create(String userId) {
     // ...
@@ -99,7 +96,7 @@ public void create(String userId) {
 `key` 是一条 Spring 表达式语言（SpEL）表达式，决定按什么粒度独立计数。最终 Redis 键由三段拼接：`简单类名#方法名[#求值结果]`
 。解析步骤：
 
-1. 固定前缀「简单类名#方法名」，作为命名空间避免不同接口维度撞键；
+1. 固定前缀为 简单类名#方法名，作为命名空间避免不同接口维度撞键；
 2. `key` 非空时，在调用上下文中求值，以 `#参数名` 引用入参；
 3. 求值结果拼到前缀之后；结果为 `null` 时退化为方法级（仅前缀），所有求值为空的调用共享同一桶。
 
@@ -120,7 +117,7 @@ public void create(String userId) {
 ```
 
 > 提示：按入参名引用需编译期保留参数名（`-parameters`），本模块已在 pom 中开启。对象属性导航按 JavaBean
-> 规则取值；若表达式引用了不存在的入参会抛求值异常，且不在「故障开放」范围内，建议为维度表达式补充求值单测。
+> 规则取值；若表达式引用了不存在的入参会抛求值异常，且不在故障开放范围内，建议为维度表达式补充求值单测。
 
 ### 4. 处理超限
 
@@ -128,7 +125,6 @@ public void create(String userId) {
 HTTP 429 与 `Retry-After` 响应头：
 
 ```java
-
 @ExceptionHandler(RateLimitExceededException.class)
 public ResponseEntity<Map<String, Object>> onLimited(RateLimitExceededException e) {
     Map<String, Object> body = Map.of(
@@ -150,7 +146,12 @@ public ResponseEntity<Map<String, Object>> onLimited(RateLimitExceededException 
 用 Dragonfly 容器一键起一个原生支持 `CL.THROTTLE` 的实例：
 
 ```bash
-docker run -d -p 6379:6379 --ulimit memlock=-1 --name dragonfly docker.dragonflydb.io/dragonflydb/dragonfly --dbnum=1 
+docker run -d \
+-p 6379:6379 \
+--ulimit memlock=-1 \
+--name dragonfly \
+docker.dragonflydb.io/dragonflydb/dragonfly \
+--dbnum=1
 ```
 
 启动后即可运行模块自带的真机测试（连接 `redis://127.0.0.1:6379`，不可达时自动跳过）：
