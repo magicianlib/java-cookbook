@@ -3,8 +3,16 @@ package io.ituknown.redis;
 import java.util.List;
 
 /**
- * 限流判定结果。第 1 位为 0 表示放行，1 表示被限流；后续依次为桶容量、剩余令牌、
- * 重试等待秒数（-1 表示未被限流）、恢复满桶等待秒数。
+ * 限流判定结果，对应限流命令返回的五元组。
+ *
+ * <p>各分量含义按声明顺序：
+ * <ul>
+ *   <li>是否放行：本次申请是否被允许通过</li>
+ *   <li>桶总容量：等于最大突发量加一，即桶可容纳的最大请求数</li>
+ *   <li>剩余配额：当前桶内还可消费的请求数</li>
+ *   <li>重试等待秒数：被限流时建议等待多久再重试，放行时为 -1</li>
+ *   <li>恢复满桶等待秒数：桶配额完全恢复所需时间</li>
+ * </ul>
  */
 public record ThrottleResult(boolean allowed, long limit, long remaining,
                              long retryAfter, long resetAfter) {

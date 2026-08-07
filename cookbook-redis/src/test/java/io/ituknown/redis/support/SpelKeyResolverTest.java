@@ -36,4 +36,11 @@ class SpelKeyResolverTest {
 
         assertEquals("Fixture#query#3", new SpelKeyResolver().resolve(method, new Object[]{"u1", 3}, "#page"));
     }
+
+    @Test
+    void null_evaluated_value_falls_back_to_method_signature() throws Exception {
+        Method method = Fixture.class.getMethod("login", String.class);
+
+        assertEquals("Fixture#login", new SpelKeyResolver().resolve(method, new Object[]{null}, "#userId"));
+    }
 }

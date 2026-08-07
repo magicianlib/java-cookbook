@@ -2,7 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>io.ituknown</groupId>
     <artifactId>java-cookbook</artifactId>
     <version>${revision}</version>
@@ -21,30 +20,23 @@
         <module>cookbook-caffeine</module>
         <module>cookbook-log</module>
         <module>ban-package-maven-plugin</module>
+        <module>cookbook-redis</module>
     </modules>
-
     <properties>
         <revision>1.4.0</revision>
-
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <maven.compiler.release>21</maven.compiler.release>
-
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
         <plugin.compiler.version>3.14.1</plugin.compiler.version>
         <plugin.flatten.version>1.7.3</plugin.flatten.version>
-
         <spring-boot.version>3.5.9</spring-boot.version>
-
         <junit.version>5.12.2</junit.version>
         <lombok.version>1.18.42</lombok.version>
-
         <commons-lang3.version>3.20.0</commons-lang3.version>
         <commons-collections4.version>4.5.0</commons-collections4.version>
     </properties>
-
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -107,6 +99,11 @@
                 <artifactId>ban-package-maven-plugin</artifactId>
                 <version>${revision}</version>
             </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>cookbook-redis</artifactId>
+                <version>${revision}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.springframework.boot</groupId>
@@ -123,14 +120,12 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
                 <scope>provided</scope>
             </dependency>
-
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
@@ -143,7 +138,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -151,7 +145,6 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
     <build>
         <pluginManagement>
             <plugins>
@@ -169,7 +162,6 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -189,7 +181,6 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>

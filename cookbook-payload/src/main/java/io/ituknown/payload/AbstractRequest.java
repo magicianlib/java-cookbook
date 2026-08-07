@@ -23,9 +23,9 @@ public abstract class AbstractRequest extends PrintFriendliness {
     private String appId;
 
     /**
-     * 链路ID
+     * 请求ID
      */
-    private String traceId;
+    private String requestId;
 
     /**
      * 是否需要打印请求日志

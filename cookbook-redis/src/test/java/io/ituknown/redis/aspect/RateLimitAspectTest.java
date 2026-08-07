@@ -70,7 +70,7 @@ class RateLimitAspectTest {
         RateLimiter rateLimiter() {
             return new RateLimiter(null) {
                 @Override
-                public ThrottleResult tryAcquire(String key, int maxBurst, int count, int period, int quantity) {
+                public ThrottleResult tryAcquire(String key, int maxBurst, int period, int count, int quantity) {
                     if (key.endsWith("#broken")) {
                         throw new RuntimeException("redis down");
                     }

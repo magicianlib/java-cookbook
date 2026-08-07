@@ -11,7 +11,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 /**
  * 限流装配：注册执行器、维度解析器、切面，并开启方法代理。
- * 由 @EnableRateLimit 导入；RedissonClient 由应用提供。
+ * 由 {@link EnableRateLimit} 导入；RedissonClient 由应用提供。
  */
 @Configuration
 @EnableAspectJAutoProxy

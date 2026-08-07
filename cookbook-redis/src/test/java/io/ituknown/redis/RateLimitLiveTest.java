@@ -57,7 +57,7 @@ class RateLimitLiveTest {
     }
 
     static class LimitedService {
-        @RateLimit(key = "#id", count = 5, maxBurst = 3)
+        @RateLimit(key = "#id", maxBurst = 3, count = 5)
         public String call(String id) {
             return "ok-" + id;
         }
