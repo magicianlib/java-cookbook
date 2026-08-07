@@ -357,15 +357,16 @@ public class RateLimiter {
     private static final String LUA_THROTTLE =
             "return redis.call('CL.THROTTLE', KEYS[1], ARGV[1], ARGV[2], ARGV[3], ARGV[4])";
 
-    private final RScript script;
+    private final RedissonClient client;
     private volatile String scriptSha;
 
     public RateLimiter(RedissonClient client) {
-        // 限流命令的入参与键须以纯文本下发，使用文本编解码避免默认编码产生非文本字节
-        this.script = client.getScript(new StringCodec());
+        this.client = client;
     }
 
     public ThrottleResult tryAcquire(String key, int maxBurst, int count, int period, int quantity) {
+        // 限流命令的入参与键须以纯文本下发，使用文本编解码避免默认编码产生非文本字节
+        RScript script = client.getScript(new StringCodec());
         List<Object> keys = List.<Object>of(key);
         Object[] args = {
                 String.valueOf(maxBurst),
