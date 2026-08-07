@@ -6,6 +6,13 @@
       "name": "JavaSE-21",
       "path": "/usr/local/openjdk/jdk21/Contents/Home",
       "default": true
+    },
+    {
+      "name": "JavaSE-21",
+      "path": "D:\\Java\\jdk21",
+      "default": true
     }
-  ]
+  ],
+  "maven.executable.path": "mvn",
+  "java.import.maven.enabled": true
 }
