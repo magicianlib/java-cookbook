@@ -274,6 +274,8 @@ git commit -m "feat(redis): add RateLimitExceededException carrying throttle res
 
 说明：Redisson 仅能借 Lua eval 执行非标准命令，已用 RESP 实测「Lua 的 `redis.call` 调 CL.THROTTLE」在本地 Dragonfly 返回 `[0,4,3,-1,3]`，语义与 redis-cell 一致。真机测试用 `Assumptions.assumeTrue` 守卫：连不上 127.0.0.1:6379 自动跳过而非失败。
 
+重要（实测修正）：Redisson 默认 codec 会把 ARGV 入参编码为非文本字节（整数 3 编码为 2 字节、首字节 0x02），CL.THROTTLE 无法按整数解析，报 `value is not an integer or out of range`。改用 `client.getScript(new StringCodec())` 以纯文本下发入参与键；入参须转为字符串。结果列表随之按字符串解码，因此 `ThrottleResult.from` 的转换须兼容字符串（`Number` 或 `String`）。
+
 - [ ] **Step 1: 写真机测试（连不上则跳过）**
 
 ```java
@@ -344,6 +346,7 @@ import java.util.List;
 
 import org.redisson.api.RScript;
 import org.redisson.api.RedissonClient;
+import org.redisson.client.codec.StringCodec;
 
 /**
  * 限流执行器：把判定参数透传给限流命令，返回结构化结果。
@@ -354,22 +357,27 @@ public class RateLimiter {
     private static final String LUA_THROTTLE =
             "return redis.call('CL.THROTTLE', KEYS[1], ARGV[1], ARGV[2], ARGV[3], ARGV[4])";
 
-    private final RedissonClient client;
+    private final RScript script;
     private volatile String scriptSha;
 
     public RateLimiter(RedissonClient client) {
-        this.client = client;
+        // 限流命令的入参与键须以纯文本下发，使用文本编解码避免默认编码产生非文本字节
+        this.script = client.getScript(new StringCodec());
     }
 
     public ThrottleResult tryAcquire(String key, int maxBurst, int count, int period, int quantity) {
-        // 限流命令按对象集合接收键，显式按对象构造，避免被推断成字符串集合而类型不符
         List<Object> keys = List.<Object>of(key);
-        Object[] args = {maxBurst, count, period, quantity};
+        Object[] args = {
+                String.valueOf(maxBurst),
+                String.valueOf(count),
+                String.valueOf(period),
+                String.valueOf(quantity)
+        };
 
         String sha = scriptSha;
         if (sha != null) {
             try {
-                List<?> result = client.getScript().evalSha(
+                List<?> result = script.evalSha(
                         RScript.Mode.READ_WRITE, sha, RScript.ReturnType.LIST, keys, args);
                 return ThrottleResult.from(result);
             } catch (Exception ignored) {
@@ -378,9 +386,9 @@ public class RateLimiter {
             }
         }
 
-        List<?> result = client.getScript().eval(
+        List<?> result = script.eval(
                 RScript.Mode.READ_WRITE, LUA_THROTTLE, RScript.ReturnType.LIST, keys, args);
-        scriptSha = client.getScript().scriptLoad(LUA_THROTTLE);
+        scriptSha = script.scriptLoad(LUA_THROTTLE);
         return ThrottleResult.from(result);
     }
 }

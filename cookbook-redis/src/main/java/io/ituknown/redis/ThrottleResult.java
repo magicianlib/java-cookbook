@@ -19,6 +19,9 @@ public record ThrottleResult(boolean allowed, long limit, long remaining,
     }
 
     private static long asLong(Object element) {
-        return ((Number) element).longValue();
+        if (element instanceof Number n) {
+            return n.longValue();
+        }
+        return Long.parseLong(String.valueOf(element));
     }
 }
