@@ -11,7 +11,7 @@
 
 | 组件                           | 职责                           |
 |------------------------------|------------------------------|
-| `@EnableRateLimit`           | 开启声明式限流，导入装配并启用方法代理          |
+| `@EnableRateLimit`           | 开启声明式限流，导入装配并启用方法代理；`order` 配置切面顺序 |
 | `@RateLimit`                 | 方法级限流声明，配置配额与维度              |
 | `RateLimitAspect`            | 切面：解析维度、申请配额、超限抛异常、故障开放      |
 | `SpelKeyResolver`            | 按 SpEL 表达式解析限流键              |
@@ -70,6 +70,12 @@ public class RedisConfig {
         return Redisson.create(config);
     }
 }
+```
+
+`@EnableRateLimit` 还提供 `order` 属性配置限流切面在调用链中的执行顺序，数值越小优先级越高（越靠外层执行）。默认最高优先级，与未配置时一致；若希望限流先于事务、数据访问等切面生效，尽早拒绝越界请求，可调小该值：
+
+```java
+@EnableRateLimit(order = 0)
 ```
 
 ### 2. 在方法上声明限流

@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(SpringExtension.class)
@@ -35,8 +36,14 @@ class EnableRateLimitTest {
         assertNotNull(rateLimitAspect);
     }
 
+    @Test
+    void enable_applies_configured_order() {
+        // @EnableRateLimit(order = 42) 经 @Import + ImportAware 透传到切面
+        assertEquals(42, rateLimitAspect.getOrder());
+    }
+
     @Configuration
-    @EnableRateLimit
+    @EnableRateLimit(order = 42)
     static class AppConfig {
 
         @Bean(destroyMethod = "shutdown")

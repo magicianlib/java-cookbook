@@ -11,6 +11,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.Ordered;
 
 import java.lang.reflect.Method;
 
@@ -22,20 +23,44 @@ import java.lang.reflect.Method;
  * 被限流时抛出 {@link RateLimitExceededException}，由调用方决定降级策略。</p>
  * <p>
  * {@link RateLimiter} 自身报错（如 Redis 不可用）只记告警、照常放行，不让限流组件的故障拖垮主流程。</p>
+ * <p>
+ * 实现 {@link Ordered}，顺序由 {@link io.ituknown.redis.annotation.EnableRateLimit#order()} 注入，
+ * 默认 {@link Ordered#LOWEST_PRECEDENCE}（最内层）；需要让限流先于事务等切面生效时调小该值。</p>
  */
 @Aspect
-public class RateLimitAspect {
+public class RateLimitAspect implements Ordered {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RateLimitAspect.class);
 
-    /** 限流执行器 */
+    /**
+     * 限流执行器
+     */
     private final RateLimiter rateLimiter;
-    /** 限流键解析器 */
+    /**
+     * 限流键解析器
+     */
     private final SpelKeyResolver keyResolver;
+    /**
+     * 切面执行顺序
+     */
+    private final int order;
 
     public RateLimitAspect(RateLimiter rateLimiter, SpelKeyResolver keyResolver) {
+        this(rateLimiter, keyResolver, Ordered.HIGHEST_PRECEDENCE);
+    }
+
+    /**
+     * @param order 切面顺序，数值越小优先级越高（越靠外层执行）
+     */
+    public RateLimitAspect(RateLimiter rateLimiter, SpelKeyResolver keyResolver, int order) {
         this.rateLimiter = rateLimiter;
         this.keyResolver = keyResolver;
+        this.order = order;
+    }
+
+    @Override
+    public int getOrder() {
+        return order;
     }
 
     @Around("@annotation(rateLimit)")
