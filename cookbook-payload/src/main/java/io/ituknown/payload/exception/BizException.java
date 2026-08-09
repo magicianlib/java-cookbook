@@ -2,6 +2,7 @@ package io.ituknown.payload.exception;
 
 import io.ituknown.payload.ResultCode;
 import io.ituknown.payload.ResultCodes;
+import lombok.Getter;
 
 import java.util.Collection;
 import java.util.Map;
@@ -14,6 +15,7 @@ import java.util.Objects;
  * 核心构造方法为 {@link #BizException(ResultCode, String, Throwable)}，
  * 子类直接调用即可完成扩展。
  */
+@Getter
 public class BizException extends RuntimeException {
 
     @java.io.Serial
@@ -64,10 +66,6 @@ public class BizException extends RuntimeException {
     }
 
     // ==================== Getter ====================
-
-    public ResultCode getCode() {
-        return code;
-    }
 
     // ==================== Static helpers ====================
 

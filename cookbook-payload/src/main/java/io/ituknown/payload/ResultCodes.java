@@ -56,6 +56,14 @@ public enum ResultCodes implements ResultCode {
     CONFLICT("000409", "conflict"),
 
     /**
+     * 请求被限流。
+     * <p>用于调用频率超出配额、触发限流的场景（HTTP 429 Too Many Requests）。
+     *
+     * @see io.ituknown.payload.exception.BizRateLimitedException
+     */
+    TOO_MANY_REQUESTS("000429", "too many requests"),
+
+    /**
      * 通用业务失败。
      * <p>用于不属于上述分类的通用业务逻辑不满足的场景，
      * 如业务前置条件不成立、状态流转不合法等。

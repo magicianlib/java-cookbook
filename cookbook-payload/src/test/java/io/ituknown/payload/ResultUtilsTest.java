@@ -13,7 +13,7 @@ class ResultUtilsTest {
     @Test
     void success_noData() {
         Result<Void> result = ResultUtils.success();
-        assertEquals("00000", result.getCode());
+        assertEquals("000000", result.getCode());
         assertEquals("success", result.getMsg());
         assertNull(result.getData());
     }
@@ -21,7 +21,7 @@ class ResultUtilsTest {
     @Test
     void success_withData() {
         Result<String> result = ResultUtils.success("hello");
-        assertEquals("00000", result.getCode());
+        assertEquals("000000", result.getCode());
         assertEquals("success", result.getMsg());
         assertEquals("hello", result.getData());
     }
@@ -29,7 +29,7 @@ class ResultUtilsTest {
     @Test
     void success_withList() {
         Result<List<Integer>> result = ResultUtils.success(List.of(1, 2, 3));
-        assertEquals("00000", result.getCode());
+        assertEquals("000000", result.getCode());
         assertEquals(List.of(1, 2, 3), result.getData());
     }
 
@@ -40,7 +40,7 @@ class ResultUtilsTest {
         List<String> list = List.of("a", "b");
         Result<Page<String>> result = ResultUtils.successPage(list, 1, 10, 25);
 
-        assertEquals("00000", result.getCode());
+        assertEquals("000000", result.getCode());
         assertEquals("success", result.getMsg());
 
         Page<String> data = result.getData();
@@ -78,7 +78,7 @@ class ResultUtilsTest {
         List<String> list = List.of("a", "b");
         Result<CursorPage<String, String>> result = ResultUtils.successCursor(list, "eyJpZCI6NX0=", "eyJpZCI6MTB9", true, true, 20);
 
-        assertEquals("00000", result.getCode());
+        assertEquals("000000", result.getCode());
         assertEquals("success", result.getMsg());
 
         CursorPage<String, String> data = result.getData();
@@ -147,7 +147,7 @@ class ResultUtilsTest {
     @Test
     void failure_noArgs() {
         Result<Void> result = ResultUtils.failure();
-        assertEquals("00001", result.getCode());
+        assertEquals("000500", result.getCode());
         assertEquals("failure", result.getMsg());
         assertNull(result.getData());
     }
@@ -155,7 +155,7 @@ class ResultUtilsTest {
     @Test
     void failure_customMsg() {
         Result<Void> result = ResultUtils.failure("参数错误");
-        assertEquals("00001", result.getCode());
+        assertEquals("000500", result.getCode());
         assertEquals("参数错误", result.getMsg());
         assertNull(result.getData());
     }
@@ -203,7 +203,7 @@ class ResultUtilsTest {
     void toString_validJson() {
         Result<String> result = ResultUtils.success("test");
         String str = result.toString();
-        assertTrue(str.contains("\"code\":\"00000\""));
+        assertTrue(str.contains("\"code\":\"000000\""));
         assertTrue(str.contains("\"msg\":\"success\""));
         assertTrue(str.contains("\"data\":\"test\""));
     }

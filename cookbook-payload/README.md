@@ -196,7 +196,7 @@ public class PostRepository {
 ```javascript
 // GET /api/posts?direction=forward&pageSize=10
 const response = {
-    "code": "00000",
+    "code": "000000",
     "msg": "success",
     "data": {
         "list": [
@@ -221,7 +221,7 @@ const response = {
 // 使用前一次返回的 nextCursor
 // GET /api/posts?direction=forward&cursor=10&pageSize=10
 const response = {
-    "code": "00000",
+    "code": "000000",
     "msg": "success",
     "data": {
         "list": [
@@ -246,7 +246,7 @@ const response = {
 // 使用前一次返回的 prevCursor
 // GET /api/posts?direction=backward&cursor=10&pageSize=10
 const response = {
-    "code": "00000",
+    "code": "000000",
     "msg": "success",
     "data": {
         "list": [

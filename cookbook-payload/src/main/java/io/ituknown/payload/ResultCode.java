@@ -3,7 +3,7 @@ package io.ituknown.payload;
 /**
  * 响应码接口，由各业务模块实现以定义自己的响应码枚举。
  * <p>
- * 通用响应码见 {@link ResultCodes}（SUCCESS = "00000", FAILURE = "00001"）。
+ * 通用响应码见 {@link ResultCodes}（SUCCESS = "000000", FAILURE = "000500"）。
  * <p>
  * 业务模块推荐按以下方式扩展：
  * <pre>{@code
