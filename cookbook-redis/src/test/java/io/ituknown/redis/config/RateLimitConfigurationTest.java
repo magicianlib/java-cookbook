@@ -19,10 +19,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class RateLimitConfigurationTest {
 
     @Test
-    void default_order_is_lowest_precedence() {
+    void default_order_is_highest_precedence_plus_one() {
         RateLimitConfiguration cfg = newConfig(DefaultMarker.class);
         RateLimitAspect aspect = cfg.rateLimitAspect(new RateLimiter(null), new SpelKeyResolver());
-        assertEquals(Ordered.LOWEST_PRECEDENCE, aspect.getOrder());
+        assertEquals(Ordered.HIGHEST_PRECEDENCE + 1, aspect.getOrder());
     }
 
     @Test

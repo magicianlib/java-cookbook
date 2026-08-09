@@ -23,13 +23,17 @@ import java.lang.annotation.Target;
 public @interface EnableRateLimit {
 
     /**
-     * 配置切面执行顺序，数值越小优先级越高，默认使用 {@link Ordered#HIGHEST_PRECEDENCE}
+     * 配置切面执行顺序，数值越小优先级越高（越靠外层执行），默认 {@code Ordered.HIGHEST_PRECEDENCE + 1}（最外层）。
      * <p>
-     * 限流通常应尽量靠前，以便在打开事务、访问数据等耗资源操作之前就拒绝越界请求，可按需调整该值。</p>
+     * 默认取最高优先级：限流通常希望尽量靠前，在打开事务、访问数据等耗资源操作之前就拒绝越界请求，故默认放最外层。</p>
      * <p>
-     * 特别说明：如果 Spring 环境中配置了多个切面，最好保证不同切面的执行顺序不同。尤其是共同同一
-     * 抽象类的切面，相同执行顺序，容器启动时可能报参数绑定异常错误：
-     * "Required to bind N arguments, but only bound M (JoinPointMatch was NOT bound in invocation)"</p>
+     * 默认值退一格为 {@code HIGHEST_PRECEDENCE + 1} 而非字面的 {@link Ordered#HIGHEST_PRECEDENCE}（即
+     * {@code Integer.MIN_VALUE}）：带参数绑定（{@code @annotation(..)}）的切面若取 MIN_VALUE，会与 Spring 内部的
+     * {@code ExposeInvocationInterceptor}（同样占据该顺序）冲突，运行期抛
+     * "Required to bind N arguments, but only bound M (JoinPointMatch was NOT bound in invocation)"。退一格既近似最外层又避开冲突。</p>
+     * <p>
+     * 若希望限流晚于某些切面生效（靠内层），把本值调大即可，例如 {@code order = 0}；
+     * 与 {@code @EnableDistributedLock} 同时启用且需明确二者先后时，请为它们显式指定不同的 order。</p>
      */
-    int order() default Ordered.HIGHEST_PRECEDENCE;
+    int order() default Ordered.HIGHEST_PRECEDENCE + 1;
 }

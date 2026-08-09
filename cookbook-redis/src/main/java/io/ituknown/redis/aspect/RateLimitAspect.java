@@ -25,7 +25,7 @@ import java.lang.reflect.Method;
  * {@link RateLimiter} 自身报错（如 Redis 不可用）只记告警、照常放行，不让限流组件的故障拖垮主流程。</p>
  * <p>
  * 实现 {@link Ordered}，顺序由 {@link io.ituknown.redis.annotation.EnableRateLimit#order()} 注入，
- * 默认 {@link Ordered#LOWEST_PRECEDENCE}（最内层）；需要让限流先于事务等切面生效时调小该值。</p>
+ * 默认 {@code Ordered.HIGHEST_PRECEDENCE + 1}（最外层）；需要让限流靠内层生效时调大该值。</p>
  */
 @Aspect
 public class RateLimitAspect implements Ordered {
@@ -46,7 +46,7 @@ public class RateLimitAspect implements Ordered {
     private final int order;
 
     public RateLimitAspect(RateLimiter rateLimiter, SpelKeyResolver keyResolver) {
-        this(rateLimiter, keyResolver, Ordered.HIGHEST_PRECEDENCE);
+        this(rateLimiter, keyResolver, Ordered.HIGHEST_PRECEDENCE + 1);
     }
 
     /**

@@ -27,9 +27,9 @@ import java.util.Map;
 public class RateLimitConfiguration implements ImportAware {
 
     /**
-     * 限流切面顺序，取自 {@link EnableRateLimit#order()}，未取到时按最高优先级
+     * 限流切面顺序，取自 {@link EnableRateLimit#order()}，未取到时按最高优先级（HIGHEST_PRECEDENCE + 1）
      */
-    private int order = Ordered.HIGHEST_PRECEDENCE;
+    private int order = Ordered.HIGHEST_PRECEDENCE + 1;
 
     @Override
     public void setImportMetadata(AnnotationMetadata importMetadata) {
