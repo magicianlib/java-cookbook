@@ -21,6 +21,7 @@
         <module>cookbook-log</module>
         <module>ban-package-maven-plugin</module>
         <module>cookbook-redis</module>
+        <module>cookbook-aspect</module>
     </modules>
     <properties>
         <revision>1.4.0</revision>
@@ -102,6 +103,11 @@
             <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>cookbook-redis</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>cookbook-aspect</artifactId>
                 <version>${revision}</version>
             </dependency>
 
