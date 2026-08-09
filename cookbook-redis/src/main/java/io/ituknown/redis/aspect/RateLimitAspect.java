@@ -42,11 +42,10 @@ public class RateLimitAspect {
     public Object around(ProceedingJoinPoint pjp, RateLimit rateLimit) throws Throwable {
         Method method = ((MethodSignature) pjp.getSignature()).getMethod();
         String key = keyResolver.resolve(method, pjp.getArgs(), rateLimit.key());
-        int maxBurst = rateLimit.maxBurst() < 0 ? rateLimit.count() : rateLimit.maxBurst();
 
         ThrottleStatus result;
         try {
-            result = rateLimiter.tryAcquire(key, maxBurst, rateLimit.period(), rateLimit.count(), rateLimit.quantity());
+            result = rateLimiter.tryAcquire(key, rateLimit.maxBurst(), rateLimit.period(), rateLimit.count(), rateLimit.quantity());
         } catch (Exception e) {
             LOGGER.warn("限流判定异常，按放行处理; key={}", key, e);
             return pjp.proceed();

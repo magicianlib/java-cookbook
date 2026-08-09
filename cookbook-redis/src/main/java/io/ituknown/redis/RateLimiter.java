@@ -46,13 +46,18 @@ public class RateLimiter {
      * 申请一次配额并返回判定结果。
      *
      * @param key      限流键
-     * @param maxBurst 最大突发量
+     * @param maxBurst 最大突发量；小于 0（如注解默认 -1）表示取 count 作为突发上限
      * @param period   周期秒数
      * @param count    周期配额
      * @param quantity 本次申请配额数
      * @return 限流判定结果，含是否放行及桶容量、剩余配额、等待秒数等信息
      */
     public ThrottleStatus tryAcquire(String key, int maxBurst, int period, int count, int quantity) {
+        // maxBurst 未显式指定时取周期配额作为突发上限
+        if (maxBurst < 0) {
+            maxBurst = count;
+        }
+        
         // 限流命令的入参与键须以纯文本下发，使用文本编解码避免默认编码产生非文本字节
         RScript script = client.getScript(new StringCodec());
         List<Object> keys = List.of(key);
