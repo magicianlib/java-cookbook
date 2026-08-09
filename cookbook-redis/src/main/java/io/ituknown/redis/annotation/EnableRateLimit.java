@@ -26,6 +26,10 @@ public @interface EnableRateLimit {
      * 配置切面执行顺序，数值越小优先级越高，默认使用 {@link Ordered#HIGHEST_PRECEDENCE}
      * <p>
      * 限流通常应尽量靠前，以便在打开事务、访问数据等耗资源操作之前就拒绝越界请求，可按需调整该值。</p>
+     * <p>
+     * 特别说明：如果 Spring 环境中配置了多个切面，最好保证不同切面的执行顺序不同。尤其是共同同一
+     * 抽象类的切面，相同执行顺序，容器启动时可能报参数绑定异常错误：
+     * "Required to bind N arguments, but only bound M (JoinPointMatch was NOT bound in invocation)"</p>
      */
     int order() default Ordered.HIGHEST_PRECEDENCE;
 }
