@@ -9,11 +9,12 @@ import java.util.List;
  * 金额按权重分摊工具类（基于 Weight 对象）
  * 采用最大余额法：各份先按权重占比向下取整，剩余零头按残差从大到小逐份补偿一个最小单位，
  * 分摊结果之和恒等于按精度取整后的总金额。
+ * 另提供保底分摊：先按权重分摊，不足保底的项补足到保底，补足差额由其余项按权重承担。
  */
 public class AmountAllocator {
 
     /**
-     * 默认保留两位小数（精确到分）
+     * 按权重分摊金额，默认保留两位小数（精确到分）
      */
     public static <K> void allocate(BigDecimal totalAmount, List<Weight<K>> weights) {
         allocate(totalAmount, weights, 2);
@@ -32,36 +33,23 @@ public class AmountAllocator {
      * @throws IllegalArgumentException 参数非法时抛出
      */
     public static <K> void allocate(BigDecimal totalAmount, List<Weight<K>> weights, int scale) {
-        if (totalAmount == null || weights == null || weights.isEmpty()) {
-            throw new IllegalArgumentException("总金额和权重列表不能为空");
-        }
-        if (totalAmount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("总金额不能为负数");
-        }
-        if (scale < 0) {
-            throw new IllegalArgumentException("小数位数不能为负数");
-        }
+        BigDecimal normalizedTotal = validate(totalAmount, weights, scale);
+        allocateByWeight(normalizedTotal, weights, scale);
+    }
 
-        // 无论金额多少都先校验并汇总权重, 保证校验口径一致
-        BigDecimal totalWeight = BigDecimal.ZERO;
-        for (Weight<K> w : weights) {
-            if (w == null || w.getWeight() == null || w.getWeight().compareTo(BigDecimal.ZERO) < 0) {
-                throw new IllegalArgumentException("权重项不能为 null，权重值不能为 null 或负数");
-            }
-            totalWeight = totalWeight.add(w.getWeight());
-        }
-
-        if (totalWeight.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("权重之和必须大于 0");
-        }
-
-        // 总金额先对齐目标精度, 避免超出精度的零头丢失或破坏总额守恒
-        BigDecimal normalizedTotal = totalAmount.setScale(scale, RoundingMode.HALF_UP);
-
-        // 取整后金额为零(总额为零或零头被舍尽), 无需分摊
+    /**
+     * 最大余额法按权重分摊并回写结果（入参需已通过校验）
+     */
+    private static <K> void allocateByWeight(BigDecimal normalizedTotal, List<Weight<K>> weights, int scale) {
+        // 金额为零, 无需分摊
         if (normalizedTotal.signum() == 0) {
             weights.forEach(w -> w.setResult(BigDecimal.ZERO.setScale(scale, RoundingMode.HALF_UP)));
             return;
+        }
+
+        BigDecimal totalWeight = BigDecimal.ZERO;
+        for (Weight<K> w : weights) {
+            totalWeight = totalWeight.add(w.getWeight());
         }
 
         // 局部辅助类
@@ -129,5 +117,113 @@ public class AmountAllocator {
         if (sumResult.compareTo(normalizedTotal) != 0) {
             throw new IllegalStateException("分摊总和与总金额不匹配，预期: " + normalizedTotal + ", 实际: " + sumResult);
         }
+    }
+
+    /**
+     * 按权重分摊金额并保证每份至少分得保底金额，默认保留两位小数（精确到分）
+     */
+    public static <K> void allocateWithMiniAmount(BigDecimal totalAmount, List<Weight<K>> weights, BigDecimal minAmount) {
+        allocateWithMiniAmount(totalAmount, weights, 2, minAmount);
+    }
+
+    /**
+     * 按权重分摊金额并保证每份至少分得保底金额，结果回写到每个权重对象
+     * <p>
+     * 先按权重分摊，结果不足保底金额的项补足到保底金额（按精度向下取整），
+     * 补足差额由其余项按权重重新分摊承担，迭代至所有项不低于保底；
+     * 各分摊结果之和恒等于取整后的总金额，每份（含零权重项）至少分得保底金额。
+     *
+     * @param totalAmount 总金额（不能为 null，必须 ≥ 0）
+     * @param weights     权重列表（不能为 null 或空；单项不能为 null，权重值不能为 null 或负数，权重总和必须大于 0）
+     * @param scale       保留小数位数（如 2 表示分）
+     * @param minAmount   保底分摊金额（不能为 null 或负数，且不能大于平均分摊金额）
+     * @param <K>         业务标识类型
+     * @throws IllegalArgumentException 参数非法时抛出
+     */
+    public static <K> void allocateWithMiniAmount(BigDecimal totalAmount, List<Weight<K>> weights, int scale, BigDecimal minAmount) {
+        BigDecimal normalizedTotal = validate(totalAmount, weights, scale);
+        if (minAmount == null || minAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("保底分摊金额不能为 null 或负数");
+        }
+
+        // 保底放大到全部份数后不能超过总金额, 即保底不能大于平均分摊金额
+        if (minAmount.multiply(BigDecimal.valueOf(weights.size())).compareTo(normalizedTotal) > 0) {
+            throw new IllegalArgumentException("保底分摊金额不能大于平均分摊金额");
+        }
+
+        // 保底向下对齐目标精度, 避免取整放大后保底总额超出总金额
+        BigDecimal floor = minAmount.setScale(scale, RoundingMode.FLOOR);
+
+        // 保底取整后为零, 等价于普通按权重分摊
+        if (floor.signum() == 0) {
+            allocateByWeight(normalizedTotal, weights, scale);
+            return;
+        }
+
+        // 迭代补足: 每轮按权重分摊剩余金额, 不足保底者固定为保底并从后续轮次剔除
+        List<Weight<K>> pool = new ArrayList<>(weights);
+        BigDecimal remaining = normalizedTotal;
+        while (true) {
+            allocateByWeight(remaining, pool, scale);
+
+            List<Weight<K>> belowFloor = new ArrayList<>();
+            for (Weight<K> w : pool) {
+                if (w.getResult().compareTo(floor) < 0) {
+                    belowFloor.add(w);
+                }
+            }
+            if (belowFloor.isEmpty()) {
+                break;
+            }
+
+            for (Weight<K> w : belowFloor) {
+                w.setResult(floor);
+            }
+            remaining = remaining.subtract(floor.multiply(BigDecimal.valueOf(belowFloor.size())));
+            pool.removeAll(belowFloor);
+            if (pool.isEmpty()) {
+                break;
+            }
+        }
+
+        // 总额守恒安全校验
+        BigDecimal sumResult = BigDecimal.ZERO;
+        for (Weight<K> w : weights) {
+            sumResult = sumResult.add(w.getResult());
+        }
+        if (sumResult.compareTo(normalizedTotal) != 0) {
+            throw new IllegalStateException("分摊总和与总金额不匹配，预期: " + normalizedTotal + ", 实际: " + sumResult);
+        }
+    }
+
+    /**
+     * 校验分摊入参，返回按精度取整后的总金额
+     */
+    private static <K> BigDecimal validate(BigDecimal totalAmount, List<Weight<K>> weights, int scale) {
+        if (totalAmount == null || weights == null || weights.isEmpty()) {
+            throw new IllegalArgumentException("总金额和权重列表不能为空");
+        }
+        if (totalAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("总金额不能为负数");
+        }
+        if (scale < 0) {
+            throw new IllegalArgumentException("小数位数不能为负数");
+        }
+
+        // 无论金额多少都先校验并汇总权重, 保证校验口径一致
+        BigDecimal totalWeight = BigDecimal.ZERO;
+        for (Weight<K> w : weights) {
+            if (w == null || w.getWeight() == null || w.getWeight().compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException("权重项不能为 null，权重值不能为 null 或负数");
+            }
+            totalWeight = totalWeight.add(w.getWeight());
+        }
+
+        if (totalWeight.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("权重之和必须大于 0");
+        }
+
+        // 总金额先对齐目标精度, 避免超出精度的零头丢失或破坏总额守恒
+        return totalAmount.setScale(scale, RoundingMode.HALF_UP);
     }
 }
