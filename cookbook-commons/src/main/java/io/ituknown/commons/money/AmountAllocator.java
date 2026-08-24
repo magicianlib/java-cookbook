@@ -7,7 +7,8 @@ import java.util.List;
 
 /**
  * 金额按权重分摊工具类（基于 Weight 对象）
- * 使用最大余额法确保分摊总额等于原始金额，结果直接写入每个 Weight 对象的 result 字段。
+ * 采用最大余额法：各份先按权重占比向下取整，剩余零头按残差从大到小逐份补偿一个最小单位，
+ * 分摊结果之和恒等于按精度取整后的总金额。
  */
 public class AmountAllocator {
 
@@ -19,10 +20,13 @@ public class AmountAllocator {
     }
 
     /**
-     * 按权重分摊金额，结果设置到每个 Weight 对象的 result 字段
+     * 按权重分摊金额，结果回写到每个权重对象
+     * <p>
+     * 总金额先按保留位数四舍五入，各分摊结果之和等于取整后的总金额；
+     * 权重为零的项不分得金额；残差相同时列表靠前的项优先获得补偿。
      *
      * @param totalAmount 总金额（不能为 null，必须 ≥ 0）
-     * @param weights     权重列表（不能为 null 或空，每个 Weight 对象的 weight 必须 ≥ 0，权重总和 > 0）
+     * @param weights     权重列表（不能为 null 或空；单项不能为 null，权重值不能为 null 或负数，权重总和必须大于 0）
      * @param scale       保留小数位数（如 2 表示分）
      * @param <K>         业务标识类型
      * @throws IllegalArgumentException 参数非法时抛出
@@ -38,16 +42,11 @@ public class AmountAllocator {
             throw new IllegalArgumentException("小数位数不能为负数");
         }
 
-        // 总金额为0, 无需后续计算
-        if (totalAmount.compareTo(BigDecimal.ZERO) == 0) {
-            weights.forEach(w -> w.setResult(BigDecimal.ZERO.setScale(scale, RoundingMode.HALF_UP)));
-            return;
-        }
-
+        // 无论金额多少都先校验并汇总权重, 保证校验口径一致
         BigDecimal totalWeight = BigDecimal.ZERO;
         for (Weight<K> w : weights) {
-            if (w.getWeight() == null || w.getWeight().compareTo(BigDecimal.ZERO) < 0) {
-                throw new IllegalArgumentException("权重不能为负数或 null");
+            if (w == null || w.getWeight() == null || w.getWeight().compareTo(BigDecimal.ZERO) < 0) {
+                throw new IllegalArgumentException("权重项不能为 null，权重值不能为 null 或负数");
             }
             totalWeight = totalWeight.add(w.getWeight());
         }
@@ -56,8 +55,14 @@ public class AmountAllocator {
             throw new IllegalArgumentException("权重之和必须大于 0");
         }
 
-        // 对齐总金额精度, 防止 totalAmount 传入 "100.005" 超出 scale 导致丢失残值或校验报错
+        // 总金额先对齐目标精度, 避免超出精度的零头丢失或破坏总额守恒
         BigDecimal normalizedTotal = totalAmount.setScale(scale, RoundingMode.HALF_UP);
+
+        // 取整后金额为零(总额为零或零头被舍尽), 无需分摊
+        if (normalizedTotal.signum() == 0) {
+            weights.forEach(w -> w.setResult(BigDecimal.ZERO.setScale(scale, RoundingMode.HALF_UP)));
+            return;
+        }
 
         // 局部辅助类
         class AllocateItem {
@@ -96,10 +101,10 @@ public class AmountAllocator {
         // 算出还需要补偿多少个最小单位
         BigDecimal remainder = normalizedTotal.subtract(sumFloor);
 
-        // 直接移动小数点转 int，例如剩余 0.03元，scale=2 时，直接转换为 3
+        // 将剩余金额换算为最小单位的个数(例如剩余 0.03 元、精确到分时为 3)
         int remainCount = remainder.movePointRight(scale).intValueExact();
 
-        // 将条目按残差从大到小降序排列
+        // 按残差从大到小排序; 排序稳定, 残差相同时保持原有顺序
         items.sort((a, b) -> b.fraction.compareTo(a.fraction));
 
         // 定义最小分配单位（例如 scale=2 时，unit = 0.01）
@@ -111,7 +116,7 @@ public class AmountAllocator {
             AllocateItem item = items.get(i);
             BigDecimal finalResult = item.floorValue;
 
-            // 前 remainCount 个残差最大的项，额外补偿 1 个最小单位
+            // 残差最大的前若干项(个数即剩余单位数)各补偿一个最小单位
             if (i < remainCount) {
                 finalResult = finalResult.add(unit);
             }
