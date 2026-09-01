@@ -1,54 +1,74 @@
-// SSS 表示毫秒位数，6位：SSSSSS
-yyyyMMddHHmmssSSS
-yyMMddHHmmssSSS
+## 1. 紧凑型（无分隔符）
 
-yyyyMMddHHmmss
-yyMMddHHmmss
+| 格式 | 说明 | 示例（假设时间为 2026-09-01 16:18:15.480 +08:00） |
+| :--- | :--- | :--- |
+| `yyyyMMddHHmmssSSS` | 4位年份 + 2位月份 + 2位日期 + 2位小时 + 2位分钟 + 2位秒 + **3位毫秒**（也可扩展为6位，如 `SSSSSS`） | `20260901161815480` |
+| `yyMMddHHmmssSSS` | 同上，但年份为2位简写 | `260901161815480` |
+| `yyyyMMddHHmmss` | 紧凑型，无毫秒 | `20260901161815` |
+| `yyMMddHHmmss` | 2位年份，无毫秒 | `260901161815` |
 
-yyyy-MM-dd HH:mm:ss.SSS
-yyyy-MM-dd HH:mm:ss
-yyyy-MM-dd
+## 2. 标准日期时间（连字符分隔）
 
-yyyy/MM/dd HH:mm:ss.SSS
-yyyy/MM-dd HH:mm:ss
-yyyy/MM/dd
+| 格式 | 说明 | 示例 |
+| :--- | :--- | :--- |
+| `yyyy-MM-dd HH:mm:ss.SSS` | 年-月-日 时:分:秒.毫秒 | `2026-09-01 16:18:15.480` |
+| `yyyy-MM-dd HH:mm:ss` | 无毫秒 | `2026-09-01 16:18:15` |
+| `yyyy-MM-dd` | 仅日期 | `2026-09-01` |
 
-HH:mm:ss.SSS
-HH:mm:ss
+## 3. 斜杠分隔日期时间
 
-// UTC+Offset 时区偏移格式（ISO 8601），带时区偏移量（如+08:00）
-// OffsetDateTime.now() 示例：2026-09-01T16:18:15.480+08:00
-// 日期时间（毫秒）带T分隔符和时区偏移（XXX表示+/-HH:mm）
-yyyy-MM-dd'T'HH:mm:ss.SSSXXX
-// 日期时间（无毫秒）带T和时区偏移
-yyyy-MM-dd'T'HH:mm:ssXXX
+| 格式 | 说明 | 示例 |
+| :--- | :--- | :--- |
+| `yyyy/MM/dd HH:mm:ss.SSS` | 年/月/日 时:分:秒.毫秒 | `2026/09/01 16:18:15.480` |
+| `yyyy/MM-dd HH:mm:ss` | **注意**：月与日之间为短横线（可能为笔误，按原样保留）——无毫秒 | `2026/09-01 16:18:15` |
+| `yyyy/MM/dd` | 仅日期 | `2026/09/01` |
 
-yyyy/MM/dd'T'HH:mm:ss.SSSXXX
-yyyy/MM/dd'T'HH:mm:ssXXX
+## 4. 纯时间（无日期）
 
-// 纯时间（毫秒）带时区偏移，无日期
-HH:mm:ss.SSSXXX
-// 纯时间（无毫秒）带时区偏移
-HH:mm:ssXXX
+| 格式 | 说明 | 示例 |
+| :--- | :--- | :--- |
+| `HH:mm:ss.SSS` | 时:分:秒.毫秒 | `16:18:15.480` |
+| `HH:mm:ss` | 无毫秒 | `16:18:15` |
 
-// UTC Zulu 时区（零时区），用字面量'Z'表示
-// 示例：2026-09-01T08:19:07.142Z
-// 日期时间（毫秒）带T和'Z'，表示UTC时间
-yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-yyyy-MM-dd'T'HH:mm:ss'Z'
+## 5. 带时区偏移（ISO 8601，如 `+08:00`）
 
-yyyy/MM/dd'T'HH:mm:ss.SSS'Z'
-yyyy/MM/dd'T'HH:mm:ss'Z'
+> 使用 `XXX` 表示时区偏移（`±HH:mm`），`T` 为日期时间分隔符。
 
-// 纯时间（毫秒）带'Z'，表示UTC时间
-HH:mm:ss.SSS'Z'
-HH:mm:ss'Z'
+| 格式 | 说明 | 示例 |
+| :--- | :--- | :--- |
+| `yyyy-MM-dd'T'HH:mm:ss.SSSXXX` | 连字符日期，带毫秒和偏移 | `2026-09-01T16:18:15.480+08:00` |
+| `yyyy-MM-dd'T'HH:mm:ssXXX` | 无毫秒 | `2026-09-01T16:18:15+08:00` |
+| `yyyy/MM/dd'T'HH:mm:ss.SSSXXX` | 斜杠日期，带毫秒和偏移 | `2026/09/01T16:18:15.480+08:00` |
+| `yyyy/MM/dd'T'HH:mm:ssXXX` | 无毫秒 | `2026/09/01T16:18:15+08:00` |
+| `HH:mm:ss.SSSXXX` | 纯时间，带毫秒和偏移 | `16:18:15.480+08:00` |
+| `HH:mm:ssXXX` | 纯时间，无毫秒，带偏移 | `16:18:15+08:00` |
 
-// ZonedDateTime 带时区ID（如 Asia/Shanghai）和偏移量
-// 示例：2026-09-01 16:21:34.696 +08:00 [Asia/Shanghai]
-// 日期时间（毫秒）带空格、偏移（XXX）和方括号内的时区ID（VV）
-yyyy-MM-dd HH:mm:ss.SSS XXX '['VV']'
-yyyy-MM-dd HH:mm:ss XXX '['VV']'
+## 6. UTC Zulu 时区（零时区，用 `'Z'` 表示）
 
-yyyy/MM/dd HH:mm:ss.SSS XXX '['VV']'
-yyyy/MM/dd HH:mm:ss XXX '['VV']'
+> 表示 UTC 时间，`Z` 为字面量。
+
+| 格式 | 说明 | 示例（UTC时间） |
+| :--- | :--- | :--- |
+| `yyyy-MM-dd'T'HH:mm:ss.SSS'Z'` | 连字符日期，带毫秒 | `2026-09-01T08:19:07.142Z` |
+| `yyyy-MM-dd'T'HH:mm:ss'Z'` | 无毫秒 | `2026-09-01T08:19:07Z` |
+| `yyyy/MM/dd'T'HH:mm:ss.SSS'Z'` | 斜杠日期，带毫秒 | `2026/09/01T08:19:07.142Z` |
+| `yyyy/MM/dd'T'HH:mm:ss'Z'` | 无毫秒 | `2026/09/01T08:19:07Z` |
+| `HH:mm:ss.SSS'Z'` | 纯时间，带毫秒 | `08:19:07.142Z` |
+| `HH:mm:ss'Z'` | 纯时间，无毫秒 | `08:19:07Z` |
+
+## 7. ZonedDateTime（带时区ID和偏移）
+
+> 格式：日期时间 + 偏移（`XXX`） + 方括号内时区ID（`VV`，如 `Asia/Shanghai`）。
+
+| 格式 | 说明 | 示例 |
+| :--- | :--- | :--- |
+| `yyyy-MM-dd HH:mm:ss.SSS XXX '['VV']'` | 连字符日期，带毫秒、偏移和时区ID | `2026-09-01 16:21:34.696 +08:00 [Asia/Shanghai]` |
+| `yyyy-MM-dd HH:mm:ss XXX '['VV']'` | 无毫秒 | `2026-09-01 16:21:34 +08:00 [Asia/Shanghai]` |
+| `yyyy/MM/dd HH:mm:ss.SSS XXX '['VV']'` | 斜杠日期，带毫秒、偏移和时区ID | `2026/09/01 16:21:34.696 +08:00 [Asia/Shanghai]` |
+| `yyyy/MM/dd HH:mm:ss XXX '['VV']'` | 无毫秒 | `2026/09/01 16:21:34 +08:00 [Asia/Shanghai]` |
+
+**备注：**
+
+- 毫秒部分 `SSS` 通常为3位，若需6位可写作 `SSSSSS`，但上述格式均以 `SSS` 表示。
+- 所有示例时间均为示意，实际解析时请根据具体场景调整。
+- 格式中的单引号（如 `'T'`、`'Z'`、`'['`、`']'`）表示字面量字符，非变量。
