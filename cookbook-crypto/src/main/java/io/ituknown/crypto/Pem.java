@@ -3,11 +3,11 @@ package io.ituknown.crypto;
 import java.nio.charset.StandardCharsets;
 
 /**
- * PEM/DER 自动识别与转换的包级工具（仅 {@code io.ituknown.crypto} 包内使用，不对外暴露）。
+ * PEM/DER 自动识别与转换工具。
  * <p>
- * 被各密钥加载工具类（如 {@link RsaKeys}、{@link EcdsaKeys}）共用，避免重复实现。
+ * 被各密钥家族（RSA / ECDSA / Ed25519）的密钥加载工具类共用，避免重复实现。
  */
-final class Pem {
+public final class Pem {
 
     private Pem() {
     }
@@ -37,11 +37,13 @@ final class Pem {
     /**
      * 从 PEM 文本中提取 DER 字节：去除 {@code -----BEGIN-----} / {@code -----END-----} 行，
      * 拼接其余行后 Base64 解码。非 PEM 内容原样返回。
+     * <p>
+     * 供密钥家族子包（rsa / ecdsa / ed25519）的加载工具跨包调用。
      *
      * @param content 原始字节（可能为 PEM 或 DER）
      * @return DER 字节
      */
-    static byte[] extractPemContent(byte[] content) {
+    public static byte[] extractPemContent(byte[] content) {
         if (!isPem(content)) {
             return content;
         }

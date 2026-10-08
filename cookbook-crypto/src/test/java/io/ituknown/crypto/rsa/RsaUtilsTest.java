@@ -1,4 +1,4 @@
-package io.ituknown.crypto;
+package io.ituknown.crypto.rsa;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

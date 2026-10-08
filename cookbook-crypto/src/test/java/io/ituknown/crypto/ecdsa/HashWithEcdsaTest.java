@@ -1,4 +1,6 @@
-package io.ituknown.crypto;
+package io.ituknown.crypto.ecdsa;
+
+import io.ituknown.crypto.Base64;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
