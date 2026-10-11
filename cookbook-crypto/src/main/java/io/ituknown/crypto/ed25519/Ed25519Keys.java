@@ -10,13 +10,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.GeneralSecurityException;
-import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
@@ -221,7 +215,9 @@ public final class Ed25519Keys {
     public record Ed25519KeyPair(String privateKeyBase64, String publicKeyBase64) {
     }
 
-    /** 把输入流排空为字节数组，并在读取后关闭流。 */
+    /**
+     * 把输入流排空为字节数组，并在读取后关闭流。
+     */
     private static byte[] readAllBytes(InputStream in) throws IOException {
         try (in) {
             java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();

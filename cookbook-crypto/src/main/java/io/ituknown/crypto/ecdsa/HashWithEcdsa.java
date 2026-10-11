@@ -3,17 +3,10 @@ package io.ituknown.crypto.ecdsa;
 import io.ituknown.crypto.Base64;
 import io.ituknown.crypto.Require;
 import io.ituknown.crypto.rsa.HashWithRsa;
-
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.Provider;
-import java.security.PublicKey;
-import java.security.Signature;
-import java.security.SignatureException;
+import java.security.*;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -104,13 +97,19 @@ public enum HashWithEcdsa {
      * 签名编码格式。
      */
     public enum Encoding {
-        /** ASN.1 DER：{@code SEQUENCE{INTEGER r, INTEGER s}}，变长。JDK/openssl 经典默认格式。 */
+        /**
+         * ASN.1 DER：{@code SEQUENCE{INTEGER r, INTEGER s}}，变长。JDK/openssl 经典默认格式。
+         */
         DER,
-        /** IEEE P1363：{@code r} 与 {@code s} 按域长度零填充后拼接，定长（P-256 为 64 字节）。JWT ES256/384/512 采用。 */
+        /**
+         * IEEE P1363：{@code r} 与 {@code s} 按域长度零填充后拼接，定长（P-256 为 64 字节）。JWT ES256/384/512 采用。
+         */
         RAW,
     }
 
-    /** 根据 hash 与编码拼接 BouncyCastle 算法名：DER 为 {@code SHA256withECDSA}，RAW 为 {@code SHA256withPLAIN-ECDSA}。 */
+    /**
+     * 根据 hash 与编码拼接 BouncyCastle 算法名：DER 为 {@code SHA256withECDSA}，RAW 为 {@code SHA256withPLAIN-ECDSA}。
+     */
     private String algorithmName(Encoding encoding) {
         return encoding == Encoding.RAW ? hash + "withPLAIN-ECDSA" : hash + "withECDSA";
     }
@@ -278,10 +277,10 @@ public enum HashWithEcdsa {
      * <p>
      * 输入的 Base64 签名会先去除所有空白与换行符，因此单行或多行均可正确解析。
      *
-     * @param pubKey         公钥
-     * @param plaintext      原文（UTF-8 字符串）
+     * @param pubKey          公钥
+     * @param plaintext       原文（UTF-8 字符串）
      * @param base64Signature Base64 签名（允许含换行/空白）
-     * @param encoding       签名编码
+     * @param encoding        签名编码
      * @return true 表示验签通过
      * @throws IllegalArgumentException 任一参数为 null
      */
@@ -296,8 +295,8 @@ public enum HashWithEcdsa {
      * <p>
      * 输入的 Base64 签名会先去除所有空白与换行符，因此单行或多行（例如直接复制带换行的签名）均可正确解析。
      *
-     * @param pubKey         公钥
-     * @param plaintext      原文（UTF-8 字符串）
+     * @param pubKey          公钥
+     * @param plaintext       原文（UTF-8 字符串）
      * @param base64Signature Base64 签名（允许含换行/空白）
      * @return true 表示验签通过
      * @throws IllegalArgumentException 任一参数为 null

@@ -9,13 +9,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.GeneralSecurityException;
-import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import java.security.*;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -77,7 +71,7 @@ public final class RsaKeys {
      *
      * @param path 私钥文件路径
      * @return RSA 私钥
-     * @throws IOException             读取文件失败
+     * @throws IOException              读取文件失败
      * @throws GeneralSecurityException 密钥格式非法
      */
     public static PrivateKey loadPrivateKey(Path path) throws IOException, GeneralSecurityException {
@@ -92,7 +86,7 @@ public final class RsaKeys {
      *
      * @param in 私钥输入流
      * @return RSA 私钥
-     * @throws IOException             读取流失败
+     * @throws IOException              读取流失败
      * @throws GeneralSecurityException 密钥格式非法
      */
     public static PrivateKey loadPrivateKey(InputStream in) throws IOException, GeneralSecurityException {
@@ -105,7 +99,7 @@ public final class RsaKeys {
      *
      * @param path 公钥文件路径
      * @return RSA 公钥
-     * @throws IOException             读取文件失败
+     * @throws IOException              读取文件失败
      * @throws GeneralSecurityException 密钥格式非法
      */
     public static PublicKey loadPublicKey(Path path) throws IOException, GeneralSecurityException {
@@ -120,7 +114,7 @@ public final class RsaKeys {
      *
      * @param in 公钥输入流
      * @return RSA 公钥
-     * @throws IOException             读取流失败
+     * @throws IOException              读取流失败
      * @throws GeneralSecurityException 密钥格式非法
      */
     public static PublicKey loadPublicKey(InputStream in) throws IOException, GeneralSecurityException {
@@ -180,10 +174,14 @@ public final class RsaKeys {
         return buildPublicKey(Base64.toByte(base64));
     }
 
-    /** 默认密钥长度（位）。 */
+    /**
+     * 默认密钥长度（位）。
+     */
     public static final int DEFAULT_KEY_SIZE = 2048;
 
-    /** 安全密钥长度下限（位）。低于此值视为弱密钥并拒绝。 */
+    /**
+     * 安全密钥长度下限（位）。低于此值视为弱密钥并拒绝。
+     */
     public static final int MIN_KEY_SIZE = 2048;
 
     /**
@@ -247,7 +245,9 @@ public final class RsaKeys {
     public record RsaKeyPair(String privateKeyBase64, String publicKeyBase64) {
     }
 
-    /** 把输入流排空为字节数组，并在读取后关闭流。 */
+    /**
+     * 把输入流排空为字节数组，并在读取后关闭流。
+     */
     private static byte[] readAllBytes(InputStream in) throws IOException {
         try (in) {
             java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();

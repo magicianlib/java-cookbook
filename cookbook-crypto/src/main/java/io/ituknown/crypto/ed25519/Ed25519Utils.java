@@ -5,12 +5,7 @@ import io.ituknown.crypto.Require;
 import io.ituknown.crypto.ecdsa.HashWithEcdsa;
 
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.Signature;
-import java.security.SignatureException;
+import java.security.*;
 
 /**
  * Ed25519 数据签名与验签工具类：用私钥对消息签名、用公钥验签，用于防篡改与身份认证。

@@ -4,7 +4,7 @@ import io.ituknown.crypto.Base64;
 import io.ituknown.crypto.Pem;
 import io.ituknown.crypto.Require;
 import io.ituknown.crypto.rsa.RsaKeys;
-
+import lombok.Getter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.IOException;
@@ -12,14 +12,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.GeneralSecurityException;
-import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.Provider;
+import java.security.*;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -66,35 +59,43 @@ public final class EcdsaKeys {
     private EcdsaKeys() {
     }
 
-    /** 默认曲线（{@link Curve#P256}）。 */
+    /**
+     * 默认曲线（{@link Curve#P256}）。
+     */
     public static final Curve DEFAULT_CURVE = Curve.P256;
 
     /**
      * ECDSA 支持的椭圆曲线，每个枚举值对应一条标准命名曲线。
      */
+    @Getter
     public enum Curve {
-        /** secp256r1 / prime256v1 / NIST P-256（对应 JWT ES256）。 */
+        /**
+         * secp256r1 / prime256v1 / NIST P-256（对应 JWT ES256）。
+         */
         P256("secp256r1"),
-        /** secp384r1 / NIST P-384（对应 JWT ES384）。 */
+        /**
+         * secp384r1 / NIST P-384（对应 JWT ES384）。
+         */
         P384("secp384r1"),
-        /** secp521r1 / NIST P-521（对应 JWT ES512）。 */
+        /**
+         * secp521r1 / NIST P-521（对应 JWT ES512）。
+         */
         P521("secp521r1"),
-        /** secp256k1（比特币 / 以太坊等使用的曲线）。 */
+        /**
+         * secp256k1（比特币 / 以太坊等使用的曲线）。
+         */
         SECP256K1("secp256k1"),
         ;
 
+        /**
+         * 标准曲线名（用于 {@link ECGenParameterSpec}）
+         */
         private final String name;
 
         Curve(String name) {
             this.name = name;
         }
 
-        /**
-         * @return 标准曲线名（用于 {@link ECGenParameterSpec}）
-         */
-        public String getName() {
-            return name;
-        }
     }
 
     /**
@@ -290,7 +291,9 @@ public final class EcdsaKeys {
     public record EcdsaKeyPair(String privateKeyBase64, String publicKeyBase64) {
     }
 
-    /** 把输入流排空为字节数组，并在读取后关闭流。 */
+    /**
+     * 把输入流排空为字节数组，并在读取后关闭流。
+     */
     private static byte[] readAllBytes(InputStream in) throws IOException {
         try (in) {
             java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
